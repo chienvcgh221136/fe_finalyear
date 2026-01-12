@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Search from './pages/Search';
+import PostDetail from './pages/PostDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/post/:id" element={<PostDetail />} />
           </Routes>
         </main>
         <Footer />

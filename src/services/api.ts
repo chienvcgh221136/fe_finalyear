@@ -38,8 +38,10 @@ export const authService = {
 };
 
 export const postService = {
-    getAll: () => api.get('/posts'),
+    getAll: (params?: any) => api.get('/posts', { params }),
     getById: (id: string) => api.get(`/posts/${id}`),
 };
+
+export const postsAPI = postService; // Alias for compatibility with new Home code
 
 export default api;

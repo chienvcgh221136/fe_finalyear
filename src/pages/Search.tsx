@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ListingCard from '../components/ListingCard';
 import { postService } from '../services/api';
-import { ChevronDown, MapPin, Grid, List } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+
+// Helper to calculate percentage
+const getPercent = (value: number, min: number, max: number) => {
+    return Math.round(((value - min) / (max - min)) * 100);
+};
 
 const Search = () => {
     const [listings, setListings] = useState<any[]>([]);
@@ -12,6 +17,14 @@ const Search = () => {
     const [city, setCity] = useState('');
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
+
+    // Area Range Slider State
+    const MIN_AREA = 0;
+    const MAX_AREA = 3500;
+    const [areaRange, setAreaRange] = useState([500, 3500]); // [min, max]
+    const sliderRef = useRef<HTMLDivElement>(null);
+    const draggingRef = useRef<'min' | 'max' | null>(null);
+
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
 
     useEffect(() => {
@@ -32,6 +45,85 @@ const Search = () => {
         fetchListings();
     }, []);
 
+    // Handle Slider Drag
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!draggingRef.current || !sliderRef.current) return;
+
+            const rect = sliderRef.current.getBoundingClientRect();
+            const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+            const value = Math.round(percent * (MAX_AREA - MIN_AREA) + MIN_AREA);
+
+            setAreaRange(prev => {
+                const [min, max] = prev;
+                if (draggingRef.current === 'min') {
+                    // Prevent crossing
+                    if (value > max - 100) return [max - 100, max];
+                    return [value, max];
+                } else {
+                    if (value < min + 100) return [min, min + 100];
+                    return [min, value];
+                }
+            });
+        };
+
+        const handleMouseUp = () => {
+            draggingRef.current = null;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        if (draggingRef.current) { // This condition is tricky in effect, usually we attach listeners on mousedown
+            // But here we rely on the ref being set in mousedown, then attaching global listeners
+        }
+
+        // Use generic handler attached to state/ref logic is cleaner
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+    const startDrag = (type: 'min' | 'max') => {
+        draggingRef.current = type;
+
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!sliderRef.current) return;
+            const rect = sliderRef.current.getBoundingClientRect();
+            const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+            const value = Math.round(percent * (MAX_AREA - MIN_AREA) + MIN_AREA);
+
+            setAreaRange(prev => {
+                const [min, max] = prev;
+                if (type === 'min') {
+                    const newValue = Math.min(value, max - 100);
+                    return [newValue, max];
+                } else {
+                    const newValue = Math.max(value, min + 100);
+                    return [min, newValue];
+                }
+            });
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            draggingRef.current = null;
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleTypeChange = (type: string) => {
+        setPropertyTypes(prev => {
+            if (prev.includes(type)) {
+                return prev.filter(t => t !== type);
+            }
+            return [...prev, type];
+        });
+    };
+
     const handleApplyFilters = () => {
         let result = [...listings];
 
@@ -44,9 +136,28 @@ const Search = () => {
         if (maxPrice) {
             result = result.filter(post => post.price <= Number(maxPrice));
         }
- 
+
+        // Filter by Area
+        result = result.filter(post => {
+            const area = post.area || 0;
+            return area >= areaRange[0] && area <= areaRange[1];
+        });
+
+        // Filter by Property Type
+        if (propertyTypes.length > 0) {
+            result = result.filter(post => propertyTypes.includes(post.type));
+        }
 
         setFilteredListings(result);
+    };
+
+    const handleClearFilters = () => {
+        setCity('');
+        setMinPrice('');
+        setMaxPrice('');
+        setAreaRange([500, 3500]);
+        setPropertyTypes([]);
+        setFilteredListings(listings);
     };
 
     return (
@@ -56,7 +167,12 @@ const Search = () => {
                 <aside className="sidebar">
                     <div className="filter-title">
                         <span>Filters</span>
-                        <button className="text-primary text-sm font-bold bg-transparent">Clear All</button>
+                        <button
+                            className="text-primary text-sm font-bold bg-transparent"
+                            onClick={handleClearFilters}
+                        >
+                            Clear All
+                        </button>
                     </div>
 
                     <div className="filter-group">
@@ -82,14 +198,27 @@ const Search = () => {
                     <div className="filter-group">
                         <label className="font-bold mb-2 block text-sm">Area (sq ft)</label>
                         <div className="range-slider-container">
-                            {/* CSS specific simulation for range visualization */}
-                            <div className="range-track">
-                                <div className="range-thumb" style={{ left: '20%' }}></div>
-                                <div className="range-thumb" style={{ left: '70%' }}></div>
+                            <div
+                                className="range-track"
+                                ref={sliderRef}
+                                style={{
+                                    background: `linear-gradient(to right, #e2e8f0 ${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%, var(--primary) ${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%, var(--primary) ${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%, #e2e8f0 ${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%)`
+                                }}
+                            >
+                                <div
+                                    className="range-thumb"
+                                    style={{ left: `${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%` }}
+                                    onMouseDown={() => startDrag('min')}
+                                ></div>
+                                <div
+                                    className="range-thumb"
+                                    style={{ left: `${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%` }}
+                                    onMouseDown={() => startDrag('max')}
+                                ></div>
                             </div>
-                            <div className="flex justify-between text-xs text-text-secondary mt-2">
-                                <span>500</span>
-                                <span>3,500</span>
+                            <div className="flex justify-between text-xs text-text-secondary mt-2 font-bold">
+                                <span>{areaRange[0]} sqft</span>
+                                <span>{areaRange[1]} sqft</span>
                             </div>
                         </div>
                     </div>
@@ -116,10 +245,16 @@ const Search = () => {
                     <div className="filter-group">
                         <label className="font-bold mb-2 block text-sm">Property Type</label>
                         <div className="checkbox-group">
-                            <label className="checkbox-item"><input type="checkbox" /> Apartment</label>
-                            <label className="checkbox-item"><input type="checkbox" /> Detached House</label>
-                            <label className="checkbox-item"><input type="checkbox" /> Condo</label>
-                            <label className="checkbox-item"><input type="checkbox" /> Townhouse</label>
+                            {['Apartment', 'Detached House', 'Condo', 'Townhouse'].map(type => (
+                                <label key={type} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={propertyTypes.includes(type)}
+                                        onChange={() => handleTypeChange(type)}
+                                    />
+                                    {type}
+                                </label>
+                            ))}
                         </div>
                     </div>
 
