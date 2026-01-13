@@ -13,7 +13,7 @@ export function SearchBar() {
         const params = new URLSearchParams();
         if (keyword) params.append('q', keyword);
         if (type) params.append('transactionType', type);
-        navigate(`/buy?${params.toString()}`); // Defaulting to buy route for search results for now
+        navigate(`/search?${params.toString()}`); // Navigate to generic search page
     };
 
     return (

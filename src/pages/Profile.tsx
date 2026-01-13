@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, postsAPI } from '../services/api';
-import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Wallet } from 'lucide-react';
+import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Wallet, Trash2, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Profile = () => {
@@ -25,6 +25,44 @@ const Profile = () => {
         queryFn: () => postsAPI.getMyPosts(),
         enabled: activeTab === 'posts',
     });
+
+    const queryClient = useQueryClient();
+    const [postFilter, setPostFilter] = useState('ALL');
+
+    const filteredPosts = (myPostsResponse?.data?.data || myPostsResponse?.data || []).filter((post: any) => {
+        if (postFilter === 'ALL') return true;
+        return post.status === postFilter;
+    });
+
+    const deletePostMutation = useMutation({
+        mutationFn: (id: string) => postsAPI.delete(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
+            setSuccess('Đã xóa tin đăng thành công');
+            setTimeout(() => setSuccess(''), 3000);
+        }
+    });
+
+    const markSoldMutation = useMutation({
+        mutationFn: (id: string) => postsAPI.markSold(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
+            setSuccess('Đã đánh dấu đã bán');
+            setTimeout(() => setSuccess(''), 3000);
+        }
+    });
+
+    const handleDeletePost = (id: string) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa tin đăng này?')) {
+            deletePostMutation.mutate(id);
+        }
+    };
+
+    const handleMarkSold = (id: string) => {
+        if (window.confirm('Xác nhận đánh dấu tin này là ĐÃ BÁN?')) {
+            markSoldMutation.mutate(id);
+        }
+    };
 
     // Safety check for data structure
     const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
@@ -49,11 +87,35 @@ const Profile = () => {
     };
 
     const StatusBadge = ({ status }: { status: string }) => {
-        // ... implementation
-        let color = "bg-gray-100 text-gray-800";
-        let label = "Unknown";
-        if (status === 'ACTIVE') { color = "bg-green-100 text-green-800"; label = "Đang hiển thị"; }
-        return <span className={`px-2 py-1 rounded text-xs font-bold ${color}`}>{label}</span>
+        let color = "bg-gray-100 text-gray-600";
+        let label = status;
+
+        switch (status) {
+            case 'ACTIVE':
+                color = "bg-green-100 text-green-700 border border-green-200";
+                label = "Đang hiển thị";
+                break;
+            case 'PENDING':
+                color = "bg-yellow-100 text-yellow-700 border border-yellow-200";
+                label = "Chờ duyệt";
+                break;
+            case 'REJECTED':
+                color = "bg-red-100 text-red-700 border border-red-200";
+                label = "Bị từ chối";
+                break;
+            case 'SOLD':
+                color = "bg-gray-100 text-gray-600 border border-gray-200";
+                label = "Đã bán";
+                break;
+            default:
+                label = status;
+        }
+
+        return (
+            <span className={`px-2.5 py-1 rounded-md text-xs font-bold shadow-sm ${color}`}>
+                {label}
+            </span>
+        );
     };
 
     return (
@@ -180,24 +242,91 @@ const Profile = () => {
                                         Đăng tin mới
                                     </Link>
                                 </div>
+
+                                {/* My Posts Sub-tabs */}
+                                <div className="flex gap-2 mb-6 border-b border-gray-100 pb-1 overflow-x-auto">
+                                    {['ALL', 'ACTIVE', 'PENDING', 'SOLD', 'REJECTED'].map(status => (
+                                        <button
+                                            key={status}
+                                            onClick={() => setPostFilter(status)}
+                                            className={`px-4 py-2 text-sm font-bold rounded-t-lg transition-colors whitespace-nowrap ${postFilter === status
+                                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
+                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {status === 'ALL' && 'Tất cả'}
+                                            {status === 'ACTIVE' && 'Đang hiển thị'}
+                                            {status === 'PENDING' && 'Chờ duyệt'}
+                                            {status === 'SOLD' && 'Đã bán'}
+                                            {status === 'REJECTED' && 'Bị từ chối'}
+                                            <span className="ml-2 text-xs py-0.5 px-1.5 rounded-full bg-gray-200 text-gray-600">
+                                                {status === 'ALL' ? myPosts.length : myPosts.filter((p: any) => p.status === status).length}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+
                                 {loadingPosts ? (
                                     <div className="py-12 text-center text-gray-500">Loading...</div>
-                                ) : myPosts.length > 0 ? (
+                                ) : filteredPosts.length > 0 ? (
                                     <div className="space-y-4">
-                                        {myPosts.map((post: any) => (
-                                            <div key={post._id} className="flex gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors">
-                                                <div className="w-32 h-24 bg-gray-200 rounded-lg shrink-0 overflow-hidden">
+                                        {filteredPosts.map((post: any) => (
+                                            <div key={post._id} className="flex flex-col md:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors bg-white">
+                                                <div className="w-full md:w-48 h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
                                                     {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start mb-1">
-                                                        <h3 className="font-bold text-gray-900 truncate pr-4">{post.title}</h3>
+                                                    <div className="absolute top-2 left-2">
                                                         <StatusBadge status={post.status || 'PENDING'} />
                                                     </div>
-                                                    <p className="text-blue-600 font-bold mb-2">{(post.price / 1e9).toFixed(2)} tỷ</p>
-                                                    <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
-                                                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                                                        <Link to={`/posts/${post._id}`} className="text-blue-600 hover:underline">Xem tin</Link>
+                                                </div>
+                                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                    <div>
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <h3 className="font-bold text-gray-900 text-lg truncate pr-4" title={post.title}>{post.title}</h3>
+                                                            <div className="text-right">
+                                                                <p className="text-blue-600 font-bold text-lg">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-4">
+                                                            <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
+                                                            {post.area && <span>• {post.area} m²</span>}
+                                                            {post.city && <span>• {post.city}</span>}
+                                                        </div>
+                                                        {post.rejectReason && post.status === 'REJECTED' && (
+                                                            <div className="text-sm text-red-600 bg-red-50 p-2 rounded mb-2">
+                                                                Lý do từ chối: {post.rejectReason}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
+                                                        <Link to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                                            Xem
+                                                        </Link>
+
+                                                        {post.status !== 'SOLD' && (
+                                                            <button
+                                                                onClick={() => navigate(`/post-ad?edit=${post._id}`)}
+                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                                            >
+                                                                <Edit size={14} /> Sửa
+                                                            </button>
+                                                        )}
+
+                                                        {post.status === 'ACTIVE' && (
+                                                            <button
+                                                                onClick={() => handleMarkSold(post._id)}
+                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
+                                                            >
+                                                                <CheckCircle size={14} /> Đã bán
+                                                            </button>
+                                                        )}
+
+                                                        <button
+                                                            onClick={() => handleDeletePost(post._id)}
+                                                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors ml-auto md:ml-0"
+                                                        >
+                                                            <Trash2 size={14} /> Xóa
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -206,7 +335,7 @@ const Profile = () => {
                                 ) : (
                                     <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                        <p>Bạn chưa có tin đăng nào</p>
+                                        <p>Không tìm thấy tin đăng nào trong mục này</p>
                                     </div>
                                 )}
                             </div>

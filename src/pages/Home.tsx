@@ -212,7 +212,7 @@ const Home = () => {
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button size="lg" asChild className="bg-white text-black hover:bg-gray-100 font-bold px-8 py-6 h-auto text-lg rounded-xl">
-                                    <Link to="/post/create">Đăng tin ngay</Link>
+                                    <Link to="/post-ad">Đăng tin ngay</Link>
                                 </Button>
                                 <Button variant="outline" size="lg" asChild className="border-gray-700 text-white hover:bg-white/10 hover:text-white font-semibold px-8 py-6 h-auto text-lg rounded-xl">
                                     <Link to="/contact">Liên hệ hỗ trợ</Link>

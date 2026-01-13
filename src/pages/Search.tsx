@@ -10,22 +10,39 @@ const getPercent = (value: number, min: number, max: number) => {
 };
 
 const Search = () => {
+    const location = useLocation();
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filteredListings, setFilteredListings] = useState<any[]>([]);
 
     // Filters States
-    // Filters States
     const [city, setCity] = useState('');
-    const [minArea, setMinArea] = useState(''); // Changed from Price to Area
+    const [minArea, setMinArea] = useState('');
     const [maxArea, setMaxArea] = useState('');
+    const [areaError, setAreaError] = useState('');
 
-    // Price Range Slider State (Swapped from Area)
+    // Price Range Slider State
     const MIN_PRICE = 0;
-    const MAX_PRICE = 20 * 1000000000; // 20 Billion
-    const [priceRange, setPriceRange] = useState([0, 20 * 1000000000]);
+    const MAX_PRICE = 50 * 1000000000; // 50 Billion
+    const [priceRange, setPriceRange] = useState([0, 50 * 1000000000]);
     const sliderRef = useRef<HTMLDivElement>(null);
     const draggingRef = useRef<'min' | 'max' | null>(null);
+
+    // Sorting State
+    const [sortOption, setSortOption] = useState('newest');
+
+    const sortListings = (items: any[], sort: string) => {
+        const sorted = [...items];
+        switch (sort) {
+            case 'price_asc':
+                return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+            case 'price_desc':
+                return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+            case 'newest':
+            default:
+                return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        }
+    };
 
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
 
@@ -40,14 +57,46 @@ const Search = () => {
                 setListings(posts);
                 setFilteredListings(posts);
 
-                // Extract unique cities
-                // Extract unique cities
-                const fetchedCities = Array.from(new Set(posts.map((p: any) => p.city).filter(Boolean))) as string[];
+                // Initial Filter based on URL
+                let initialFiltered = [...posts];
+                const searchParams = new URLSearchParams(location.search);
+                const isBuyPage = location.pathname === '/buy';
+                const isRentPage = location.pathname === '/rent';
+                const typeParam = searchParams.get('propertyType');
+                const isVipParam = searchParams.get('isVip');
 
-                // Predefined major cities
+                // Filter by Transaction Type (Path)
+                if (isBuyPage) {
+                    initialFiltered = initialFiltered.filter(p => p.transactionType === 'SALE');
+                } else if (isRentPage) {
+                    initialFiltered = initialFiltered.filter(p => p.transactionType === 'RENT');
+                }
+                // If /search, show all (unless filtered by param below)
+
+                const transactionTypeParam = searchParams.get('transactionType');
+                if (transactionTypeParam) {
+                    initialFiltered = initialFiltered.filter(p => p.transactionType === transactionTypeParam);
+                    setTransactionTypes([transactionTypeParam]);
+                }
+
+                // Filter by Property Type (Query Param)
+                if (typeParam) {
+                    initialFiltered = initialFiltered.filter(p => p.propertyType === typeParam || p.type === typeParam);
+                    setPropertyTypes([typeParam]);
+                } else {
+                    setPropertyTypes([]);
+                }
+
+                // Filter by VIP (Query Param)
+                if (isVipParam === 'true') {
+                    initialFiltered = initialFiltered.filter(p => p.isVip);
+                }
+
+                setFilteredListings(initialFiltered);
+
+                // Extract unique cities
+                const fetchedCities = Array.from(new Set(posts.map((p: any) => p.address?.city || p.city).filter(Boolean))) as string[];
                 const majorCities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
-
-                // Merge and dedup
                 const allCities = Array.from(new Set([...majorCities, ...fetchedCities]));
 
                 setAvailableCities(allCities);
@@ -59,9 +108,9 @@ const Search = () => {
         };
 
         fetchListings();
-    }, []);
+    }, [location.pathname, location.search]);
 
-    // Handle Slider Drag (Updated for Price)
+    // Handle Slider Drag (Price)
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!draggingRef.current || !sliderRef.current) return;
@@ -144,7 +193,20 @@ const Search = () => {
         });
     };
 
+    // Transaction Type Filter Logic
+    const [transactionTypes, setTransactionTypes] = useState<string[]>([]);
+
+
+
     const handleApplyFilters = () => {
+        setAreaError(''); // Clear previous error
+
+        // Validate Area
+        if (minArea && maxArea && Number(minArea) > Number(maxArea)) {
+            setAreaError('Min area cannot be greater than Max area');
+            return;
+        }
+
         let result = [...listings];
 
         // Ensure we respect the current page context (Buy vs Rent)
@@ -154,15 +216,8 @@ const Search = () => {
             result = result.filter(post => post.transactionType === 'RENT');
         }
 
-        // Ensure we respect the current page context (Buy vs Rent)
-        if (location.pathname === '/buy') {
-            result = result.filter(post => post.transactionType === 'SALE');
-        } else if (location.pathname === '/rent') {
-            result = result.filter(post => post.transactionType === 'RENT');
-        }
-
         if (city) {
-            result = result.filter(post => post.city === city);
+            result = result.filter(post => (post.address?.city === city) || (post.city === city));
         }
 
         // Filter by Area (Inputs)
@@ -179,12 +234,23 @@ const Search = () => {
             return price >= priceRange[0] && price <= priceRange[1];
         });
 
-        // Filter by Property Type
         if (propertyTypes.length > 0) {
             result = result.filter(post => propertyTypes.includes(post.type));
         }
 
-        setFilteredListings(result);
+        // Filter by Transaction Type (Sidebar)
+        if (transactionTypes.length > 0) {
+            result = result.filter(post => transactionTypes.includes(post.transactionType));
+        }
+
+        const sortedResult = sortListings(result, sortOption);
+        setFilteredListings(sortedResult);
+    };
+
+    const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newSort = e.target.value;
+        setSortOption(newSort);
+        setFilteredListings(prev => sortListings(prev, newSort));
     };
 
     const handleClearFilters = () => {
@@ -193,7 +259,9 @@ const Search = () => {
         setMaxArea('');
         setPriceRange([0, MAX_PRICE]); // Reset Price Slider
         setPropertyTypes([]);
+        setTransactionTypes([]); // Clear Transaction Filter
         setFilteredListings(listings);
+        setAreaError('');
     };
 
     // Helper to format price
@@ -222,31 +290,41 @@ const Search = () => {
                         </button>
                     </div>
 
-                    {/* Area Range (Inputs) - Swapped to Top */}
+
+
+                    {/* Area Range (Inputs) */}
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Area (sq ft)</label>
-                        <div className="flex gap-2 mb-4">
-                            <input
-                                type="number"
-                                placeholder="Min"
-                                className="filter-input"
-                                value={minArea}
-                                onChange={(e) => setMinArea(e.target.value)}
-                            />
-                            <input
-                                type="number"
-                                placeholder="Max"
-                                className="filter-input"
-                                value={maxArea}
-                                onChange={(e) => setMaxArea(e.target.value)}
-                            />
+                        <label className="font-bold mb-2 block text-sm">Diện tích (m²)</label>
+                        <div className="flex items-start gap-2 mb-4">
+                            <div className="flex-1">
+                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối thiểu</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    onKeyDown={(e) => ["-", "e", "+"].includes(e.key) && e.preventDefault()}
+                                    className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
+                                    value={minArea}
+                                    onChange={(e) => setMinArea(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối đa</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    onKeyDown={(e) => ["-", "e", "+"].includes(e.key) && e.preventDefault()}
+                                    className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
+                                    value={maxArea}
+                                    onChange={(e) => setMaxArea(e.target.value)}
+                                />
+                            </div>
                         </div>
+                        {areaError && <p className="text-red-500 text-xs mt-1 mb-2">{areaError}</p>}
                     </div>
 
-                    {/* Price Range (Slider) - Swapped to Bottom */}
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Price Range</label>
-                        <div className="range-slider-container">
+                        <label className="font-bold mb-2 block text-sm">Khoảng giá (VNĐ)</label>
+                        <div className="range-slider-container mb-6">
                             <div
                                 className="range-track"
                                 ref={sliderRef}
@@ -258,16 +336,62 @@ const Search = () => {
                                     className="range-thumb"
                                     style={{ left: `${getPercent(priceRange[0], MIN_PRICE, MAX_PRICE)}%` }}
                                     onMouseDown={() => startDrag('min')}
-                                ></div>
+                                    role="slider"
+                                    aria-valuenow={priceRange[0]}
+                                >
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {formatPrice(priceRange[0])}
+                                    </div>
+                                </div>
                                 <div
                                     className="range-thumb"
                                     style={{ left: `${getPercent(priceRange[1], MIN_PRICE, MAX_PRICE)}%` }}
                                     onMouseDown={() => startDrag('max')}
-                                ></div>
+                                    role="slider"
+                                    aria-valuenow={priceRange[1]}
+                                >
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                        {formatPrice(priceRange[1])}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex justify-between text-xs text-text-secondary mt-2 font-bold">
+                            <div className="flex justify-between text-xs text-text-secondary mt-3 font-bold">
                                 <span>{formatPrice(priceRange[0])}</span>
                                 <span>{formatPrice(priceRange[1])}</span>
+                            </div>
+                        </div>
+
+                        {/* Price Inputs */}
+                        <div className="flex items-start gap-2">
+                            <div className="flex-1">
+                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối thiểu</span>
+                                <input
+                                    type="text"
+                                    value={priceRange[0].toLocaleString('vi-VN')}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value.replace(/\./g, '').replace(/[^0-9]/g, ''));
+                                        if (val <= MAX_PRICE + 1000000000) {
+                                            setPriceRange([Math.min(val, priceRange[1]), priceRange[1]]);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
+                                />
+                                <div className="text-xs text-blue-600 mt-1 font-medium">{formatPrice(priceRange[0])}</div>
+                            </div>
+                            <div className="flex-1">
+                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối đa</span>
+                                <input
+                                    type="text"
+                                    value={priceRange[1].toLocaleString('vi-VN')}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value.replace(/\./g, '').replace(/[^0-9]/g, ''));
+                                        if (val <= MAX_PRICE + 5000000000) {
+                                            setPriceRange([priceRange[0], val]);
+                                        }
+                                    }}
+                                    className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
+                                />
+                                <div className="text-xs text-blue-600 mt-1 font-medium">{formatPrice(priceRange[1])}</div>
                             </div>
                         </div>
                     </div>
@@ -317,11 +441,15 @@ const Search = () => {
                         <div className="results-header">
                             <span className="results-count">Showing {filteredListings.length} properties</span>
                             <div className="flex items-center gap-4">
-                                <span className="text-sm font-semibold text-text-secondary">Sort by:</span>
-                                <select className="sort-select border-none bg-transparent font-bold text-primary pl-0 focus:ring-0 cursor-pointer">
-                                    <option>Newest First</option>
-                                    <option>Price (Low to High)</option>
-                                    <option>Price (High to Low)</option>
+                                <span className="text-sm font-semibold text-text-secondary">Sắp xếp:</span>
+                                <select
+                                    className="sort-select border-none bg-transparent font-bold text-primary pl-0 focus:ring-0 cursor-pointer"
+                                    value={sortOption}
+                                    onChange={handleSortChange}
+                                >
+                                    <option value="newest">Mới nhất</option>
+                                    <option value="price_asc">Giá (Thấp đến Cao)</option>
+                                    <option value="price_desc">Giá (Cao đến Thấp)</option>
                                 </select>
                             </div>
                         </div>

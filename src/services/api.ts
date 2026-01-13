@@ -28,28 +28,33 @@ api.interceptors.response.use(
 export const authService = {
     login: (data: any) => api.post('/auth/login', data),
     register: (data: any) => api.post('/auth/register', data),
-    logout: () => {
-        const refreshToken = localStorage.getItem('refreshToken');
-        return api.post('/auth/logout', { refreshToken });
-    },
+    logout: () => api.post('/auth/logout'),
     getProfile: () => api.get('/users/me'), // Assuming /users/me is the endpoint
 };
 
 export const usersAPI = {
     getProfile: authService.getProfile,
     updateProfile: (data: any) => api.put('/users/me', data),
+    getAll: () => api.get('/users'),
+    ban: (id: string) => api.patch(`/admin/users/${id}/ban`),
+    unban: (id: string) => api.patch(`/admin/users/${id}/unban`),
 };
 
 export const postService = {
     getAll: (params?: any) => api.get('/posts', { params }),
     getById: (id: string) => api.get(`/posts/${id}`),
     getMyPosts: () => api.get('/posts/me/list'), // Corrected endpoint
-    create: (data: FormData) => api.post('/posts', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    }),
+    create: (data: any) => api.post('/posts', data),
+    update: (id: string, data: any) => api.put(`/posts/${id}`, data),
+    delete: (id: string) => api.delete(`/posts/${id}`),
     markSold: (id: string) => api.patch(`/posts/${id}/sold`),
+    getPending: () => api.get('/posts/admin/pending'),
+    approve: (id: string) => api.patch(`/posts/${id}/approve`),
+    reject: (id: string, reason: string) => api.patch(`/posts/${id}/reject`, { reason }),
 };
 
-export const postsAPI = postService; // Alias for compatibility with new Home code
+export const postsAPI = postService;
+
+// Duplicate removed.
 
 export default api;

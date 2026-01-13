@@ -6,5 +6,41 @@ export interface User {
     phone?: string; // Corrected to match backend field 'phone'
     avatar?: string;
     role?: 'ADMIN' | 'USER';
+    isBanned?: boolean;
     createdAt?: string;
+}
+
+export interface Address {
+    street?: string;
+    ward?: string;
+    district: string;
+    city: string;
+}
+
+export interface Post {
+    _id: string;
+    userId: User | string;
+    title: string;
+    description: string;
+    transactionType: 'SALE' | 'RENT';
+    propertyType: 'APARTMENT' | 'HOUSE' | 'LAND' | 'OFFICE' | 'SHOPHOUSE';
+    apartmentType?: 'MINI' | 'DORM' | 'SERVICED' | 'STUDIO' | 'OFFICETEL' | 'PENTHOUSE' | 'DUPLEX' | 'HIGH_END';
+    price: number;
+    deposit?: number;
+    area: number;
+    address: Address;
+    bedrooms?: number;
+    bathrooms?: number;
+    floor?: number;
+    totalFloors?: number;
+    furniture?: 'NONE' | 'BASIC' | 'FULL';
+    images: string[];
+    redbookImages?: string[];
+    status: 'PENDING' | 'ACTIVE' | 'REJECTED' | 'SOLD';
+    rejectReason?: string;
+    isVip: boolean;
+    priorityScore: number;
+    viewCount: number;
+    createdAt: string;
+    updatedAt: string;
 }

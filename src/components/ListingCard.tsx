@@ -38,7 +38,7 @@ const ListingCard = ({ post }: ListingProps) => {
 
                 <p className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
                     <MapPin size={16} className="text-gray-400" />
-                    <span className="truncate">{post.district || 'Unknown District'}, {post.city || 'Unknown City'}</span>
+                    <span className="truncate">{post.address?.district || post.district || 'Unknown District'}, {post.address?.city || post.city || 'Unknown City'}</span>
                 </p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
