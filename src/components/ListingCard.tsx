@@ -18,8 +18,8 @@ const ListingCard = ({ post }: ListingProps) => {
     return (
         <Link to={`/post/${post._id || post.id}`} className="group block bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
             <div className="relative h-48 overflow-hidden">
-                <span className="absolute top-3 left-3 z-10 bg-blue-600 text-white px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                    {post.type || 'For Sale'}
+                <span className={`absolute top-3 left-3 z-10 text-white px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${post.transactionType === 'RENT' ? 'bg-orange-500' : 'bg-blue-600'}`}>
+                    {post.transactionType === 'RENT' ? 'For Rent' : 'For Sale'}
                 </span>
                 <img
                     src={post.images?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'}
@@ -38,7 +38,7 @@ const ListingCard = ({ post }: ListingProps) => {
 
                 <p className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
                     <MapPin size={16} className="text-gray-400" />
-                    <span className="truncate">{post.address?.city}, {post.address?.state || 'CA'}</span>
+                    <span className="truncate">{post.district || 'Unknown District'}, {post.city || 'Unknown City'}</span>
                 </p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">

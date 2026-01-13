@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import { postService } from '../services/api';
 import { ChevronDown } from 'lucide-react';
@@ -14,18 +15,21 @@ const Search = () => {
     const [filteredListings, setFilteredListings] = useState<any[]>([]);
 
     // Filters States
+    // Filters States
     const [city, setCity] = useState('');
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
+    const [minArea, setMinArea] = useState(''); // Changed from Price to Area
+    const [maxArea, setMaxArea] = useState('');
 
-    // Area Range Slider State
-    const MIN_AREA = 0;
-    const MAX_AREA = 3500;
-    const [areaRange, setAreaRange] = useState([500, 3500]); // [min, max]
+    // Price Range Slider State (Swapped from Area)
+    const MIN_PRICE = 0;
+    const MAX_PRICE = 20 * 1000000000; // 20 Billion
+    const [priceRange, setPriceRange] = useState([0, 20 * 1000000000]);
     const sliderRef = useRef<HTMLDivElement>(null);
     const draggingRef = useRef<'min' | 'max' | null>(null);
 
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
+
+    const [availableCities, setAvailableCities] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchListings = async () => {
@@ -35,6 +39,18 @@ const Search = () => {
                 const posts = Array.isArray(data) ? data : [];
                 setListings(posts);
                 setFilteredListings(posts);
+
+                // Extract unique cities
+                // Extract unique cities
+                const fetchedCities = Array.from(new Set(posts.map((p: any) => p.city).filter(Boolean))) as string[];
+
+                // Predefined major cities
+                const majorCities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
+
+                // Merge and dedup
+                const allCities = Array.from(new Set([...majorCities, ...fetchedCities]));
+
+                setAvailableCities(allCities);
             } catch (error) {
                 console.error('Error fetching listings:', error);
             } finally {
@@ -45,24 +61,27 @@ const Search = () => {
         fetchListings();
     }, []);
 
-    // Handle Slider Drag
+    // Handle Slider Drag (Updated for Price)
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!draggingRef.current || !sliderRef.current) return;
 
             const rect = sliderRef.current.getBoundingClientRect();
             const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-            const value = Math.round(percent * (MAX_AREA - MIN_AREA) + MIN_AREA);
+            const value = Math.round(percent * (MAX_PRICE - MIN_PRICE) + MIN_PRICE);
 
-            setAreaRange(prev => {
+            setPriceRange(prev => {
                 const [min, max] = prev;
+                // Snap to 100 Million steps for cleaner values
+                const step = 100000000;
+                const steppedValue = Math.round(value / step) * step;
+
                 if (draggingRef.current === 'min') {
-                    // Prevent crossing
-                    if (value > max - 100) return [max - 100, max];
-                    return [value, max];
+                    if (steppedValue > max - step) return [max - step, max];
+                    return [steppedValue, max];
                 } else {
-                    if (value < min + 100) return [min, min + 100];
-                    return [min, value];
+                    if (steppedValue < min + step) return [min, min + step];
+                    return [min, steppedValue];
                 }
             });
         };
@@ -73,11 +92,10 @@ const Search = () => {
             document.removeEventListener('mouseup', handleMouseUp);
         };
 
-        if (draggingRef.current) { // This condition is tricky in effect, usually we attach listeners on mousedown
-            // But here we rely on the ref being set in mousedown, then attaching global listeners
+        if (draggingRef.current) {
+            // Logic handled by startDrag which attaches listeners
         }
 
-        // Use generic handler attached to state/ref logic is cleaner
         return () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
@@ -86,20 +104,22 @@ const Search = () => {
 
     const startDrag = (type: 'min' | 'max') => {
         draggingRef.current = type;
+        const step = 100000000;
 
         const handleMouseMove = (e: MouseEvent) => {
             if (!sliderRef.current) return;
             const rect = sliderRef.current.getBoundingClientRect();
             const percent = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
-            const value = Math.round(percent * (MAX_AREA - MIN_AREA) + MIN_AREA);
+            const value = Math.round(percent * (MAX_PRICE - MIN_PRICE) + MIN_PRICE);
+            const steppedValue = Math.round(value / step) * step;
 
-            setAreaRange(prev => {
+            setPriceRange(prev => {
                 const [min, max] = prev;
                 if (type === 'min') {
-                    const newValue = Math.min(value, max - 100);
+                    const newValue = Math.min(steppedValue, max - step);
                     return [newValue, max];
                 } else {
-                    const newValue = Math.max(value, min + 100);
+                    const newValue = Math.max(steppedValue, min + step);
                     return [min, newValue];
                 }
             });
@@ -127,20 +147,36 @@ const Search = () => {
     const handleApplyFilters = () => {
         let result = [...listings];
 
-        if (city) {
-            result = result.filter(post => post.address?.city === city);
-        }
-        if (minPrice) {
-            result = result.filter(post => post.price >= Number(minPrice));
-        }
-        if (maxPrice) {
-            result = result.filter(post => post.price <= Number(maxPrice));
+        // Ensure we respect the current page context (Buy vs Rent)
+        if (location.pathname === '/buy') {
+            result = result.filter(post => post.transactionType === 'SALE');
+        } else if (location.pathname === '/rent') {
+            result = result.filter(post => post.transactionType === 'RENT');
         }
 
-        // Filter by Area
+        // Ensure we respect the current page context (Buy vs Rent)
+        if (location.pathname === '/buy') {
+            result = result.filter(post => post.transactionType === 'SALE');
+        } else if (location.pathname === '/rent') {
+            result = result.filter(post => post.transactionType === 'RENT');
+        }
+
+        if (city) {
+            result = result.filter(post => post.city === city);
+        }
+
+        // Filter by Area (Inputs)
+        if (minArea) {
+            result = result.filter(post => (post.area || 0) >= Number(minArea));
+        }
+        if (maxArea) {
+            result = result.filter(post => (post.area || 0) <= Number(maxArea));
+        }
+
+        // Filter by Price (Slider)
         result = result.filter(post => {
-            const area = post.area || 0;
-            return area >= areaRange[0] && area <= areaRange[1];
+            const price = post.price || 0;
+            return price >= priceRange[0] && price <= priceRange[1];
         });
 
         // Filter by Property Type
@@ -153,11 +189,22 @@ const Search = () => {
 
     const handleClearFilters = () => {
         setCity('');
-        setMinPrice('');
-        setMaxPrice('');
-        setAreaRange([500, 3500]);
+        setMinArea(''); // Clear Area Inputs
+        setMaxArea('');
+        setPriceRange([0, MAX_PRICE]); // Reset Price Slider
         setPropertyTypes([]);
         setFilteredListings(listings);
+    };
+
+    // Helper to format price
+    const formatPrice = (price: number) => {
+        if (price >= 1000000000) {
+            return (price / 1000000000).toFixed(1) + ' tỷ';
+        }
+        if (price >= 1000000) {
+            return (price / 1000000).toFixed(0) + ' triệu';
+        }
+        return price;
     };
 
     return (
@@ -175,50 +222,52 @@ const Search = () => {
                         </button>
                     </div>
 
+                    {/* Area Range (Inputs) - Swapped to Top */}
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Price Range</label>
+                        <label className="font-bold mb-2 block text-sm">Area (sq ft)</label>
                         <div className="flex gap-2 mb-4">
                             <input
                                 type="number"
-                                placeholder="$ Min"
+                                placeholder="Min"
                                 className="filter-input"
-                                value={minPrice}
-                                onChange={(e) => setMinPrice(e.target.value)}
+                                value={minArea}
+                                onChange={(e) => setMinArea(e.target.value)}
                             />
                             <input
                                 type="number"
-                                placeholder="$ Max"
+                                placeholder="Max"
                                 className="filter-input"
-                                value={maxPrice}
-                                onChange={(e) => setMaxPrice(e.target.value)}
+                                value={maxArea}
+                                onChange={(e) => setMaxArea(e.target.value)}
                             />
                         </div>
                     </div>
 
+                    {/* Price Range (Slider) - Swapped to Bottom */}
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Area (sq ft)</label>
+                        <label className="font-bold mb-2 block text-sm">Price Range</label>
                         <div className="range-slider-container">
                             <div
                                 className="range-track"
                                 ref={sliderRef}
                                 style={{
-                                    background: `linear-gradient(to right, #e2e8f0 ${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%, var(--primary) ${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%, var(--primary) ${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%, #e2e8f0 ${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%)`
+                                    background: `linear-gradient(to right, #e2e8f0 ${getPercent(priceRange[0], MIN_PRICE, MAX_PRICE)}%, var(--primary) ${getPercent(priceRange[0], MIN_PRICE, MAX_PRICE)}%, var(--primary) ${getPercent(priceRange[1], MIN_PRICE, MAX_PRICE)}%, #e2e8f0 ${getPercent(priceRange[1], MIN_PRICE, MAX_PRICE)}%)`
                                 }}
                             >
                                 <div
                                     className="range-thumb"
-                                    style={{ left: `${getPercent(areaRange[0], MIN_AREA, MAX_AREA)}%` }}
+                                    style={{ left: `${getPercent(priceRange[0], MIN_PRICE, MAX_PRICE)}%` }}
                                     onMouseDown={() => startDrag('min')}
                                 ></div>
                                 <div
                                     className="range-thumb"
-                                    style={{ left: `${getPercent(areaRange[1], MIN_AREA, MAX_AREA)}%` }}
+                                    style={{ left: `${getPercent(priceRange[1], MIN_PRICE, MAX_PRICE)}%` }}
                                     onMouseDown={() => startDrag('max')}
                                 ></div>
                             </div>
                             <div className="flex justify-between text-xs text-text-secondary mt-2 font-bold">
-                                <span>{areaRange[0]} sqft</span>
-                                <span>{areaRange[1]} sqft</span>
+                                <span>{formatPrice(priceRange[0])}</span>
+                                <span>{formatPrice(priceRange[1])}</span>
                             </div>
                         </div>
                     </div>
@@ -231,12 +280,10 @@ const Search = () => {
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
                             >
-                                <option value="">Select City</option>
-                                <option value="Hồ Chí Minh">Hồ Chí Minh</option>
-                                <option value="Hà Nội">Hà Nội</option>
-                                <option value="Đà Nẵng">Đà Nẵng</option>
-                                <option value="New York">New York</option>
-                                <option value="San Francisco">San Francisco</option>
+                                <option value="">All Cities</option>
+                                {availableCities.map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
                             </select>
                             <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                         </div>

@@ -1,19 +1,16 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api', // Explicit URL for dev usually helps
     headers: {
         'Content-Type': 'application/json',
     },
+    withCredentials: true, // Important for cookies
 });
 
-// Request interceptor to add token
+// Request interceptor (no longer needs to add token manually)
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
         return config;
     },
     (error) => Promise.reject(error)
@@ -34,12 +31,23 @@ export const authService = {
     logout: () => {
         const refreshToken = localStorage.getItem('refreshToken');
         return api.post('/auth/logout', { refreshToken });
-    }
+    },
+    getProfile: () => api.get('/users/me'), // Assuming /users/me is the endpoint
+};
+
+export const usersAPI = {
+    getProfile: authService.getProfile,
+    updateProfile: (data: any) => api.put('/users/me', data),
 };
 
 export const postService = {
     getAll: (params?: any) => api.get('/posts', { params }),
     getById: (id: string) => api.get(`/posts/${id}`),
+    getMyPosts: () => api.get('/posts/me/list'), // Corrected endpoint
+    create: (data: FormData) => api.post('/posts', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    markSold: (id: string) => api.patch(`/posts/${id}/sold`),
 };
 
 export const postsAPI = postService; // Alias for compatibility with new Home code

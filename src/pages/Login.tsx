@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
@@ -10,24 +11,24 @@ const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const onSubmit = async (data: any) => {
         setError('');
         setSuccess('');
         try {
-            const response = await authService.login(data);
-            if (response.data.success) {
-                localStorage.setItem('token', response.data.accessToken);
-                localStorage.setItem('refreshToken', response.data.refreshToken);
+            const result = await login(data.email, data.password);
+
+            if (result.success) {
                 setSuccess('Login successful! Redirecting...');
                 setTimeout(() => {
                     navigate('/');
-                }, 1500);
+                }, 1000);
             } else {
-                setError(response.data.message || 'Login failed');
+                setError(result.error || 'Login failed');
             }
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid credentials');
+            setError(err.message || 'Login failed');
         }
     };
 

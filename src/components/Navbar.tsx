@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Package, Home, Building2 } from 'lucide-react';
+import { useState } from 'react';
+import { Package, Home, Building2, User, LogOut, Heart, PlusCircle, MessageCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+    const { user, isAuthenticated, logout } = useAuth();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
     return (
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
             <div className="container mx-auto px-4 h-[72px] flex justify-between items-center">
@@ -27,16 +32,98 @@ const Navbar = () => {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-6">
-                    <Link to="/post-ad" className="hidden md:block text-gray-900 font-bold hover:text-blue-600 transition-colors">
-                        Đăng tin
-                    </Link>
-                    <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
-                    <Link to="/login" className="font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                        Đăng nhập
-                    </Link>
-                    <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-blue-600/20">
-                        Đăng ký
-                    </Link>
+                    {isAuthenticated ? (
+                        // Logged In State
+                        <div className="flex items-center gap-4">
+                            <Link to="/post-ad" className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                                <PlusCircle size={18} />
+                                <span>Đăng tin</span>
+                            </Link>
+
+                            <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
+                                <MessageCircle size={24} />
+                            </button>
+
+                            {/* User Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center border-2 border-white shadow-sm hover:ring-2 hover:ring-blue-100 transition-all focus:outline-none"
+                                >
+                                    {user?.name?.charAt(0).toUpperCase()}
+                                </button>
+
+                                {isDropdownOpen && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-10 cursor-default"
+                                            onClick={() => setIsDropdownOpen(false)}
+                                        />
+                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 py-2 animate-in fade-in slide-in-from-top-2 duration-100">
+                                            {/* Header */}
+                                            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0">
+                                                    {user?.name?.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div className="overflow-hidden">
+                                                    <p className="font-bold text-gray-900 truncate">{user?.name}</p>
+                                                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Links */}
+                                            <div className="py-2">
+                                                <Link
+                                                    to="/profile"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <User size={18} />
+                                                    Tài khoản
+                                                </Link>
+                                                <Link
+                                                    to="/profile?tab=favorites"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <Heart size={18} />
+                                                    Tin đã lưu
+                                                </Link>
+                                            </div>
+
+                                            {/* Footer */}
+                                            <div className="border-t border-gray-100 mt-1 pt-1">
+                                                <button
+                                                    onClick={() => {
+                                                        logout();
+                                                        setIsDropdownOpen(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                                                >
+                                                    <LogOut size={18} />
+                                                    Đăng xuất
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        // Guest State
+                        <>
+                            <Link to="/post-ad" className="hidden md:block text-gray-900 font-bold hover:text-blue-600 transition-colors">
+                                Đăng tin
+                            </Link>
+                            <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
+                            <Link to="/login" className="font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                Đăng nhập
+                            </Link>
+                            <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                                Đăng ký
+                            </Link>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

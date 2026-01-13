@@ -7,6 +7,7 @@ import Footer from './components/Footer';
 import Search from './pages/Search';
 import PostDetail from './pages/PostDetail';
 import ProtectedRoute from './components/ProtectedRoute';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -35,6 +36,14 @@ function App() {
               }
             />
             <Route path="/post/:id" element={<PostDetail />} />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </main>
         <Footer />

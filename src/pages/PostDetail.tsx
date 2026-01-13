@@ -100,7 +100,7 @@ const PostDetail = () => {
                                     </div>
                                     <div className="flex items-center gap-2 text-gray-500">
                                         <MapPin size={18} className="text-gray-400" />
-                                        <span>{post.address?.city || 'Ho Chi Minh City'}, {post.address?.state || ''}</span>
+                                        <span>{post.district || 'Unknown District'}, {post.city || 'Unknown City'}</span>
                                     </div>
                                 </div>
                                 <div className="flex gap-3">
