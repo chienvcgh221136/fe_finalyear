@@ -4,10 +4,11 @@ import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
     MapPin, Share2, Heart, AlertCircle, ChevronRight,
-    Home, Maximize2, BedDouble, Bath, Compass, FileText
+    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, MessageCircle
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
 import AgentWidget from '../components/post/AgentWidget';
+import ReportModal from '../components/modals/ReportModal';
 
 
 const PostDetail = () => {
@@ -15,6 +16,8 @@ const PostDetail = () => {
     const { user } = useAuth();
     const [post, setPost] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -64,12 +67,30 @@ const PostDetail = () => {
         </div>
     );
 
+    const handleStartChat = async () => {
+        if (!user) {
+            alert("Vui lòng đăng nhập để chat với người bán");
+            return;
+        }
+        try {
+            await import('../services/api').then(m => m.chatAPI.createOrGet({
+                postId: post._id,
+                sellerId: post.user?._id || post.userId?._id || post.userId
+            }));
+            // Redirect to chat
+            window.location.href = '/chat';
+        } catch (error) {
+            console.error("Chat error", error);
+            alert("Không thể bắt đầu cuộc trò chuyện");
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50/50 pb-12 font-sans">
             {/* Visibility Warning for Owner/Admin */}
             {post.status !== 'ACTIVE' && (
                 <div className={`w-full py-3 px-4 text-center font-bold text-white ${post.status === 'REJECTED' ? 'bg-red-500' :
-                        post.status === 'PENDING' ? 'bg-yellow-500' : 'bg-gray-500'
+                    post.status === 'PENDING' ? 'bg-yellow-500' : 'bg-gray-500'
                     }`}>
                     {post.status === 'REJECTED' && `⛔ Tin này đã bị TỪ CHỐI (Lý do: ${post.rejectReason}). Chỉ có bạn mới thấy tin này.`}
                     {post.status === 'PENDING' && "⏳ Tin này đang CHỜ DUYỆT. Chưa hiển thị công khai."}
@@ -126,6 +147,13 @@ const PostDetail = () => {
                                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-red-50 hover:text-red-500 transition-all">
                                     <Heart size={18} />
                                     <span className="text-sm">Save</span>
+                                </button>
+                                <button
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all"
+                                >
+                                    <Flag size={18} />
+                                    <span className="text-sm">Report</span>
                                 </button>
 
                                 {/* Owner Actions */}
@@ -204,7 +232,11 @@ const PostDetail = () => {
                     <div className="lg:w-[30%] space-y-6">
 
                         {/* Agent Widget - Sidebar Position (Next to Image) */}
-                        <AgentWidget user={post.user || post.userId} updatedAt={post.updatedAt || post.createdAt} />
+                        <AgentWidget
+                            user={post.user || post.userId}
+                            updatedAt={post.updatedAt || post.createdAt}
+                            onStartChat={handleStartChat}
+                        />
 
                         {/* Vị trí / Map Section - Moved to Sidebar */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -228,11 +260,49 @@ const PostDetail = () => {
                                 Không nên đặt cọc, chuyển khoản trước khi xem nhà.
                                 Hãy kiểm tra kỹ giấy tờ pháp lý và so sánh giá trong khu vực.
                             </p>
-                            <Link to="#" className="text-blue-600 text-sm font-bold hover:underline">Xem thêm hướng dẫn</Link>
+                            <div className="flex items-center justify-between mb-4">
+                                <Link to="#" className="text-blue-600 text-sm font-bold hover:underline">Xem thêm hướng dẫn</Link>
+                                <button
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className="text-gray-400 hover:text-gray-600 text-sm font-medium flex items-center gap-1"
+                                >
+                                    <Flag size={14} /> Report
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={async () => {
+                                    if (!user) {
+                                        alert("Vui lòng đăng nhập để chat với người bán");
+                                        return;
+                                    }
+                                    try {
+                                        await import('../services/api').then(m => m.chatAPI.createOrGet({
+                                            postId: post._id,
+                                            sellerId: post.user?._id || post.userId?._id || post.userId
+                                        }));
+                                        // Redirect to chat (window.location for simple refresh or useNavigate)
+                                        window.location.href = '/chat';
+                                    } catch (error) {
+                                        console.error("Chat error", error);
+                                        alert("Không thể bắt đầu cuộc trò chuyện");
+                                    }
+                                }}
+                                className="w-full py-3 bg-white border-2 border-blue-600 text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <MessageCircle size={20} />
+                                Chat với người bán
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <ReportModal
+                isOpen={isReportModalOpen}
+                onClose={() => setIsReportModalOpen(false)}
+                postId={post._id}
+            />
         </div>
     );
 };

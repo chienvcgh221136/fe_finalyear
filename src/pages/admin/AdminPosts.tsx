@@ -4,7 +4,7 @@ import { postsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
 import {
     Search, Filter, MapPin,
-    CheckSquare, Flag, AlertTriangle, RefreshCw, Bell, HelpCircle, ChevronDown
+    CheckSquare, Flag, AlertTriangle, RefreshCw, Bell, HelpCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -247,10 +247,10 @@ const AdminPosts = () => {
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-1.5 text-sm text-slate-600">
                                                 <span className="text-xs text-slate-500">
-                                                    {new Date(post.createdAt || Date.now()).toLocaleDateString('vi-VN')}
+                                                    {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN')}
                                                     <br />
                                                     <span className="text-[10px] text-slate-400">
-                                                        {new Date(post.createdAt || Date.now()).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                                        {post.createdAt ? new Date(post.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </span>
                                             </div>

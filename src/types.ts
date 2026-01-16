@@ -44,3 +44,29 @@ export interface Post {
     createdAt: string;
     updatedAt: string;
 }
+
+export interface ChatRoom {
+    _id: string;
+    postId: string | Post;
+    userIds: (string | User)[];
+    lastMessage: string;
+    lastMessageAt: string;
+    createdAt: string;
+    updatedAt: string;
+    unreadCount?: number;
+}
+
+export interface MessageItem {
+    senderId: string | User;
+    content: string;
+    isRead: boolean;
+    createdAt: string;
+}
+
+export interface MessageData {
+    _id: string;
+    chatRoomId: string | ChatRoom;
+    messages: MessageItem[];
+    createdAt: string;
+    updatedAt: string;
+}

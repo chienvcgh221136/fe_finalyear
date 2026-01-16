@@ -53,7 +53,22 @@ export const postService = {
     reject: (id: string, reason: string) => api.patch(`/posts/${id}/reject`, { reason }),
 };
 
+export const reportsAPI = {
+    create: (postId: string, data: { reason: string; description: string }) => api.post(`/reports/${postId}`, data),
+    getAll: () => api.get('/reports/admin'),
+    resolve: (id: string) => api.patch(`/reports/${id}/resolve`),
+    reject: (id: string) => api.patch(`/reports/${id}/reject`),
+};
+
 export const postsAPI = postService;
+
+export const chatAPI = {
+    createOrGet: (data: { postId: string; sellerId: string }) => api.post('/chat/create', data),
+    getMyChats: () => api.get('/chat/my-chats'),
+    getMessages: (chatRoomId: string) => api.get(`/chat/${chatRoomId}/messages`),
+    sendMessage: (chatRoomId: string, content: string) => api.post(`/chat/${chatRoomId}/send`, { content }),
+    markAsRead: (chatRoomId: string) => api.put(`/chat/${chatRoomId}/read`),
+};
 
 // Duplicate removed.
 

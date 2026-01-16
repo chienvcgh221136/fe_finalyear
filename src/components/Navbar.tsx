@@ -50,12 +50,12 @@ const Navbar = () => {
                         <div className="flex items-center gap-4">
                             <Link to="/post-ad" className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-lg shadow-blue-600/20">
                                 <PlusCircle size={18} />
-                                <span>Đăng tin</span>
+                                <span className="hidden md:inline">Đăng tin</span>
                             </Link>
 
-                            <button className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
+                            <Link to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
                                 <MessageCircle size={24} />
-                            </button>
+                            </Link>
 
                             {/* User Dropdown */}
                             <div className="relative">

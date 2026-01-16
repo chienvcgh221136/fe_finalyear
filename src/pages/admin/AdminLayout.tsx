@@ -2,12 +2,16 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Home, FileText, Users, BarChart3, LogOut, Menu, X } from 'lucide-react';
+import {
+    LayoutDashboard, FileText, Users, LogOut, Search, Bell,
+    Settings, ChevronRight, Menu, X, Flag, BarChart3, Home
+} from 'lucide-react';
 
 const navItems = [
     { label: 'Dashboard', href: '/admin', icon: BarChart3 },
     { label: 'Duyệt tin', href: '/admin/posts', icon: FileText },
     { label: 'Người dùng', href: '/admin/users', icon: Users },
+    { label: 'Reports', href: '/admin/reports', icon: Flag },
 ];
 
 const AdminLayout = () => {

@@ -13,9 +13,10 @@ interface AgentWidgetProps {
         reviewCount?: number; // Add dynamic review count
     };
     updatedAt?: string; // Keeping for backward compatibility if needed, but preferring user.createdAt
+    onStartChat?: () => void;
 }
 
-const AgentWidget = ({ user, updatedAt }: AgentWidgetProps) => {
+const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
     // Generate member since date from USER data
     const memberSince = user?.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
@@ -103,7 +104,9 @@ const AgentWidget = ({ user, updatedAt }: AgentWidgetProps) => {
                     {!showPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">Press to reveal</span>}
                 </button>
 
-                <button className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-colors">
+                <button
+                    onClick={onStartChat}
+                    className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-colors">
                     <MessageCircle size={20} />
                     <span>Start Chat</span>
                 </button>
