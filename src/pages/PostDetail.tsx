@@ -234,6 +234,7 @@ const PostDetail = () => {
                         {/* Agent Widget - Sidebar Position (Next to Image) */}
                         <AgentWidget
                             user={post.user || post.userId}
+                            postId={post._id}
                             updatedAt={post.updatedAt || post.createdAt}
                             onStartChat={handleStartChat}
                         />

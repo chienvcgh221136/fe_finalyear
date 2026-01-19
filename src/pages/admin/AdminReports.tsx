@@ -20,7 +20,7 @@ const AdminReports = () => {
         mutationFn: reportsAPI.resolve,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            alert("Report resolved");
+            alert("Đã giải quyết báo cáo");
         }
     });
 
@@ -28,7 +28,7 @@ const AdminReports = () => {
         mutationFn: reportsAPI.reject,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            alert("Report rejected");
+            alert("Đã từ chối báo cáo");
         }
     });
 
@@ -58,8 +58,8 @@ const AdminReports = () => {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Reported Posts</h1>
-                    <p className="text-gray-500">Review and take action on listings flagged by the community.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">Báo cáo vi phạm</h1>
+                    <p className="text-gray-500">Xem xét và xử lý các bài đăng bị cộng đồng báo cáo.</p>
                 </div>
             </div>
 
@@ -73,7 +73,7 @@ const AdminReports = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Search reports..."
+                            placeholder="Tìm kiếm báo cáo..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm outline-none"
@@ -86,25 +86,25 @@ const AdminReports = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50/50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
-                                <th className="px-6 py-4">Post Title</th>
-                                <th className="px-6 py-4">Reporter</th>
-                                <th className="px-6 py-4">Reason</th>
-                                <th className="px-6 py-4">Reports</th>
-                                <th className="px-6 py-4 text-center">Status</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+                                <th className="px-6 py-4">Bài đăng</th>
+                                <th className="px-6 py-4">Người báo cáo</th>
+                                <th className="px-6 py-4">Lý do</th>
+                                <th className="px-6 py-4">Số lượng</th>
+                                <th className="px-6 py-4 text-center">Trạng thái</th>
+                                <th className="px-6 py-4 text-right">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Loading reports...</td>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">Đang tải báo cáo...</td>
                                 </tr>
                             ) : filteredReports?.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                         <div className="flex flex-col items-center justify-center p-4">
                                             <CheckCircle className="text-green-500 mb-2" size={32} />
-                                            <p>No pending reports!</p>
+                                            <p>Không có báo cáo chờ xử lý!</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -119,7 +119,7 @@ const AdminReports = () => {
                                                 </div>
                                                 <div>
                                                     <Link to={`/post/${report.postId?._id}`} target="_blank" className="font-bold text-gray-900 line-clamp-1 hover:text-blue-600">
-                                                        {report.postId?.title || 'Unknown Post'}
+                                                        {report.postId?.title || 'Bài đăng không tồn tại'}
                                                     </Link>
                                                     <p className="text-xs text-gray-400 font-mono mt-0.5">ID: #{report._id.slice(-6).toUpperCase()}</p>
                                                 </div>
@@ -127,7 +127,7 @@ const AdminReports = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div>
-                                                <p className="font-medium text-gray-900">{report.reporterId?.name || 'Unknown'}</p>
+                                                <p className="font-medium text-gray-900">{report.reporterId?.name || 'Ẩn danh'}</p>
                                                 <p className="text-xs text-gray-500">{report.reporterId?.email}</p>
                                             </div>
                                         </td>
@@ -155,7 +155,7 @@ const AdminReports = () => {
                                                 ${report.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
                                                     report.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
                                                         'bg-gray-100 text-gray-500'}`}>
-                                                {report.status}
+                                                {report.status === 'PENDING' ? 'Chờ xử lý' : report.status === 'RESOLVED' ? 'Đã giải quyết' : 'Đã từ chối'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -172,18 +172,14 @@ const AdminReports = () => {
                                                     <>
                                                         <button
                                                             onClick={() => resolveMutation.mutate(report._id)}
-                                                            title="Resolve (No Action)"
+                                                            title="Giải quyết (Xác nhận vi phạm)"
                                                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
                                                         >
                                                             <CheckCircle size={16} />
                                                         </button>
                                                         <button
-                                                            onClick={() => rejectMutation.mutate(report._id)} // In backend this is 'reject', meaning ignore report? Or ban post?
-                                                            // Usually 'Resolve' means "Issue Fixed" or "Post Taken Down".
-                                                            // 'Reject' means "Report Invalid".
-                                                            // Backend has 'resolveReport' and 'rejectReport'.
-                                                            // Let's assume Resolve = Valid Report, Reject = Invalid Report.
-                                                            title="Reject Report (Invalid)"
+                                                            onClick={() => rejectMutation.mutate(report._id)}
+                                                            title="Từ chối (Báo cáo sai)"
                                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                                                         >
                                                             <XCircle size={16} />
@@ -200,10 +196,10 @@ const AdminReports = () => {
                 </div>
                 {/* Footer Pagination (Simple placeholder) */}
                 <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/50">
-                    <span className="text-xs text-gray-500">Showing all records</span>
+                    <span className="text-xs text-gray-500">Hiển thị tất cả bản ghi</span>
                     <div className="flex gap-1">
-                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Previous</button>
-                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Next</button>
+                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Trước</button>
+                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Sau</button>
                     </div>
                 </div>
             </div>

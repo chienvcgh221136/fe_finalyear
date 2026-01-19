@@ -14,6 +14,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminPosts from './pages/admin/AdminPosts';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminReports from './pages/admin/AdminReports';
+import AdminVipPackages from './pages/admin/AdminVipPackages';
 import Chat from './pages/Chat'; // Added
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -92,6 +93,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="posts" element={<AdminPosts />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="vip" element={<AdminVipPackages />} />
           <Route path="reports" element={<AdminReports />} /> {/* Added */}
         </Route>
       </Routes>

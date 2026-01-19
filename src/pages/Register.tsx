@@ -30,7 +30,7 @@ const Register = () => {
         setSuccess('');
         try {
             if (data.password !== data.confirmPassword) {
-                setError('Passwords do not match');
+                setError('Mật khẩu không khớp');
                 return;
             }
 
@@ -44,16 +44,16 @@ const Register = () => {
             const response = await authService.register(payload);
 
             if (response.data.success) {
-                setSuccess('Registration successful! Redirecting to login...');
+                setSuccess('Đăng ký thành công! Đang chuyển hướng đến đăng nhập...');
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
             } else {
-                setError(response.data.message || 'Registration failed');
+                setError(response.data.message || 'Đăng ký thất bại');
             }
         } catch (err: any) {
             console.error('Registration Error:', err);
-            setError(err.response?.data?.message || 'Registration failed. Please try again.');
+            setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
         }
     };
 
@@ -73,33 +73,33 @@ const Register = () => {
 
             <div className="auth-container" style={{ maxWidth: '500px' }}>
                 <div className="auth-header">
-                    <h2 className="auth-title">Create your Account</h2>
-                    <p className="auth-subtitle">Join thousands of home buyers and renters today.</p>
+                    <h2 className="auth-title">Tạo tài khoản mới</h2>
+                    <p className="auth-subtitle">Tham gia cùng hàng ngàn người mua và thuê nhà ngay hôm nay.</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-group">
-                        <label className="form-label">Full Name</label>
+                        <label className="form-label">Họ và Tên</label>
                         <input
                             type="text"
-                            placeholder="John Doe"
+                            placeholder="Nguyễn Văn A"
                             className="form-input"
-                            {...register('name', { required: 'Name is required' })}
+                            {...register('name', { required: 'Vui lòng nhập họ tên' })}
                         />
                         {errors.name && <span className="text-sm" style={{ color: 'var(--error)' }}>{errors.name.message as string}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Email Address</label>
+                        <label className="form-label">Email</label>
                         <input
                             type="email"
                             placeholder="email@example.com"
                             className="form-input"
                             {...register('email', {
-                                required: 'Email is required',
+                                required: 'Vui lòng nhập Email',
                                 pattern: {
                                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                    message: "Invalid email address"
+                                    message: "Email không hợp lệ"
                                 }
                             })}
                         />
@@ -107,25 +107,25 @@ const Register = () => {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Phone Number</label>
+                        <label className="form-label">Số điện thoại</label>
                         <input
                             type="tel"
-                            placeholder="(555) 000-0000"
+                            placeholder="(09) 000-0000"
                             className="form-input"
-                            {...register('phone', { required: 'Phone is required' })}
+                            {...register('phone', { required: 'Vui lòng nhập số điện thoại' })}
                         />
                         {errors.phone && <span className="text-sm" style={{ color: 'var(--error)' }}>{errors.phone.message as string}</span>}
                     </div>
 
                     <div className="flex gap-4">
                         <div className="form-group flex-grow">
-                            <label className="form-label">Password</label>
+                            <label className="form-label">Mật khẩu</label>
                             <div className="password-input-wrapper">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="........"
                                     className="form-input"
-                                    {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 chars' } })}
+                                    {...register('password', { required: 'Vui lòng nhập mật khẩu', minLength: { value: 6, message: 'Tối thiểu 6 ký tự' } })}
                                 />
                                 <button
                                     type="button"
@@ -139,17 +139,17 @@ const Register = () => {
                         </div>
 
                         <div className="form-group flex-grow">
-                            <label className="form-label">Confirm Password</label>
+                            <label className="form-label">Xác nhận mật khẩu</label>
                             <div className="password-input-wrapper">
                                 <input
                                     type="password"
                                     placeholder="........"
                                     className="form-input"
                                     {...register('confirmPassword', {
-                                        required: 'Confirm Password is required',
+                                        required: 'Vui lòng xác nhận mật khẩu',
                                         validate: (val: string) => {
                                             if (watch('password') != val) {
-                                                return "Passwords do not match";
+                                                return "Mật khẩu không khớp";
                                             }
                                         }
                                     })}
@@ -164,16 +164,16 @@ const Register = () => {
                         className="btn btn-primary w-full"
                         style={{ marginTop: '1rem' }}
                     >
-                        Register Account
+                        Đăng ký tài khoản
                     </button>
                 </form>
 
                 <div className="auth-footer">
                     <p>
-                        By clicking register, you agree to our <Link to="#" className="text-primary font-bold">Terms of Service</Link> and <Link to="#" className="text-primary font-bold">Privacy Policy</Link>.
+                        Bằng việc đăng ký, bạn đồng ý với <Link to="#" className="text-primary font-bold">Điều khoản</Link> và <Link to="#" className="text-primary font-bold">Chính sách bảo mật</Link> của chúng tôi.
                     </p>
                     <p style={{ marginTop: '1rem' }}>
-                        Already have an account? <Link to="/login" className="text-primary font-bold">Log in</Link>
+                        Đã có tài khoản? <Link to="/login" className="text-primary font-bold">Đăng nhập</Link>
                     </p>
                 </div>
             </div>

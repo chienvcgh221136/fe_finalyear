@@ -110,7 +110,7 @@ const Home = () => {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Crown className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                                <span className="text-sm font-bold text-yellow-600 uppercase tracking-wider">Premium Listings</span>
+                                <span className="text-sm font-bold text-yellow-600 uppercase tracking-wider">Tin Nổi Bật</span>
                             </div>
                             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Tin VIP Nổi Bật</h2>
                         </div>
@@ -156,7 +156,7 @@ const Home = () => {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Clock className="h-5 w-5 text-blue-600" />
-                                <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">New Arrivals</span>
+                                <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Tin Mới Nhất</span>
                             </div>
                             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Tin Mới Đăng</h2>
                         </div>

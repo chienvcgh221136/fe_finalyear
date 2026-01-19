@@ -19,16 +19,16 @@ const Login = () => {
             if (credentialResponse.credential) {
                 const result = await googleLogin(credentialResponse.credential);
                 if (result.success) {
-                    setSuccess('Google Login successful! Redirecting...');
+                    setSuccess('Đăng nhập Google thành công! Đang chuyển hướng...');
                     setTimeout(() => {
                         navigate('/');
                     }, 1000);
                 } else {
-                    setError(result.error || 'Google Login failed');
+                    setError(result.error || 'Đăng nhập Google thất bại');
                 }
             }
         } catch (err) {
-            setError('Google Login failed');
+            setError('Đăng nhập Google thất bại');
         }
     };
 
@@ -36,15 +36,15 @@ const Login = () => {
         try {
             const result = await login(data.email, data.password);
             if (result.success) {
-                setSuccess('Login successful! Redirecting...');
+                setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
                 setTimeout(() => {
                     navigate('/');
                 }, 1000);
             } else {
-                setError(result.error || 'Login failed');
+                setError(result.error || 'Đăng nhập thất bại');
             }
         } catch (err) {
-            setError('Login failed');
+            setError('Đăng nhập thất bại');
         }
     };
 
@@ -64,33 +64,33 @@ const Login = () => {
 
             <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-                    <p className="text-gray-500 mt-2">Sign in to manage your properties or find your next home.</p>
+                    <h2 className="text-2xl font-bold text-gray-900">Chào mừng trở lại</h2>
+                    <p className="text-gray-500 mt-2">Đăng nhập để quản lý tài sản hoặc tìm ngôi nhà tiếp theo của bạn.</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="block text-sm font-bold text-gray-700">Email Address</label>
+                        <label className="block text-sm font-bold text-gray-700">Email</label>
                         <input
                             type="email"
-                            placeholder="e.g. name@company.com"
+                            placeholder="ví dụ: ten@company.com"
                             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            {...register('email', { required: 'Email is required' })}
+                            {...register('email', { required: 'Vui lòng nhập Email' })}
                         />
                         {errors.email && <span className="text-sm text-red-500">{errors.email.message as string}</span>}
                     </div>
 
                     <div className="space-y-1">
                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-bold text-gray-700">Password</label>
-                            <Link to="#" className="text-sm text-blue-600 font-semibold hover:text-blue-700">Forgot password?</Link>
+                            <label className="block text-sm font-bold text-gray-700">Mật khẩu</label>
+                            <Link to="#" className="text-sm text-blue-600 font-semibold hover:text-blue-700">Quên mật khẩu?</Link>
                         </div>
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Enter your password"
+                                placeholder="Nhập mật khẩu của bạn"
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pr-12"
-                                {...register('password', { required: 'Password is required' })}
+                                {...register('password', { required: 'Vui lòng nhập mật khẩu' })}
                             />
                             <button
                                 type="button"
@@ -107,7 +107,7 @@ const Login = () => {
                         type="submit"
                         className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors shadow-sm mt-2"
                     >
-                        Sign in
+                        Đăng nhập
                     </button>
                 </form>
 
@@ -116,14 +116,14 @@ const Login = () => {
                         <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500 font-medium">OR</span>
+                        <span className="px-2 bg-white text-gray-500 font-medium">HOẶC</span>
                     </div>
                 </div>
 
                 <div className="flex justify-center w-full">
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}
-                        onError={() => setError("Google Login Failed")}
+                        onError={() => setError("Đăng nhập Google thất bại")}
                         theme="outline"
                         size="large"
                         width="100%"
@@ -134,7 +134,7 @@ const Login = () => {
 
                 <div className="text-center mt-6">
                     <p className="text-gray-600">
-                        Don't have an account? <Link to="/register" className="text-blue-600 font-bold hover:text-blue-700 ml-1">Create account</Link>
+                        Chưa có tài khoản? <Link to="/register" className="text-blue-600 font-bold hover:text-blue-700 ml-1">Tạo tài khoản</Link>
                     </p>
                 </div>
             </div>

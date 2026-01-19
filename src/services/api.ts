@@ -93,6 +93,13 @@ export const vipAPI = {
     getPackages: () => api.get('/vip/packages'),
     purchase: (packageId: string) => api.post('/vip/purchase', { packageId }),
     getMyVip: () => api.get('/vip/me'),
+
+    // Admin Endpoints
+    createPackage: (data: any) => api.post('/vip/packages', data),
+    updatePackage: (id: string, data: any) => api.put(`/vip/packages/${id}`, data),
+    deletePackage: (id: string) => api.patch(`/vip/packages/${id}`),
+    getAdminStats: () => api.get('/vip/admin/stats'),
+    getVipUsers: () => api.get('/vip/admin/users'),
 };
 
 export const statsAPI = {
@@ -100,6 +107,8 @@ export const statsAPI = {
     getAdminOverview: () => api.get('/stats/admin/overview'),
 };
 
-// Duplicate removed.
+export const leadsAPI = {
+    showPhone: (postId: string) => api.post(`/leads/show-phone/${postId}`),
+};
 
 export default api;

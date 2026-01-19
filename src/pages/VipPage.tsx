@@ -94,32 +94,56 @@ const VipPage = () => {
                                 </div>
                             </div>
 
-                            <ul className="mb-8 space-y-4">
-                                <li className="flex items-center gap-3">
+                            {pkg.description && (
+                                <p className={`text-sm mb-6 ${isPopular ? 'text-gray-200' : 'text-gray-500'}`}>
+                                    {pkg.description}
+                                </p>
+                            )}
+
+                            <div className="space-y-4 mb-8">
+                                <div className="flex items-center gap-3">
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                         <Zap size={16} />
                                     </div>
-                                    <span className="font-medium text-sm">Priority Score: <strong className={isPopular ? 'text-yellow-400' : 'text-blue-600'}>+{pkg.priorityScore}</strong></span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
-                                        <Shield size={16} />
-                                    </div>
-                                    <span className="font-medium text-sm">Tin đăng VIP Badge</span>
-                                </li>
-                                <li className="flex items-center gap-3">
+                                    <span className="font-medium text-sm">Điểm ưu tiên: <strong className={isPopular ? 'text-yellow-400' : 'text-blue-600'}>+{pkg.priorityScore}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-3">
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                         <Clock size={16} />
                                     </div>
-                                    <span className="font-medium text-sm">Duyệt tin siêu tốc</span>
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
-                                        <Star size={16} />
+                                    <span className="font-medium text-sm">Thời hạn: {pkg.durationDays} ngày</span>
+                                </div>
+                                {pkg.limitViewPhone && pkg.limitViewPhone > 0 && (
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
+                                            <Shield size={16} />
+                                            {/* Ideally Phone icon but Shield is imported, can reuse or import Phone */}
+                                        </div>
+                                        <span className="font-medium text-sm">Xem SĐT: <strong>{pkg.limitViewPhone}</strong> lượt/ngày</span>
                                     </div>
-                                    <span className="font-medium text-sm">Hiển thị trang chủ</span>
-                                </li>
-                            </ul>
+                                )}
+
+                                {pkg.perks && pkg.perks.length > 0 ? (
+                                    pkg.perks.map((perk, i) => (
+                                        <div key={i} className="flex items-center gap-3">
+                                            <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
+                                                <Star size={16} />
+                                            </div>
+                                            <span className="font-medium text-sm">{perk}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <>
+                                        {/* Fallback if no perks defined (legacy) */}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
+                                                <Star size={16} />
+                                            </div>
+                                            <span className="font-medium text-sm">Huy hiệu VIP</span>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
 
                             <button
                                 onClick={() => handleBuy(pkg)}

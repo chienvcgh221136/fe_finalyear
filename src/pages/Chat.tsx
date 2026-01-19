@@ -9,6 +9,7 @@ const Chat = () => {
     const { user } = useAuth();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
     const [newMessage, setNewMessage] = useState('');
+    const [searchTerm, setSearchTerm] = useState(''); // Added search state
     const queryClient = useQueryClient();
 
     // Fetch Chat Rooms
@@ -23,6 +24,17 @@ const Chat = () => {
         // handle error state visually if needed, but react-query usually handles this. 
         // For now, let's just ensure we don't crash.
     }
+
+
+    const getOtherParticipant = (room: ChatRoom) => {
+        return room.userIds.find((p: any) => p._id !== user?.id && p._id !== user?._id) || room.userIds[0];
+    };
+
+    // Filter rooms based on search term
+    const filteredRooms = roomsResponse?.filter(room => {
+        const other = getOtherParticipant(room) as any;
+        return other?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    });
 
     // Fetch Messages
     const { data: messagesData, isLoading: loadingMessages } = useQuery({
@@ -55,9 +67,7 @@ const Chat = () => {
         sendMessageMutation.mutate(newMessage);
     };
 
-    const getOtherParticipant = (room: ChatRoom) => {
-        return room.userIds.find((p: any) => p._id !== user?.id && p._id !== user?._id) || room.userIds[0];
-    };
+
 
 
 
@@ -72,6 +82,8 @@ const Chat = () => {
                         <input
                             type="text"
                             placeholder="Tìm kiếm..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
                         />
                     </div>
@@ -82,8 +94,8 @@ const Chat = () => {
                         <div className="flex justify-center p-4">
                             <Loader2 className="animate-spin text-blue-600" />
                         </div>
-                    ) : roomsResponse && roomsResponse.length > 0 ? (
-                        roomsResponse.map((room) => {
+                    ) : filteredRooms && filteredRooms.length > 0 ? (
+                        filteredRooms.map((room) => {
                             const other = getOtherParticipant(room) as any;
                             const isActive = selectedRoomId === room._id;
 

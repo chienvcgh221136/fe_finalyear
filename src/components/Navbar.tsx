@@ -11,7 +11,7 @@ const Navbar = () => {
     const handleLogout = () => {
         logout();
         setIsDropdownOpen(false);
-        setLogoutSuccess('Logout successful!');
+        setLogoutSuccess('Đăng xuất thành công!');
         setTimeout(() => setLogoutSuccess(''), 3000);
     };
 

@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Phone, MessageCircle, AlertCircle, CheckCircle, Star } from 'lucide-react';
+import { Phone, MessageCircle, AlertCircle, CheckCircle, Star, Lock } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { leadsAPI } from '../../services/api';
 
 interface AgentWidgetProps {
     user?: {
@@ -8,16 +10,18 @@ interface AgentWidgetProps {
         phone?: string;
         email?: string;
         _id?: string;
-        createdAt?: string; // Add createdAt for Member Since
-        rating?: number;    // Add dynamic rating
-        totalReviews?: number; // Updated to match backend
-        reviewCount?: number; // kept for backward compat if needed
+        createdAt?: string;
+        rating?: number;
+        totalReviews?: number;
+        reviewCount?: number;
     };
-    updatedAt?: string; // Keeping for backward compatibility if needed, but preferring user.createdAt
+    postId?: string; // Made optional to avoid breaking other usages if any
+    updatedAt?: string;
     onStartChat?: () => void;
 }
 
-const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
+const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps) => {
+    const { user: currentUser } = useAuth();
     // Generate member since date from USER data
     const memberSince = user?.createdAt
         ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
@@ -27,10 +31,45 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
     const firstLetter = userName.charAt(0).toUpperCase();
 
     const [showPhone, setShowPhone] = useState(false);
-    const phoneNumber = user?.phone || "0909 123 ***";
+    // Mask phone number initially: 0909 123 ***
+    const originalPhone = user?.phone || "0909 123 456";
+    const maskedPhone = originalPhone.length > 6
+        ? `${originalPhone.slice(0, 4)} *** ***`
+        : "Show Phone Number";
 
-    const handleShowPhone = () => {
-        setShowPhone(true);
+    const [isLoadingPhone, setIsLoadingPhone] = useState(false);
+
+    const handleShowPhone = async () => {
+        if (showPhone) return;
+
+        // If owner viewing their own post
+        if (currentUser && (currentUser.id === user?._id || currentUser._id === user?._id)) {
+            setShowPhone(true);
+            return;
+        }
+
+        if (!currentUser) {
+            alert("Vui lòng đăng nhập để xem số điện thoại");
+            return;
+        }
+
+        if (!postId) {
+            // Fallback if no postId provided (should not happen in PostDetail)
+            setShowPhone(true);
+            return;
+        }
+
+        setIsLoadingPhone(true);
+        try {
+            await leadsAPI.showPhone(postId);
+            setShowPhone(true);
+        } catch (error: any) {
+            console.error("Show phone error", error);
+            const message = error.response?.data?.message || "Không thể xem số điện thoại";
+            alert(message);
+        } finally {
+            setIsLoadingPhone(false);
+        }
     };
 
     // Dynamic values for rating - default to hidden or 0 if not present
@@ -38,7 +77,8 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
     const reviewCount = user?.totalReviews || user?.reviewCount || 0;
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full mb-6 relative overflow-hidden">
+            {/* VIP Decor if applicable (Optional) */}
 
             {/* Header Label */}
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-6">
@@ -93,16 +133,24 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
             <div className="flex flex-col gap-3 mb-8">
                 <button
                     onClick={handleShowPhone}
+                    disabled={isLoadingPhone}
                     className={`w-full font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm ${showPhone
                         ? 'bg-white border-2 border-blue-600 text-blue-600'
                         : 'bg-blue-600 hover:bg-blue-700 text-white'
-                        }`}
+                        } ${isLoadingPhone ? 'opacity-70 cursor-wait' : ''}`}
                 >
-                    <Phone size={20} className={showPhone ? "text-blue-600" : "fill-current"} />
-                    <span>
-                        {showPhone ? phoneNumber : 'Show Phone Number'}
-                    </span>
-                    {!showPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">Press to reveal</span>}
+                    {isLoadingPhone ? (
+                        <span>Checking...</span>
+                    ) : (
+                        <>
+                            {showPhone ? <Phone size={20} className="text-blue-600" /> : <Lock size={18} />}
+                            <span>
+                                {showPhone ? originalPhone : maskedPhone}
+                            </span>
+                        </>
+                    )}
+
+                    {!showPhone && !isLoadingPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">Click to reveal</span>}
                 </button>
 
                 <button

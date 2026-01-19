@@ -4,14 +4,15 @@ import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     LayoutDashboard, FileText, Users, LogOut, Search, Bell,
-    Settings, ChevronRight, Menu, X, Flag, BarChart3, Home
+    Settings, ChevronRight, Menu, X, Flag, BarChart3, Home, Crown
 } from 'lucide-react';
 
 const navItems = [
-    { label: 'Dashboard', href: '/admin', icon: BarChart3 },
+    { label: 'Tổng quan', href: '/admin', icon: BarChart3 },
     { label: 'Duyệt tin', href: '/admin/posts', icon: FileText },
     { label: 'Người dùng', href: '/admin/users', icon: Users },
-    { label: 'Reports', href: '/admin/reports', icon: Flag },
+    { label: 'Gói VIP', href: '/admin/vip', icon: Crown },
+    { label: 'Báo cáo', href: '/admin/reports', icon: Flag },
 ];
 
 const AdminLayout = () => {
@@ -88,7 +89,7 @@ const AdminLayout = () => {
 
                     <div className="hidden md:block">
                         <h1 className="text-xl font-bold text-gray-800">
-                            {navItems.find((item) => item.href === location.pathname)?.label || 'Dashboard'}
+                            {navItems.find((item) => item.href === location.pathname)?.label || 'Tổng quan'}
                         </h1>
                     </div>
 

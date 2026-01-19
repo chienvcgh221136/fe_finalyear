@@ -95,8 +95,8 @@ const AdminDashboard = () => {
                                             Đăng bởi: <span className="font-medium text-gray-700">{(post.userId as User)?.name || 'Unknown'}</span>
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Pending</span>
-                                            <span className="text-xs text-gray-400">• {new Date(post.createdAt ?? Date.now()).toLocaleDateString()}</span>
+                                            <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Chờ duyệt</span>
+                                            <span className="text-xs text-gray-400">• {new Date(post.createdAt ?? Date.now()).toLocaleDateString('vi-VN')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -130,7 +130,7 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500 truncate">{u.email}</p>
                                     </div>
                                     <div className="text-xs text-gray-400 font-medium">
-                                        {new Date(u.createdAt ?? Date.now()).toLocaleDateString()}
+                                        {new Date(u.createdAt ?? Date.now()).toLocaleDateString('vi-VN')}
                                     </div>
                                 </div>
                             ))}

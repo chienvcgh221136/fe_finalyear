@@ -110,6 +110,8 @@ export interface VipPackage {
     priorityScore: number;
     description: string;
     isActive: boolean;
+    limitViewPhone?: number;
+    perks?: string[];
 }
 
 export interface UserStats {
