@@ -89,7 +89,7 @@ const Search = () => {
 
                 // Filter by VIP (Query Param)
                 if (isVipParam === 'true') {
-                    initialFiltered = initialFiltered.filter(p => p.isVip);
+                    initialFiltered = initialFiltered.filter(p => p.vip?.isActive);
                 }
 
                 setFilteredListings(initialFiltered);

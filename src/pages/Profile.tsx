@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { usersAPI, postsAPI } from '../services/api';
-import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Wallet, Trash2, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { usersAPI, postsAPI, filesAPI } from '../services/api';
+import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
+import WalletPage from './WalletPage';
+import VipPage from './VipPage';
+import UserStatsPage from './UserStatsPage';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -12,14 +14,21 @@ const Profile = () => {
     const { user, logout, updateUser } = useAuth();
     const activeTab = searchParams.get('tab') || 'profile';
 
-    const [success, setSuccess] = useState(''); // Add success state
-
+    const [success, setSuccess] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+
+    // Form State
     const [profileForm, setProfileForm] = useState({
         name: user?.name || '',
-        phone: user?.phone || '', // Corrected to phone
+        phone: user?.phone || '',
+        avatar: user?.avatar || '',
     });
 
+    // File Upload State
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = useState(false);
+
+    // Queries
     const { data: myPostsResponse, isLoading: loadingPosts } = useQuery({
         queryKey: ['posts', 'me'],
         queryFn: () => postsAPI.getMyPosts(),
@@ -29,11 +38,13 @@ const Profile = () => {
     const queryClient = useQueryClient();
     const [postFilter, setPostFilter] = useState('ALL');
 
+    // Filter Posts
     const filteredPosts = (myPostsResponse?.data?.data || myPostsResponse?.data || []).filter((post: any) => {
         if (postFilter === 'ALL') return true;
         return post.status === postFilter;
     });
 
+    // Mutations
     const deletePostMutation = useMutation({
         mutationFn: (id: string) => postsAPI.delete(id),
         onSuccess: () => {
@@ -52,6 +63,17 @@ const Profile = () => {
         }
     });
 
+    const updateProfileMutation = useMutation({
+        mutationFn: (data: any) => usersAPI.updateProfile(data),
+        onSuccess: (res) => {
+            updateUser(res.data.data || res.data);
+            setIsEditing(false);
+            setSuccess('Cập nhật thông tin thành công!');
+            setTimeout(() => setSuccess(''), 3000);
+        },
+    });
+
+    // Handlers
     const handleDeletePost = (id: string) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa tin đăng này?')) {
             deletePostMutation.mutate(id);
@@ -64,28 +86,51 @@ const Profile = () => {
         }
     };
 
-    // Safety check for data structure
-    const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
-
     const handleTabChange = (tab: string) => {
         setSearchParams({ tab });
     };
-
-    const updateProfileMutation = useMutation({
-        mutationFn: (data: any) => usersAPI.updateProfile(data),
-        onSuccess: (res) => {
-            updateUser(res.data.data || res.data);
-            setIsEditing(false);
-            setSuccess('Cập nhật thông tin thành công!'); // Set success message
-            setTimeout(() => setSuccess(''), 3000); // Clear after 3s
-        },
-    });
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Vui lòng chọn file ảnh');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File ảnh quá lớn (tối đa 5MB)');
+            return;
+        }
+
+        try {
+            setUploading(true);
+            const res = await filesAPI.upload(file);
+            const url = res.data.data?.url || res.data.url;
+
+            // Update form state
+            const newFormState = { ...profileForm, avatar: url };
+            setProfileForm(newFormState);
+
+            // Auto-save to backend
+            updateProfileMutation.mutate(newFormState);
+
+            setSuccess('Tải ảnh đại diện thành công!');
+            setTimeout(() => setSuccess(''), 3000);
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Lỗi tải ảnh lên. Vui lòng thử lại.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Components
     const StatusBadge = ({ status }: { status: string }) => {
         let color = "bg-gray-100 text-gray-600";
         let label = status;
@@ -118,6 +163,8 @@ const Profile = () => {
         );
     };
 
+    const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
+
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="container mx-auto px-4">
@@ -126,9 +173,13 @@ const Profile = () => {
                     {/* Sidebar */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit sticky top-24">
                         <div className="p-6 text-center border-b border-gray-100">
-                            {/* Avatar */}
-                            <div className="w-20 h-20 bg-blue-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-4 border-4 border-white shadow-lg">
-                                {user?.name?.charAt(0).toUpperCase()}
+                            {/* Avatar Display */}
+                            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg overflow-hidden bg-blue-600 text-white text-3xl font-bold relative group">
+                                {user?.avatar ? (
+                                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                ) : (
+                                    user?.name?.charAt(0).toUpperCase()
+                                )}
                             </div>
                             <h3 className="font-bold text-gray-900 text-lg mb-1">{user?.name}</h3>
                             <p className="text-sm text-gray-500">{user?.email}</p>
@@ -139,7 +190,9 @@ const Profile = () => {
                                 { id: 'posts', label: 'Tin của tôi', icon: FileText },
                                 { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
                                 { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
-                                { id: 'wallet', label: 'Ví & VIP', icon: Wallet },
+                                { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
+                                { id: 'vip', label: 'Gói VIP', icon: Crown },
+                                { id: 'stats', label: 'Thống kê', icon: BarChart2 },
                             ].map(item => (
                                 <button
                                     key={item.id}
@@ -184,6 +237,7 @@ const Profile = () => {
                                 )}
 
                                 <div className="space-y-4 max-w-lg">
+                                    {/* Name Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
                                         <input
@@ -194,6 +248,8 @@ const Profile = () => {
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
+
+                                    {/* Email Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                         <input
@@ -204,6 +260,8 @@ const Profile = () => {
                                         />
                                         <p className="text-xs text-gray-400 mt-1">Email không thể thay đổi</p>
                                     </div>
+
+                                    {/* Phone Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
                                         <input
@@ -214,6 +272,50 @@ const Profile = () => {
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
+
+                                    {/* Avatar Upload */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
+                                                <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                    {profileForm.avatar ? (
+                                                        <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <UserIcon className="text-gray-400" size={32} />
+                                                    )}
+                                                </div>
+                                                {isEditing && (
+                                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                                                        <Camera className="text-white" size={24} />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {isEditing && (
+                                                <div className="flex-1">
+                                                    <input
+                                                        type="file"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileChange}
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        disabled={uploading}
+                                                        className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                                                    >
+                                                        {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
+                                                    </button>
+                                                    <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP (Max 5MB)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Buttons */}
                                     {isEditing && (
                                         <div className="flex gap-3 pt-2">
                                             <button
@@ -243,7 +345,6 @@ const Profile = () => {
                                     </Link>
                                 </div>
 
-                                {/* My Posts Sub-tabs */}
                                 <div className="flex gap-2 mb-6 border-b border-gray-100 pb-1 overflow-x-auto">
                                     {['ALL', 'ACTIVE', 'PENDING', 'SOLD', 'REJECTED'].map(status => (
                                         <button
@@ -362,14 +463,23 @@ const Profile = () => {
                         )}
 
                         {activeTab === 'wallet' && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6">Ví & VIP</h2>
-                                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                    <Wallet className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                    <p>Chức năng đang cập nhật</p>
-                                </div>
+                            <div className="rounded-xl overflow-hidden">
+                                <WalletPage />
                             </div>
                         )}
+
+                        {activeTab === 'vip' && (
+                            <div className="rounded-xl overflow-hidden">
+                                <VipPage />
+                            </div>
+                        )}
+
+                        {activeTab === 'stats' && (
+                            <div className="rounded-xl overflow-hidden">
+                                <UserStatsPage />
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </div>

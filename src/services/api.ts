@@ -40,6 +40,18 @@ export const usersAPI = {
     unban: (id: string) => api.patch(`/admin/users/${id}/unban`),
 };
 
+export const filesAPI = {
+    upload: (file: File) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        return api.post('/upload', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+};
+
 export const postService = {
     getAll: (params?: any) => api.get('/posts', { params }),
     getById: (id: string) => api.get(`/posts/${id}`),
@@ -68,6 +80,23 @@ export const chatAPI = {
     getMessages: (chatRoomId: string) => api.get(`/chat/${chatRoomId}/messages`),
     sendMessage: (chatRoomId: string, content: string) => api.post(`/chat/${chatRoomId}/send`, { content }),
     markAsRead: (chatRoomId: string) => api.put(`/chat/${chatRoomId}/read`),
+};
+
+export const walletAPI = {
+    getMe: () => api.get('/wallet/me'),
+    topup: (amount: number, method?: string) => api.post('/wallet/topup', { amount, method }),
+    getTransactions: () => api.get('/wallet/transactions'),
+};
+
+export const vipAPI = {
+    getPackages: () => api.get('/vip/packages'),
+    purchase: (packageId: string) => api.post('/vip/purchase', { packageId }),
+    getMyVip: () => api.get('/vip/me'),
+};
+
+export const statsAPI = {
+    getMyStats: () => api.get('/stats/me'),
+    getAdminOverview: () => api.get('/stats/admin/overview'),
 };
 
 // Duplicate removed.

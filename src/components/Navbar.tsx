@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Package, Home, Building2, User, LogOut, Heart, PlusCircle, MessageCircle, Shield } from 'lucide-react';
+import { Package, Home, Building2, User, LogOut, Heart, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -61,9 +61,13 @@ const Navbar = () => {
                             <div className="relative">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                    className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center border-2 border-white shadow-sm hover:ring-2 hover:ring-blue-100 transition-all focus:outline-none"
+                                    className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-100 text-blue-600'} font-bold flex items-center justify-center border-2 border-white shadow-sm hover:ring-2 hover:ring-blue-100 transition-all focus:outline-none overflow-hidden`}
                                 >
-                                    {user?.name?.charAt(0).toUpperCase()}
+                                    {user?.avatar ? (
+                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user?.name?.charAt(0).toUpperCase()
+                                    )}
                                 </button>
 
                                 {isDropdownOpen && (
@@ -75,8 +79,12 @@ const Navbar = () => {
                                         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 py-2 animate-in fade-in slide-in-from-top-2 duration-100">
                                             {/* Header */}
                                             <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center shrink-0">
-                                                    {user?.name?.charAt(0).toUpperCase()}
+                                                <div className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-600 text-white'} font-bold flex items-center justify-center shrink-0 overflow-hidden`}>
+                                                    {user?.avatar ? (
+                                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        user?.name?.charAt(0).toUpperCase()
+                                                    )}
                                                 </div>
                                                 <div className="overflow-hidden">
                                                     <p className="font-bold text-gray-900 truncate">{user?.name}</p>
@@ -101,6 +109,30 @@ const Navbar = () => {
                                                 >
                                                     <Heart size={18} />
                                                     Tin đã lưu
+                                                </Link>
+                                                <Link
+                                                    to="/profile?tab=wallet"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <CreditCard size={18} />
+                                                    Ví của tôi
+                                                </Link>
+                                                <Link
+                                                    to="/profile?tab=vip"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <Crown size={18} />
+                                                    Nâng cấp VIP
+                                                </Link>
+                                                <Link
+                                                    to="/profile?tab=stats"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <BarChart2 size={18} />
+                                                    Thống kê
                                                 </Link>
                                                 {user?.role === 'ADMIN' && (
                                                     <Link

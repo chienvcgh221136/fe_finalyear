@@ -1,13 +1,28 @@
+export interface VipData {
+    isActive: boolean;
+    vipType: string;
+    priorityScore: number;
+    packageId?: string;
+    startedAt: string | null;
+    expiredAt: string | null;
+}
+
 export interface User {
     id: string; // or _id depending on backend
     _id?: string;
     name: string;
     email: string;
-    phone?: string; // Corrected to match backend field 'phone'
+    phone?: string;
     avatar?: string;
     role?: 'ADMIN' | 'USER';
     isBanned?: boolean;
     createdAt?: string;
+    rating?: number;
+    totalReviews?: number;
+    vip?: VipData;
+    wallet?: {
+        balance: number;
+    };
 }
 
 export interface Address {
@@ -38,8 +53,7 @@ export interface Post {
     redbookImages?: string[];
     status: 'PENDING' | 'ACTIVE' | 'REJECTED' | 'SOLD';
     rejectReason?: string;
-    isVip: boolean;
-    priorityScore: number;
+    vip?: VipData;
     viewCount: number;
     createdAt: string;
     updatedAt: string;
@@ -69,4 +83,41 @@ export interface MessageData {
     messages: MessageItem[];
     createdAt: string;
     updatedAt: string;
+}
+// Wallet & VIP Types
+export interface Wallet {
+    balance: number;
+    totalTopup: number;
+    totalSpent: number;
+    updatedAt: string;
+}
+
+export interface Transaction {
+    _id: string;
+    userId: string;
+    type: 'TOPUP' | 'VIP_PURCHASE' | 'POST_FEE';
+    amount: number;
+    balanceAfter: number;
+    description: string;
+    createdAt: string;
+}
+
+export interface VipPackage {
+    _id: string;
+    name: string;
+    price: number;
+    durationDays: number;
+    priorityScore: number;
+    description: string;
+    isActive: boolean;
+}
+
+export interface UserStats {
+    totalPosts: number;
+    activePosts: number;
+    soldPosts: number;
+    totalViews: number;
+    totalLeads: number;
+    vipPosts: number;
+    totalSpent: number;
 }

@@ -5,12 +5,13 @@ interface AgentWidgetProps {
     user?: {
         name: string;
         avatar?: string;
-        phoneNumber?: string;
+        phone?: string;
         email?: string;
         _id?: string;
         createdAt?: string; // Add createdAt for Member Since
         rating?: number;    // Add dynamic rating
-        reviewCount?: number; // Add dynamic review count
+        totalReviews?: number; // Updated to match backend
+        reviewCount?: number; // kept for backward compat if needed
     };
     updatedAt?: string; // Keeping for backward compatibility if needed, but preferring user.createdAt
     onStartChat?: () => void;
@@ -26,7 +27,7 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
     const firstLetter = userName.charAt(0).toUpperCase();
 
     const [showPhone, setShowPhone] = useState(false);
-    const phoneNumber = user?.phoneNumber || "0909 123 ***";
+    const phoneNumber = user?.phone || "0909 123 ***";
 
     const handleShowPhone = () => {
         setShowPhone(true);
@@ -34,7 +35,7 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
 
     // Dynamic values for rating - default to hidden or 0 if not present
     const rating = user?.rating || 0;
-    const reviewCount = user?.reviewCount || 0;
+    const reviewCount = user?.totalReviews || user?.reviewCount || 0;
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 w-full mb-6">
@@ -69,13 +70,13 @@ const AgentWidget = ({ user, updatedAt, onStartChat }: AgentWidgetProps) => {
                     </div>
 
                     {/* Show rating if it exists in data */}
-                    {(user?.rating !== undefined && user?.rating !== null) ? (
+                    {(rating > 0) ? (
                         <div className="flex items-center gap-2 text-sm mb-1">
                             <div className="flex items-center gap-1">
                                 <Star size={14} className="text-orange-500 fill-orange-500" />
-                                <span className="font-bold text-orange-500">{user.rating}</span>
+                                <span className="font-bold text-orange-500">{rating}</span>
                             </div>
-                            <span className="text-gray-400 text-xs">({user.reviewCount || 0} Reviews)</span>
+                            <span className="text-gray-400 text-xs">({reviewCount} Reviews)</span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-1 text-sm mb-1 text-gray-500">
