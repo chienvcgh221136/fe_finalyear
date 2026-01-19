@@ -8,6 +8,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     isAdmin: boolean;
     login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    googleLogin: (token: string) => Promise<{ success: boolean; error?: string }>;
     register: (data: { name: string; email: string; phone: string; password: string }) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     updateUser: (user: User) => void;
@@ -72,6 +73,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
+    const googleLogin = async (token: string) => {
+        try {
+            const response = await authService.googleLogin(token);
+            const data = response.data.data || response.data;
+            const newUser = data.user || (data.id ? data : null);
+
+            if (newUser) {
+                setUser(newUser);
+                return { success: true };
+            } else {
+                return { success: false, error: "Invalid user data received" };
+            }
+        } catch (error: any) {
+            return {
+                success: false,
+                error: error.response?.data?.message || 'Google Login failed'
+            };
+        }
+    };
+
     const logout = async () => {
         try {
             await authService.logout();
@@ -94,6 +115,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 isAuthenticated: !!user,
                 isAdmin: user?.role === 'ADMIN',
                 login,
+                googleLogin,
                 register,
                 logout,
                 updateUser,

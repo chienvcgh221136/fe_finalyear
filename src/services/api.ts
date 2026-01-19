@@ -29,6 +29,7 @@ export const authService = {
     login: (data: any) => api.post('/auth/login', data),
     register: (data: any) => api.post('/auth/register', data),
     logout: () => api.post('/auth/logout'),
+    googleLogin: (token: string) => api.post('/auth/google', { token }),
     getProfile: () => api.get('/users/me'), // Assuming /users/me is the endpoint
 };
 
