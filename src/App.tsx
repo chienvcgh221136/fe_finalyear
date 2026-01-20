@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -16,20 +16,22 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminReports from './pages/admin/AdminReports';
 import AdminVipPackages from './pages/admin/AdminVipPackages';
 import Chat from './pages/Chat'; // Added
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './context/AuthContext';
 
-const MainLayout = () => (
-  <div className="flex flex-col min-h-screen">
-    <Navbar />
-    <main className="flex-grow">
-      <Outlet />
-    </main>
-    <Footer />
-  </div>
-);
+const MainLayout = () => {
+  const location = useLocation();
+  const isChatPage = location.pathname.startsWith('/chat');
 
-const queryClient = new QueryClient();
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">
+        <Outlet />
+      </main>
+      {!isChatPage && <Footer />}
+    </div>
+  );
+};
+
 
 function App() {
   return (

@@ -2,11 +2,24 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Package, Home, Building2, User, LogOut, Heart, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { chatAPI } from '../services/api';
 
 const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [logoutSuccess, setLogoutSuccess] = useState('');
+
+    // Fetch unread messages count
+    const { data: chatsData } = useQuery({
+        queryKey: ['chats'],
+        queryFn: chatAPI.getMyChats,
+        enabled: !!isAuthenticated && !!user,
+        refetchInterval: 5000, // Check every 5 seconds
+        retry: false,
+    });
+
+    const unreadCount = chatsData?.data?.chats?.reduce((acc: number, chat: any) => acc + (chat.unreadCount || 0), 0) || 0;
 
     const handleLogout = () => {
         logout();
@@ -55,6 +68,11 @@ const Navbar = () => {
 
                             <Link to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
                                 <MessageCircle size={24} />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
                             </Link>
 
                             {/* User Dropdown */}

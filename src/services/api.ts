@@ -79,8 +79,10 @@ export const chatAPI = {
     createOrGet: (data: { postId: string; sellerId: string }) => api.post('/chat/create', data),
     getMyChats: () => api.get('/chat/my-chats'),
     getMessages: (chatRoomId: string) => api.get(`/chat/${chatRoomId}/messages`),
-    sendMessage: (chatRoomId: string, content: string) => api.post(`/chat/${chatRoomId}/send`, { content }),
+    sendMessage: (chatRoomId: string, content: string, type: 'TEXT' | 'IMAGE' = 'TEXT') => api.post(`/chat/${chatRoomId}/send`, { content, type }),
     markAsRead: (chatRoomId: string) => api.put(`/chat/${chatRoomId}/read`),
+    searchMessages: (query: string) => api.get('/chat/search', { params: { query } }),
+    deleteChat: (chatRoomId: string) => api.delete(`/chat/${chatRoomId}`),
 };
 
 export const walletAPI = {

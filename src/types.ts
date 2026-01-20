@@ -71,8 +71,10 @@ export interface ChatRoom {
 }
 
 export interface MessageItem {
+    _id?: string;
     senderId: string | User;
     content: string;
+    type?: 'TEXT' | 'IMAGE';
     isRead: boolean;
     createdAt: string;
 }

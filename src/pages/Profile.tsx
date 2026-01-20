@@ -228,7 +228,47 @@ const Profile = () => {
                                         </button>
                                     )}
                                 </div>
+                                
+                                <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
+                                        <div className="flex items-center justify-center gap-4">
+                                            <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
+                                                <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                    {profileForm.avatar ? (
+                                                        <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <UserIcon className="text-gray-400" size={32} />
+                                                    )}
+                                                </div>
+                                                {isEditing && (
+                                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                                                        <Camera className="text-white" size={24} />
+                                                    </div>
+                                                )}
+                                            </div>
 
+                                            {isEditing && (
+                                                <div className="flex items-center justify-center gap-4">
+                                                    <input
+                                                        type="file"
+                                                        ref={fileInputRef}
+                                                        onChange={handleFileChange}
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => fileInputRef.current?.click()}
+                                                        disabled={uploading}
+                                                        className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                                                    >
+                                                        {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
+                                                    </button>
+                                                    <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 {success && (
                                     <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
                                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -272,50 +312,7 @@ const Profile = () => {
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
-
-                                    {/* Avatar Upload */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
-                                        <div className="flex items-center gap-4">
-                                            <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
-                                                <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {profileForm.avatar ? (
-                                                        <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <UserIcon className="text-gray-400" size={32} />
-                                                    )}
-                                                </div>
-                                                {isEditing && (
-                                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
-                                                        <Camera className="text-white" size={24} />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {isEditing && (
-                                                <div className="flex-1">
-                                                    <input
-                                                        type="file"
-                                                        ref={fileInputRef}
-                                                        onChange={handleFileChange}
-                                                        accept="image/*"
-                                                        className="hidden"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        disabled={uploading}
-                                                        className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
-                                                    >
-                                                        {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
-                                                    </button>
-                                                    <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP (Max 5MB)</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Action Buttons */}
+                                    
                                     {isEditing && (
                                         <div className="flex gap-3 pt-2">
                                             <button
