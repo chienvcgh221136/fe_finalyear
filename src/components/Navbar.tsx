@@ -79,13 +79,20 @@ const Navbar = () => {
                             <div className="relative">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                    className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-100 text-blue-600'} font-bold flex items-center justify-center border-2 border-white shadow-sm hover:ring-2 hover:ring-blue-100 transition-all focus:outline-none overflow-hidden`}
+                                    className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-100 text-blue-600'} font-bold flex items-center justify-center border-2 ${user?.vip?.isActive ? 'border-amber-400 ring-2 ring-amber-100' : 'border-white'} shadow-sm hover:ring-2 hover:ring-blue-100 transition-all focus:outline-none overflow-visible relative`}
                                 >
-                                    {user?.avatar ? (
-                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        user?.name?.charAt(0).toUpperCase()
+                                    {user?.vip?.isActive && (
+                                        <div className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white rounded-full p-0.5 border-2 border-white shadow-sm z-10">
+                                            <Crown size={10} fill="currentColor" />
+                                        </div>
                                     )}
+                                    <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                                        {user?.avatar ? (
+                                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            user?.name?.charAt(0).toUpperCase()
+                                        )}
+                                    </div>
                                 </button>
 
                                 {isDropdownOpen && (
@@ -97,12 +104,19 @@ const Navbar = () => {
                                         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-20 py-2 animate-in fade-in slide-in-from-top-2 duration-100">
                                             {/* Header */}
                                             <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-                                                <div className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-600 text-white'} font-bold flex items-center justify-center shrink-0 overflow-hidden`}>
-                                                    {user?.avatar ? (
-                                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        user?.name?.charAt(0).toUpperCase()
+                                                <div className={`w-10 h-10 rounded-full ${user?.avatar ? '' : 'bg-blue-600 text-white'} font-bold flex items-center justify-center shrink-0 border-2 ${user?.vip?.isActive ? 'border-amber-400' : 'border-transparent'} relative`}>
+                                                    {user?.vip?.isActive && (
+                                                        <div className="absolute -top-1.5 -right-1.5 bg-amber-400 text-white rounded-full p-0.5 border-2 border-white shadow-sm z-10">
+                                                            <Crown size={10} fill="currentColor" />
+                                                        </div>
                                                     )}
+                                                    <div className="w-full h-full rounded-full overflow-hidden flex items-center justify-center">
+                                                        {user?.avatar ? (
+                                                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            user?.name?.charAt(0).toUpperCase()
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="overflow-hidden">
                                                     <p className="font-bold text-gray-900 truncate">{user?.name}</p>

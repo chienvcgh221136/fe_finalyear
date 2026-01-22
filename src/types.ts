@@ -91,6 +91,7 @@ export interface Wallet {
     balance: number;
     totalTopup: number;
     totalSpent: number;
+    totalWithdrawn: number;
     updatedAt: string;
 }
 

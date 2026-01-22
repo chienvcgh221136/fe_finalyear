@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { walletAPI } from '../services/api';
+import { walletAPI, withdrawAPI } from '../services/api';
 import type { Wallet, Transaction } from '../types';
-import { CreditCard, History, Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, Plus, X, Copy, CheckCircle } from 'lucide-react';
+import { CreditCard, History, Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, Plus, X, Copy, CheckCircle, Clock } from 'lucide-react';
 
 // CONSTANTS - REPLACE WITH YOUR ACTUAL INFO
 const BANK_INFO = {
@@ -12,6 +12,11 @@ const BANK_INFO = {
     ACCOUNT_NO: '0943285591', // Thay bằng số tài khoản của bạn
     ACCOUNT_NAME: 'PHAM VAN CHIEN', // Thay bằng tên tài khoản của bạn
 };
+
+const COMMON_BANKS = [
+    'Vietcombank', 'Techcombank', 'MBBank', 'ACB', 'VPBank', 'TPBank',
+    'BIDV', 'Agribank', 'VietinBank', 'Sacombank', 'VIB', 'HDBank', 'MSB', 'OCB'
+];
 
 const WalletPage = () => {
     const { user } = useAuth();
@@ -21,6 +26,17 @@ const WalletPage = () => {
     const [showQR, setShowQR] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [latestTxId, setLatestTxId] = useState<string | null>(null);
+
+    // Withdraw State
+    const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+    const [withdrawStep, setWithdrawStep] = useState<'FORM' | 'OTP'>('FORM');
+    const [withdrawAmount, setWithdrawAmount] = useState('');
+    const [otp, setOtp] = useState('');
+    const [bankDetails, setBankDetails] = useState({
+        bankName: '',
+        accountNumber: '',
+        accountHolder: ''
+    });
 
     // Fetch Wallet Data
     const { data: wallet, isLoading: loadingWallet } = useQuery({
@@ -87,6 +103,42 @@ const WalletPage = () => {
         queryClient.invalidateQueries({ queryKey: ['wallet'] });
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+
+    const handleInitiateWithdraw = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
+        try {
+            await withdrawAPI.request(Number(withdrawAmount));
+            setWithdrawStep('OTP');
+        } catch (error: any) {
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleVerifyWithdraw = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await withdrawAPI.verify(otp, Number(withdrawAmount), bankDetails);
+            setIsWithdrawModalOpen(false);
+            setWithdrawStep('FORM');
+            setWithdrawAmount('');
+            setOtp('');
+            setBankDetails({ bankName: '', accountNumber: '', accountHolder: '' });
+            alert('Yêu cầu rút tiền thành công! Vui lòng chờ admin duyệt.');
+            queryClient.invalidateQueries({ queryKey: ['wallet'] });
+            queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        } catch (error: any) {
+            alert(error.response?.data?.message || 'Xác thực thất bại');
+        }
+    };
+
     const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
     const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString('vi-VN');
@@ -122,8 +174,10 @@ const WalletPage = () => {
                         <Plus size={20} />
                         Nạp tiền
                     </button>
-                    {/* Placeholder Withdraw Button */}
-                    <button className="bg-blue-500/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2 backdrop-blur-sm border border-white/20">
+                    <button
+                        onClick={() => setIsWithdrawModalOpen(true)}
+                        className="bg-blue-500/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2 backdrop-blur-sm border border-white/20"
+                    >
                         <ArrowUpRight size={20} />
                         Rút tiền
                     </button>
@@ -131,14 +185,14 @@ const WalletPage = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
                         <ArrowDownLeft size={24} />
                     </div>
                     <div>
                         <p className="text-gray-500 text-sm font-medium">Tổng tiền nạp</p>
-                        <div className="text-2xl font-bold text-gray-900">{formatCurrency(wallet?.totalTopup || 0)}</div>
+                        <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalTopup || 0)}</div>
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
@@ -147,7 +201,16 @@ const WalletPage = () => {
                     </div>
                     <div>
                         <p className="text-gray-500 text-sm font-medium">Tổng tiền đã chi</p>
-                        <div className="text-2xl font-bold text-gray-900">{formatCurrency(wallet?.totalSpent || 0)}</div>
+                        <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalSpent || 0)}</div>
+                    </div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                        <ArrowUpRight size={24} />
+                    </div>
+                    <div>
+                        <p className="text-gray-500 text-sm font-medium">Tổng tiền đã rút</p>
+                        <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalWithdrawn || 0)}</div>
                     </div>
                 </div>
             </div>
@@ -180,15 +243,14 @@ const WalletPage = () => {
                                 {transactions?.map((tx) => (
                                     <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${tx.type === 'TOPUP' ? 'bg-green-100 text-green-700' :
-                                                'bg-red-100 text-red-700'
+                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                                 }`}>
-                                                {tx.type === 'TOPUP' ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
+                                                {['TOPUP', 'REFUND'].includes(tx.type) ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
                                                 {tx.type}
                                             </span>
                                         </td>
-                                        <td className={`px-6 py-4 font-bold ${tx.type === 'TOPUP' ? 'text-green-600' : 'text-red-600'}`}>
-                                            {tx.type === 'TOPUP' ? '+' : ''}{formatCurrency(tx.amount)}
+                                        <td className={`px-6 py-4 font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
+                                            {['TOPUP', 'REFUND'].includes(tx.type) ? '+' : ''}{formatCurrency(Math.abs(tx.amount))}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">{tx.description}</td>
                                         <td className="px-6 py-4 text-gray-500 font-medium">{formatDate(tx.createdAt)}</td>
@@ -203,8 +265,8 @@ const WalletPage = () => {
             {/* Topup Modal */}
             {isTopupModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
+                        <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-800">
                                 {showQR ? 'Thông tin chuyển khoản' : 'Nạp tiền vào ví'}
                             </h3>
@@ -213,141 +275,358 @@ const WalletPage = () => {
                             </button>
                         </div>
 
-                        {!showQR ? (
-                            <form onSubmit={handleTopup} className="p-6">
-                                <div className="mb-6">
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn nạp (VNĐ)</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            value={amount}
-                                            onChange={(e) => setAmount(e.target.value)}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold text-lg text-gray-900"
-                                            placeholder="VD: 500000"
-                                            min="10000"
-                                            autoFocus
-                                        />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">VNĐ</span>
+                        <div className="overflow-y-auto">
+                            {!showQR ? (
+                                <form onSubmit={handleTopup} className="p-6">
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn nạp (VNĐ)</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                value={amount}
+                                                onChange={(e) => setAmount(e.target.value)}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold text-lg text-gray-900"
+                                                placeholder="VD: 500000"
+                                                min="10000"
+                                                autoFocus
+                                            />
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">VNĐ</span>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-2 ml-1">Tối thiểu 10.000 VNĐ</p>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2 ml-1">Tối thiểu 10.000 VNĐ</p>
-                                </div>
 
-                                <div className="grid grid-cols-3 gap-3 mb-6">
-                                    {[100000, 200000, 500000].map(val => (
+                                    <div className="grid grid-cols-3 gap-3 mb-6">
+                                        {[100000, 200000, 500000].map(val => (
+                                            <button
+                                                key={val}
+                                                type="button"
+                                                onClick={() => setAmount(val.toString())}
+                                                className="px-2 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                                            >
+                                                {formatCurrency(val)}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex gap-3">
                                         <button
-                                            key={val}
                                             type="button"
-                                            onClick={() => setAmount(val.toString())}
-                                            className="px-2 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                                            onClick={handleCloseModal}
+                                            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                                         >
-                                            {formatCurrency(val)}
+                                            Hủy
                                         </button>
-                                    ))}
-                                </div>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors"
+                                        >
+                                            Tiếp tục
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <div className="p-6">
+                                    {/* QR Code Section */}
+                                    <div className="text-center mb-6">
+                                        <div className="bg-white p-2 rounded-xl border border-gray-200 inline-block shadow-sm">
+                                            <img
+                                                src={qrUrl}
+                                                alt="Mã QR chuyển khoản"
+                                                className="w-64 h-64 object-contain"
+                                            />
+                                        </div>
+                                        <p className="text-sm text-gray-500 mt-2">Quét mã QR để thanh toán tự động</p>
+                                    </div>
 
-                                <div className="flex gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="flex-1 px-4 py-3 rounded-xl border border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
-                                    >
-                                        Hủy
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors"
-                                    >
-                                        Tiếp tục
-                                    </button>
-                                </div>
-                            </form>
-                        ) : (
-                            <div className="p-6">
-                                {/* QR Code Section */}
-                                <div className="text-center mb-6">
-                                    <div className="bg-white p-2 rounded-xl border border-gray-200 inline-block shadow-sm">
-                                        <img
-                                            src={qrUrl}
-                                            alt="Mã QR chuyển khoản"
-                                            className="w-64 h-64 object-contain"
-                                        />
+                                    {/* Bank Info Details */}
+                                    <div className="bg-blue-50 rounded-xl p-4 mb-6 space-y-3 border border-blue-100">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Ngân hàng</span>
+                                            <span className="font-bold text-gray-900">{BANK_INFO.BANK_ID}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Số tài khoản</span>
+                                            <span className="font-bold text-gray-900 flex items-center gap-2">
+                                                {BANK_INFO.ACCOUNT_NO}
+                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(BANK_INFO.ACCOUNT_NO)} />
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Chủ tài khoản</span>
+                                            <span className="font-bold text-gray-900">{BANK_INFO.ACCOUNT_NAME}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-gray-500">Số tiền</span>
+                                            <span className="font-bold text-blue-600">{formatCurrency(Number(amount))}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm pt-2 border-t border-blue-200">
+                                            <span className="text-gray-500">Nội dung CK</span>
+                                            <span className="font-bold text-red-600 flex items-center gap-2">
+                                                {transferContent}
+                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(transferContent)} />
+                                            </span>
+                                        </div>
                                     </div>
-                                    <p className="text-sm text-gray-500 mt-2">Quét mã QR để thanh toán tự động</p>
-                                </div>
 
-                                {/* Bank Info Details */}
-                                <div className="bg-blue-50 rounded-xl p-4 mb-6 space-y-3 border border-blue-100">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Ngân hàng</span>
-                                        <span className="font-bold text-gray-900">{BANK_INFO.BANK_ID}</span>
+                                    <div className="bg-yellow-50 text-yellow-800 text-xs p-3 rounded-lg mb-6">
+                                        <strong>Lưu ý:</strong> Vui lòng nhập chính xác nội dung chuyển khoản <strong>{transferContent}</strong> để tiền được cộng tự động vào ví.
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Số tài khoản</span>
-                                        <span className="font-bold text-gray-900 flex items-center gap-2">
-                                            {BANK_INFO.ACCOUNT_NO}
-                                            <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(BANK_INFO.ACCOUNT_NO)} />
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Chủ tài khoản</span>
-                                        <span className="font-bold text-gray-900">{BANK_INFO.ACCOUNT_NAME}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Số tiền</span>
-                                        <span className="font-bold text-blue-600">{formatCurrency(Number(amount))}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm pt-2 border-t border-blue-200">
-                                        <span className="text-gray-500">Nội dung CK</span>
-                                        <span className="font-bold text-red-600 flex items-center gap-2">
-                                            {transferContent}
-                                            <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(transferContent)} />
-                                        </span>
+
+                                    <div className="text-center mt-4">
+                                        <button
+                                            onClick={handleCloseModal}
+                                            className="text-gray-500 hover:text-gray-700 font-medium text-sm underline"
+                                        >
+                                            Đóng cửa sổ này
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div className="bg-yellow-50 text-yellow-800 text-xs p-3 rounded-lg mb-6">
-                                    <strong>Lưu ý:</strong> Vui lòng nhập chính xác nội dung chuyển khoản <strong>{transferContent}</strong> để tiền được cộng tự động vào ví.
-                                </div>
-
-                                <div className="text-center mt-4">
-                                    <button
-                                        onClick={handleCloseModal}
-                                        className="text-gray-500 hover:text-gray-700 font-medium text-sm underline"
-                                    >
-                                        Đóng cửa sổ này
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* Success Success Check Modal */}
-            {showSuccess && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300 transform">
-                        <div className="p-8 text-center">
-                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 animate-bounce">
-                                <CheckCircle size={48} />
-                            </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
-                            <p className="text-gray-500 mb-8">
-                                Số tiền đã được cộng vào tài khoản của bạn.
-                            </p>
-                            <button
-                                onClick={() => setShowSuccess(false)}
-                                className="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
-                            >
-                                Tuyệt vời
-                            </button>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* Withdraw Modal */}
+            {isWithdrawModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 font-sans">
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
+                            <h3 className="text-xl font-extrabold text-gray-900">Rút tiền</h3>
+                            <button onClick={() => setIsWithdrawModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        {/* Steps Indicator */}
+                        <div className="px-6 pt-6">
+                            <div className="bg-gray-100 p-1 rounded-xl flex">
+                                <div className={`flex-1 py-2 text-center text-sm font-bold rounded-lg transition-all ${withdrawStep === 'FORM' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
+                                    1. Thông tin
+                                </div>
+                                <div className={`flex-1 py-2 text-center text-sm font-bold rounded-lg transition-all ${withdrawStep === 'OTP' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
+                                    2. Xác thực
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="overflow-y-auto p-6">
+                            {withdrawStep === 'FORM' ? (
+                                <form onSubmit={handleInitiateWithdraw} className="space-y-6">
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-2">Bước 1: Chi tiết rút tiền</h4>
+                                        <p className="text-gray-500 text-sm mb-6">Nhập số tiền và thông tin tài khoản nhận tiền.</p>
+
+                                        {/* Amount Input */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn rút</label>
+                                            <div className="relative group">
+                                                <input
+                                                    type="number"
+                                                    required
+                                                    min="50000"
+                                                    value={withdrawAmount}
+                                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 outline-none font-bold text-3xl text-gray-900 transition-all placeholder:text-gray-300"
+                                                    placeholder="0"
+                                                />
+                                                <span className="absolute right-24 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">VNĐ</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setWithdrawAmount(wallet?.balance?.toString() || '0')}
+                                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
+                                                >
+                                                    TỐI ĐA
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2">Khả dụng: <span className="font-bold text-gray-700">{formatCurrency(wallet?.balance || 0)}</span></p>
+                                            {Number(withdrawAmount) > (wallet?.balance || 0) && (
+                                                <p className="text-red-500 text-xs font-bold mt-1">⚠️ Số tiền rút vượt quá số dư khả dụng</p>
+                                            )}
+                                        </div>
+
+                                        {/* Bank Info */}
+                                        <div>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Chọn tài khoản ngân hàng</label>
+
+                                            {/* Bank Form Fields styled as a 'New Account' card */}
+                                            <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-4 space-y-3 relative overflow-hidden">
+                                                <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="col-span-2">
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Ngân hàng</label>
+                                                        <select
+                                                            value={COMMON_BANKS.includes(bankDetails.bankName) ? bankDetails.bankName : 'other'}
+                                                            onChange={(e) => {
+                                                                if (e.target.value === 'other') {
+                                                                    setBankDetails({ ...bankDetails, bankName: '' });
+                                                                } else {
+                                                                    setBankDetails({ ...bankDetails, bankName: e.target.value });
+                                                                }
+                                                            }}
+                                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none mb-2"
+                                                        >
+                                                            <option value="" disabled>Chọn ngân hàng</option>
+                                                            {COMMON_BANKS.map(bank => (
+                                                                <option key={bank} value={bank}>{bank}</option>
+                                                            ))}
+                                                            <option value="other">Ngân hàng khác...</option>
+                                                        </select>
+
+                                                        {(!COMMON_BANKS.includes(bankDetails.bankName) || bankDetails.bankName === '') && (
+                                                            <input
+                                                                type="text"
+                                                                required
+                                                                value={bankDetails.bankName}
+                                                                onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
+                                                                className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none animate-in fade-in slide-in-from-top-1"
+                                                                placeholder="Nhập tên ngân hàng..."
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <div className="col-span-2 md:col-span-1">
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Số tài khoản</label>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            value={bankDetails.accountNumber}
+                                                            onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
+                                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-mono font-semibold focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            placeholder="0000 0000 0000"
+                                                        />
+                                                    </div>
+                                                    <div className="col-span-2 md:col-span-1">
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Chủ tài khoản</label>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            value={bankDetails.accountHolder}
+                                                            onChange={(e) => setBankDetails({ ...bankDetails, accountHolder: e.target.value })}
+                                                            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none uppercase"
+                                                            placeholder="NGUYEN VAN A"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    {/* Info Alert */}
+                                    <div className="bg-blue-50 p-4 rounded-xl flex gap-3 items-start text-sm text-blue-800">
+                                        <CheckCircle size={20} className="shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-bold mb-1">Thời gian xử lý</p>
+                                            <p className="opacity-90">Yêu cầu rút tiền thường được xử lý trong 2-4 giờ làm việc. Phí giao dịch: <span className="font-bold">Miễn phí</span>.</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Actions */}
+                                    <div className="flex gap-4 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsWithdrawModalOpen(false)}
+                                            disabled={isSubmitting}
+                                            className="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                        >
+                                            Hủy
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={isSubmitting || Number(withdrawAmount) > (wallet?.balance || 0) || Number(withdrawAmount) < 50000}
+                                            className="flex-1 py-3 px-6 rounded-xl bg-blue-500 text-white font-bold hover:bg-blue-600 shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <Clock size={18} className="animate-spin" />
+                                                    Đang xử lý...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Tiếp tục xác thực
+                                                    <ArrowUpRight size={18} />
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <form onSubmit={handleVerifyWithdraw} className="space-y-6">
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-2">Bước 2: Xác thực</h4>
+                                        <p className="text-gray-500 text-sm mb-6">Nhập mã OTP được gửi về email của bạn để xác nhận rút tiền.</p>
+
+                                        <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
+                                            <p className="text-sm text-yellow-800 flex items-center gap-2">
+                                                <Clock size={16} />
+                                                Mã OTP hết hạn sau 10 phút.
+                                            </p>
+                                        </div>
+
+                                        <div className="flex justify-center mb-8">
+                                            <input
+                                                type="text"
+                                                required
+                                                value={otp}
+                                                onChange={(e) => setOtp(e.target.value)}
+                                                className="w-full max-w-[300px] px-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none text-center text-4xl font-mono tracking-[0.5em] text-gray-800 transition-all"
+                                                maxLength={6}
+                                                placeholder="••••••"
+                                                autoFocus
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-4 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setWithdrawStep('FORM')}
+                                            className="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+                                        >
+                                            Quay lại
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 py-3 px-6 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg shadow-green-500/30 transition-all"
+                                        >
+                                            Xác nhận rút tiền
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )
+            }
+
+            {/* Success Success Check Modal */}
+            {
+                showSuccess && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300 transform">
+                            <div className="p-8 text-center">
+                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 animate-bounce">
+                                    <CheckCircle size={48} />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
+                                <p className="text-gray-500 mb-8">
+                                    Số tiền đã được cộng vào tài khoản của bạn.
+                                </p>
+                                <button
+                                    onClick={() => setShowSuccess(false)}
+                                    className="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+                                >
+                                    Tuyệt vời
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
 export default WalletPage;
-

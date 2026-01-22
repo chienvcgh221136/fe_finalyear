@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
 import { statsAPI } from '../services/api';
 import type { UserStats } from '../types';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package } from 'lucide-react';
 
 const UserStatsPage = () => {
+    const { user } = useAuth();
     const { data: stats, isLoading } = useQuery({
         queryKey: ['userStats'],
         queryFn: async () => {
@@ -32,6 +34,32 @@ const UserStatsPage = () => {
                 <LayoutDashboard className="text-blue-600" size={32} />
                 Thống kê hoạt động
             </h1>
+
+            {/* VIP Status Card */}
+            {user?.vip?.isActive && (
+                <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-6 mb-8 text-white shadow-lg relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Package size={100} />
+                    </div>
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div>
+                            <p className="text-amber-100 font-medium text-sm mb-1">Gói thành viên hiện tại</p>
+                            <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
+                                <span className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">👑</span>
+                                {user.vip.vipType}
+                            </h2>
+                            <p className="text-sm opacity-90">
+                                Hết hạn: <span className="font-bold">{new Date(user.vip.expiredAt || '').toLocaleDateString('vi-VN')}</span>
+                                <span className="mx-2">•</span>
+                                Chỉ số ưu tiên: <span className="font-bold">{user.vip.priorityScore}</span>
+                            </p>
+                        </div>
+                        <button className="bg-white text-orange-600 px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-orange-50 transition-colors">
+                            Nâng cấp
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

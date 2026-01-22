@@ -91,6 +91,13 @@ export const walletAPI = {
     getTransactions: () => api.get('/wallet/transactions'),
 };
 
+export const withdrawAPI = {
+    request: (amount: number) => api.post('/withdraw/request', { amount }),
+    verify: (otp: string, amount: number, bank: any) => api.post('/withdraw/verify', { otp, amount, bank }),
+    getAll: (status?: string) => api.get('/withdraw/admin/requests', { params: { status } }),
+    updateStatus: (id: string, status: string, adminNote?: string) => api.put(`/withdraw/admin/request/${id}`, { status, adminNote }),
+};
+
 export const vipAPI = {
     getPackages: () => api.get('/vip/packages'),
     purchase: (packageId: string) => api.post('/vip/purchase', { packageId }),
