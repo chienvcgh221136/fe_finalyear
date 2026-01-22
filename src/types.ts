@@ -115,6 +115,7 @@ export interface VipPackage {
     isActive: boolean;
     limitViewPhone?: number;
     perks?: string[];
+    isPopular?: boolean;
 }
 
 export interface UserStats {

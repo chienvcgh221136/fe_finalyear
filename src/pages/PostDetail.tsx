@@ -4,12 +4,14 @@ import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
     MapPin, Share2, Heart, AlertCircle, ChevronRight,
-    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, MessageCircle
+    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, MessageCircle, Calendar
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
 import AgentWidget from '../components/post/AgentWidget';
 import ReportModal from '../components/modals/ReportModal';
 
+
+import ScheduleModal from '../components/modals/ScheduleModal';
 
 const PostDetail = () => {
     const { id } = useParams();
@@ -18,6 +20,7 @@ const PostDetail = () => {
     const [loading, setLoading] = useState(true);
 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchPost = async () => {
@@ -129,38 +132,68 @@ const PostDetail = () => {
                                 <div>
                                     <div className="flex items-baseline gap-4 mb-2">
                                         <span className="text-blue-600 text-3xl font-extrabold tracking-tight">
-                                            {formatPrice(post.price)}
+                                            {formatPrice(post.price)} {post.transactionType === 'RENT' ? '/tháng' : ''}
                                         </span>
-                                        <span className="text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded text-sm">
-                                            ~ {(post.price / (post.area || 1) / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu/m²
-                                        </span>
+                                        {post.transactionType === 'SALE' && post.area && (
+                                            <span className="text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded text-sm">
+                                                ~ {(post.price / post.area / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu/m²
+                                            </span>
+                                        )}
                                     </div>
                                     <MapPin size={18} className="text-gray-400" />
-                                    <span>{post.address?.district || post.district || 'Unknown District'}, {post.address?.city || post.city || 'Unknown City'}</span>
+                                    <span>{post.address?.district || post.district || 'Chưa rõ'}, {post.address?.city || post.city || 'Chưa rõ'}</span>
                                 </div>
                             </div>
                             <div className="flex gap-3">
                                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 hover:text-blue-600 transition-all">
                                     <Share2 size={18} />
-                                    <span className="text-sm">Share</span>
+                                    <span className="text-sm">Chia sẻ</span>
                                 </button>
-                                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-red-50 hover:text-red-500 transition-all">
+
+                                {user?._id !== (typeof post.userId === 'object' ? (post.userId as any)._id : post.userId) && (
+                                    <button
+                                        onClick={() => setIsScheduleModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                    >
+                                        <Calendar size={18} />
+                                        <span className="text-sm">Đặt lịch</span>
+                                    </button>
+                                )}
+
+                                <button
+                                    onClick={async () => {
+                                        if (!user) {
+                                            alert("Vui lòng đăng nhập để lưu tin");
+                                            return;
+                                        }
+                                        try {
+                                            const res = await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
+                                            if (res.data.success) {
+                                                alert(res.data.message === 'Favorited' ? 'Đã lưu tin' : 'Đã bỏ lưu tin');
+                                                // Ideally, toggle a local state here to change icon style
+                                            }
+                                        } catch (error) {
+                                            console.error("Favorite error", error);
+                                        }
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-red-50 hover:text-red-500 transition-all"
+                                >
                                     <Heart size={18} />
-                                    <span className="text-sm">Save</span>
+                                    <span className="text-sm">Lưu tin</span>
                                 </button>
                                 <button
                                     onClick={() => setIsReportModalOpen(true)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all"
                                 >
                                     <Flag size={18} />
-                                    <span className="text-sm">Report</span>
+                                    <span className="text-sm">Báo cáo</span>
                                 </button>
 
                                 {/* Owner Actions */}
                                 {user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId) && (
                                     <>
                                         <Link to={`/edit-post/${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
-                                            <span className="text-sm">Edit Post</span>
+                                            <span className="text-sm">Sửa tin</span>
                                         </Link>
                                     </>
                                 )}
@@ -251,6 +284,8 @@ const PostDetail = () => {
                             </div>
                         </div>
 
+
+
                         {/* Safety Tips or Ad placeholder */}
                         <div className="bg-blue-50/50 rounded-2xl border border-blue-100 p-6">
                             <div className="flex items-start gap-3 mb-3">
@@ -267,33 +302,11 @@ const PostDetail = () => {
                                     onClick={() => setIsReportModalOpen(true)}
                                     className="text-gray-400 hover:text-gray-600 text-sm font-medium flex items-center gap-1"
                                 >
-                                    <Flag size={14} /> Report
+                                    <Flag size={14} /> Báo cáo
                                 </button>
                             </div>
 
-                            <button
-                                onClick={async () => {
-                                    if (!user) {
-                                        alert("Vui lòng đăng nhập để chat với người bán");
-                                        return;
-                                    }
-                                    try {
-                                        await import('../services/api').then(m => m.chatAPI.createOrGet({
-                                            postId: post._id,
-                                            sellerId: post.user?._id || post.userId?._id || post.userId
-                                        }));
-                                        // Redirect to chat (window.location for simple refresh or useNavigate)
-                                        window.location.href = '/chat';
-                                    } catch (error) {
-                                        console.error("Chat error", error);
-                                        alert("Không thể bắt đầu cuộc trò chuyện");
-                                    }
-                                }}
-                                className="w-full py-3 bg-white border-2 border-blue-600 text-blue-700 font-bold rounded-xl hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <MessageCircle size={20} />
-                                Chat với người bán
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -303,6 +316,16 @@ const PostDetail = () => {
                 isOpen={isReportModalOpen}
                 onClose={() => setIsReportModalOpen(false)}
                 postId={post._id}
+            />
+
+            <ScheduleModal
+                isOpen={isScheduleModalOpen}
+                onClose={() => setIsScheduleModalOpen(false)}
+                postId={post._id}
+                postTitle={post.title}
+                postImage={post.images?.[0] || ''}
+                postPrice={post.price}
+                postAddress={post.address?.district ? `${post.address.district}, ${post.address.city}` : post.city}
             />
         </div>
     );

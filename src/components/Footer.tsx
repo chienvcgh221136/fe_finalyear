@@ -17,7 +17,7 @@ const Footer = () => {
                                 <span className="font-bold text-xl">EstateMarket</span>
                             </Link>
                             <p className="text-secondary" style={{ marginBottom: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
-                                Helping million of people find their perfect home since 2010. The most trusted marketplace for real estate.
+                                Giúp hàng triệu người tìm được ngôi nhà mơ ước từ năm 2010. Nền tảng giao dịch bất động sản tin cậy nhất.
                             </p>
                             <div className="flex gap-4">
                                 {/* Placeholders for icons as simple links if needed, or stick to Lucide */}
@@ -30,36 +30,36 @@ const Footer = () => {
 
                         {/* Column 2: Marketplace */}
                         <div>
-                            <h4 className="footer-heading">Marketplace</h4>
+                            <h4 className="footer-heading">Khám phá</h4>
                             <div className="footer-links">
-                                <Link to="/buy" className="footer-link">Buy Property</Link>
-                                <Link to="/rent" className="footer-link">Rent Property</Link>
-                                <Link to="/sell" className="footer-link">Sell Property</Link>
-                                <Link to="/post-ad" className="footer-link">Post an Ad</Link>
-                                <Link to="/vip" className="footer-link">VIP Memberships</Link>
+                                <Link to="/buy" className="footer-link">Mua nhà</Link>
+                                <Link to="/rent" className="footer-link">Thuê nhà</Link>
+                                <Link to="/sell" className="footer-link">Bán nhà</Link>
+                                <Link to="/post-ad" className="footer-link">Đăng tin</Link>
+                                <Link to="/vip" className="footer-link">Gói VIP</Link>
                             </div>
                         </div>
 
                         {/* Column 3: Support */}
                         <div>
-                            <h4 className="footer-heading">Support</h4>
+                            <h4 className="footer-heading">Hỗ trợ</h4>
                             <div className="footer-links">
-                                <Link to="/help" className="footer-link">Help Center</Link>
-                                <Link to="/terms" className="footer-link">Terms of Service</Link>
-                                <Link to="/privacy" className="footer-link">Privacy Policy</Link>
-                                <Link to="/cookie" className="footer-link">Cookie Policy</Link>
-                                <Link to="/safety" className="footer-link">Safety Tips</Link>
+                                <Link to="/help" className="footer-link">Trung tâm trợ giúp</Link>
+                                <Link to="/terms" className="footer-link">Điều khoản dịch vụ</Link>
+                                <Link to="/privacy" className="footer-link">Chính sách bảo mật</Link>
+                                <Link to="/cookie" className="footer-link">Chính sách Cookie</Link>
+                                <Link to="/safety" className="footer-link">Mẹo an toàn</Link>
                             </div>
                         </div>
 
                         {/* Column 4: Newsletter */}
                         <div>
-                            <h4 className="footer-heading">Newsletter</h4>
-                            <p className="text-secondary" style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>Get the latest property deals and news in your inbox.</p>
+                            <h4 className="footer-heading">Nhận tin mới</h4>
+                            <p className="text-secondary" style={{ marginBottom: '1rem', fontSize: '0.9rem' }}>Nhận các tin đăng và ưu đãi mới nhất.</p>
                             <form className="newsletter-form">
                                 <input
                                     type="email"
-                                    placeholder="Your email address"
+                                    placeholder="Email của bạn"
                                     className="newsletter-input"
                                 />
                                 <button type="submit" className="newsletter-btn">

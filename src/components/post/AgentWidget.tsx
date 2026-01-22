@@ -35,7 +35,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
     const originalPhone = user?.phone || "0909 123 456";
     const maskedPhone = originalPhone.length > 6
         ? `${originalPhone.slice(0, 4)} *** ***`
-        : "Show Phone Number";
+        : "Hiển thị số điện thoại";
 
     const [isLoadingPhone, setIsLoadingPhone] = useState(false);
 
@@ -82,7 +82,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
 
             {/* Header Label */}
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-6">
-                LISTED BY AGENT
+                ĐĂNG BỞI
             </div>
 
             {/* Profile Section */}
@@ -116,16 +116,16 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
                                 <Star size={14} className="text-orange-500 fill-orange-500" />
                                 <span className="font-bold text-orange-500">{rating}</span>
                             </div>
-                            <span className="text-gray-400 text-xs">({reviewCount} Reviews)</span>
+                            <span className="text-gray-400 text-xs">({reviewCount} Đánh giá)</span>
                         </div>
                     ) : (
                         <div className="flex items-center gap-1 text-sm mb-1 text-gray-500">
                             <Star size={14} className="text-gray-300" />
-                            <span className="text-xs">No rating</span>
+                            <span className="text-xs">Chưa có đánh giá</span>
                         </div>
                     )}
 
-                    <p className="text-gray-500 text-xs">Member since {memberSince}</p>
+                    <p className="text-gray-500 text-xs">Thành viên từ {memberSince}</p>
                 </div>
             </div>
 
@@ -140,7 +140,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
                         } ${isLoadingPhone ? 'opacity-70 cursor-wait' : ''}`}
                 >
                     {isLoadingPhone ? (
-                        <span>Checking...</span>
+                        <span>Đang kiểm tra...</span>
                     ) : (
                         <>
                             {showPhone ? <Phone size={20} className="text-blue-600" /> : <Lock size={18} />}
@@ -150,14 +150,14 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
                         </>
                     )}
 
-                    {!showPhone && !isLoadingPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">Click to reveal</span>}
+                    {!showPhone && !isLoadingPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">Bấm để hiện số</span>}
                 </button>
 
                 <button
                     onClick={onStartChat}
                     className="w-full bg-white border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-colors">
                     <MessageCircle size={20} />
-                    <span>Start Chat</span>
+                    <span>Chat ngay</span>
                 </button>
             </div>
 
@@ -165,7 +165,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
             <div className="border-t border-gray-100 pt-6 text-center">
                 <button className="flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 font-medium text-sm transition-colors">
                     <AlertCircle size={18} />
-                    <span>Report this listing</span>
+                    <span>Báo cáo tin này</span>
                 </button>
             </div>
 

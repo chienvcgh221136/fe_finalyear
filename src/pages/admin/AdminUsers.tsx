@@ -5,7 +5,7 @@ import { usersAPI } from '../../services/api';
 import type { User } from '../../types';
 import {
     Search, Filter, MoreVertical, Ban,
-    UserPlus, Users, ShieldCheck, ChevronDown, AlertTriangle
+    UserPlus, Users, ShieldCheck, ChevronDown, AlertTriangle, Trash2
 } from 'lucide-react';
 
 const AdminUsers = () => {
@@ -42,7 +42,23 @@ const AdminUsers = () => {
         },
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: (userId: string) => usersAPI.delete(userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+            alert("Đã xóa tài khoản người dùng vĩnh viễn.");
+        },
+        onError: (err: any) => {
+            alert(err.response?.data?.message || "Lỗi khi xóa tài khoản.");
+        },
+    });
+
     const [confirmModal, setConfirmModal] = useState<{ open: boolean; userId: string | null }>({
+        open: false,
+        userId: null,
+    });
+
+    const [deleteConfirmModal, setDeleteConfirmModal] = useState<{ open: boolean; userId: string | null }>({
         open: false,
         userId: null,
     });
@@ -51,6 +67,13 @@ const AdminUsers = () => {
         if (confirmModal.userId) {
             banMutation.mutate(confirmModal.userId);
             setConfirmModal({ open: false, userId: null });
+        }
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteConfirmModal.userId) {
+            deleteMutation.mutate(deleteConfirmModal.userId);
+            setDeleteConfirmModal({ open: false, userId: null });
         }
     };
 
@@ -87,12 +110,12 @@ const AdminUsers = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Manage platform users, roles, and security status.</p>
+                    <h1 className="text-2xl font-bold text-slate-900">Quản lý Người dùng</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Quản lý người dùng, vai trò và trạng thái bảo mật.</p>
                 </div>
                 <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm shadow-blue-200">
                     <UserPlus size={18} />
-                    Add New User
+                    Thêm Người dùng
                 </button>
             </div>
 
@@ -100,10 +123,10 @@ const AdminUsers = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL USERS</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG NGƯỜI DÙNG</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{totalUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +12% this month
+                            <span>↗</span> +12% tháng này
                         </p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
@@ -113,10 +136,10 @@ const AdminUsers = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ACTIVE ACCOUNTS</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN HOẠT ĐỘNG</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{activeUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +5% from last week
+                            <span>↗</span> +5% từ tuần trước
                         </p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
@@ -126,10 +149,10 @@ const AdminUsers = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">BANNED ACCOUNTS</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN BỊ KHÓA</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{bannedUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-red-500 mt-2 flex items-center gap-1">
-                            <span>⚠</span> 2 pending review
+                            <span>⚠</span> 2 đang chờ xem xét
                         </p>
                     </div>
                     <div className="p-3 bg-red-50 text-red-500 rounded-lg">
@@ -146,7 +169,7 @@ const AdminUsers = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Search by name or email..."
+                            placeholder="Tìm kiếm theo tên hoặc email..."
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -160,9 +183,9 @@ const AdminUsers = () => {
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
                             >
-                                <option value="All Roles">All Roles</option>
-                                <option value="ADMIN">Admin</option>
-                                <option value="USER">User</option>
+                                <option value="All Roles">Tất cả vai trò</option>
+                                <option value="ADMIN">Quản trị viên</option>
+                                <option value="USER">Người dùng</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                         </div>
@@ -173,16 +196,16 @@ const AdminUsers = () => {
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
-                                <option value="Status">Status</option>
-                                <option value="Active">Active</option>
-                                <option value="Banned">Banned</option>
+                                <option value="Status">Trạng thái</option>
+                                <option value="Active">Hoạt động</option>
+                                <option value="Banned">Bị khóa</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                         </div>
                     </div>
 
                     <div className="hidden sm:block text-sm text-slate-500 font-medium ml-auto">
-                        Showing <span className="text-slate-900 font-bold">{filteredUsers?.length}</span> of {totalUsers} users
+                        Hiển thị <span className="text-slate-900 font-bold">{filteredUsers?.length}</span> trong số {totalUsers} người dùng
                     </div>
                 </div>
 
@@ -191,11 +214,11 @@ const AdminUsers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">USER</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NGƯỜI DÙNG</th>
                                 <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">EMAIL</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">ROLE</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">STATUS</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">ACTIONS</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">VAI TRÒ</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">TRẠNG THÁI</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">HÀNH ĐỘNG</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -233,7 +256,7 @@ const AdminUsers = () => {
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${user.isBanned ? 'bg-red-500' : 'bg-green-500'}`}></div>
                                                 <span className={`text-sm font-medium ${user.isBanned ? 'text-red-500' : 'text-slate-600'}`}>
-                                                    {user.isBanned ? 'Banned' : 'Active'}
+                                                    {user.isBanned ? 'Bị khóa' : 'Hoạt động'}
                                                 </span>
                                             </div>
                                         </td>
@@ -249,17 +272,21 @@ const AdminUsers = () => {
                                                     >
                                                         {user.isBanned ? (
                                                             <>
-                                                                <ShieldCheck size={14} /> Unban User
+                                                                <ShieldCheck size={14} /> Mở khóa
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Ban size={14} /> Ban User
+                                                                <Ban size={14} /> Khóa
                                                             </>
                                                         )}
                                                     </button>
                                                 )}
-                                                <button className="text-slate-400 hover:text-slate-600">
-                                                    <MoreVertical size={18} />
+                                                <button
+                                                    onClick={() => user._id && setDeleteConfirmModal({ open: true, userId: user._id })}
+                                                    className="text-slate-400 hover:text-red-600 transition-colors"
+                                                    title="Xóa người dùng vĩnh viễn"
+                                                >
+                                                    <Trash2 size={18} />
                                                 </button>
                                             </div>
                                         </td>
@@ -270,7 +297,7 @@ const AdminUsers = () => {
                                     <td colSpan={5} className="py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center justify-center">
                                             <Filter className="h-10 w-10 text-slate-300 mb-3" />
-                                            <p>No users found matching your filters.</p>
+                                            <p>Không tìm thấy người dùng nào phù hợp với bộ lọc.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -281,11 +308,11 @@ const AdminUsers = () => {
                 {/* Pagination (Mock UI) */}
                 <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-between items-center">
                     <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        Previous
+                        Trang trước
                     </button>
-                    <span className="text-sm text-slate-500">Page 1 of 1</span>
+                    <span className="text-sm text-slate-500">Trang 1 / 1</span>
                     <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        Next
+                        Trang sau
                     </button>
                 </div>
             </div>
@@ -315,6 +342,38 @@ const AdminUsers = () => {
                                     className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm shadow-sm shadow-red-200"
                                 >
                                     Khóa ngay
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmModal.open && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 text-center">
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
+                                <Trash2 className="h-8 w-8 text-red-600" />
+                            </div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa tài khoản</h3>
+                            <p className="text-sm text-gray-500 mb-6">
+                                Hành động này <strong className="text-red-600">không thể hoàn tác</strong>. Tất cả dữ liệu của người dùng, bao gồm tin đăng và lịch hẹn, sẽ bị xóa vĩnh viễn.
+                            </p>
+
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setDeleteConfirmModal({ open: false, userId: null })}
+                                    className="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-colors text-sm"
+                                >
+                                    Hủy bỏ
+                                </button>
+                                <button
+                                    onClick={handleConfirmDelete}
+                                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm shadow-sm shadow-red-200"
+                                >
+                                    Xóa vĩnh viễn
                                 </button>
                             </div>
                         </div>

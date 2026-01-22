@@ -17,7 +17,8 @@ const AdminVipPackages = () => {
         priorityScore: '',
         limitViewPhone: '',
         description: '',
-        perks: ''
+        perks: '',
+        isPopular: false
     });
 
     // Queries
@@ -43,6 +44,7 @@ const AdminVipPackages = () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'vip-packages'] });
             setShowModal(false);
             resetForm();
+            alert("Tạo gói thành công!");
         },
         onError: (error: any) => {
             alert(error.response?.data?.message || 'Có lỗi xảy ra');
@@ -55,6 +57,7 @@ const AdminVipPackages = () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'vip-packages'] });
             setShowModal(false);
             resetForm();
+            alert("Cập nhật thành công!");
         },
         onError: (error: any) => {
             alert(error.response?.data?.message || 'Có lỗi xảy ra');
@@ -72,7 +75,7 @@ const AdminVipPackages = () => {
     });
 
     const resetForm = () => {
-        setFormData({ name: '', price: '', durationDays: '', priorityScore: '', limitViewPhone: '', description: '', perks: '' });
+        setFormData({ name: '', price: '', durationDays: '', priorityScore: '', limitViewPhone: '', description: '', perks: '', isPopular: false });
         setEditingPackage(null);
     };
 
@@ -85,7 +88,8 @@ const AdminVipPackages = () => {
             priorityScore: pkg.priorityScore.toString(),
             limitViewPhone: (pkg.limitViewPhone || 0).toString(),
             description: pkg.description,
-            perks: pkg.perks?.join(', ') || ''
+            perks: pkg.perks?.join(', ') || '',
+            isPopular: pkg.isPopular || false
         });
         setShowModal(true);
     };
@@ -98,7 +102,8 @@ const AdminVipPackages = () => {
             durationDays: Number(formData.durationDays),
             priorityScore: Number(formData.priorityScore),
             limitViewPhone: Number(formData.limitViewPhone),
-            perks: formData.perks.split(',').map(s => s.trim()).filter(Boolean)
+            perks: formData.perks.split(',').map(s => s.trim()).filter(Boolean),
+            isPopular: formData.isPopular
         };
 
         if (editingPackage) {
@@ -407,6 +412,19 @@ const AdminVipPackages = () => {
                                     value={formData.description}
                                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                                 ></textarea>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="isPopular"
+                                    checked={formData.isPopular}
+                                    onChange={e => setFormData({ ...formData, isPopular: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor="isPopular" className="text-sm font-medium text-gray-700">
+                                    Đặt làm gói Phổ biến nhất (Most Popular)
+                                </label>
                             </div>
 
                             <div className="pt-4 flex justify-end gap-3">

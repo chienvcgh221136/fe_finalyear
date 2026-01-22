@@ -45,6 +45,12 @@ const Search = () => {
     };
 
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
+    const PROPERTY_TYPE_LABELS: Record<string, string> = {
+        'Apartment': 'Căn hộ',
+        'Detached House': 'Nhà riêng',
+        'Condo': 'Chung cư',
+        'Townhouse': 'Nhà phố'
+    };
 
     const [availableCities, setAvailableCities] = useState<string[]>([]);
 
@@ -203,7 +209,7 @@ const Search = () => {
 
         // Validate Area
         if (minArea && maxArea && Number(minArea) > Number(maxArea)) {
-            setAreaError('Min area cannot be greater than Max area');
+            setAreaError('Diện tích tối thiểu không được lớn hơn tối đa');
             return;
         }
 
@@ -281,12 +287,12 @@ const Search = () => {
                 {/* Sidebar */}
                 <aside className="sidebar">
                     <div className="filter-title">
-                        <span>Filters</span>
+                        <span>Bộ lọc</span>
                         <button
                             className="text-primary text-sm font-bold bg-transparent"
                             onClick={handleClearFilters}
                         >
-                            Clear All
+                            Xóa tất cả
                         </button>
                     </div>
 
@@ -397,14 +403,14 @@ const Search = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">City</label>
+                        <label className="font-bold mb-2 block text-sm">Thành phố</label>
                         <div className="relative">
                             <select
                                 className="filter-input appearance-none bg-white cursor-pointer"
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
                             >
-                                <option value="">All Cities</option>
+                                <option value="">Tất cả thành phố</option>
                                 {availableCities.map(c => (
                                     <option key={c} value={c}>{c}</option>
                                 ))}
@@ -414,7 +420,7 @@ const Search = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Property Type</label>
+                        <label className="font-bold mb-2 block text-sm">Loại bất động sản</label>
                         <div className="checkbox-group">
                             {['Apartment', 'Detached House', 'Condo', 'Townhouse'].map(type => (
                                 <label key={type} className="checkbox-item">
@@ -423,23 +429,23 @@ const Search = () => {
                                         checked={propertyTypes.includes(type)}
                                         onChange={() => handleTypeChange(type)}
                                     />
-                                    {type}
+                                    {PROPERTY_TYPE_LABELS[type] || type}
                                 </label>
                             ))}
                         </div>
                     </div>
 
                     <button className="btn btn-primary w-full mt-4" onClick={handleApplyFilters}>
-                        Apply Filters
+                        Áp dụng
                     </button>
                 </aside>
 
                 {/* Main Content */}
                 <main className="main-content">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold mb-1">Find your dream home</h1>
+                        <h1 className="text-3xl font-bold mb-1">Tìm ngôi nhà mơ ước của bạn</h1>
                         <div className="results-header">
-                            <span className="results-count">Showing {filteredListings.length} properties</span>
+                            <span className="results-count">Hiển thị {filteredListings.length} kết quả</span>
                             <div className="flex items-center gap-4">
                                 <span className="text-sm font-semibold text-text-secondary">Sắp xếp:</span>
                                 <select
@@ -456,7 +462,7 @@ const Search = () => {
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-12">Loading properties...</div>
+                        <div className="text-center py-12">Đang tải danh sách...</div>
                     ) : (
                         <>
                             <div className="listings-grid">
@@ -479,7 +485,7 @@ const Search = () => {
 
                             {filteredListings.length === 0 && (
                                 <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                                    No properties found matching your filters.
+                                    Không tìm thấy bất động sản nào phù hợp.
                                 </div>
                             )}
                         </>

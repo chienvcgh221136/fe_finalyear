@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { postsAPI } from '../../services/api';
+import { postsAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
 import {
     Search, Filter, MapPin,
@@ -27,6 +27,13 @@ const AdminPosts = () => {
         select: (res) => res.data.data as Post[],
     });
 
+    const { data: stats } = useQuery({
+        queryKey: ['admin', 'post-stats'],
+        queryFn: () => statsAPI.getAdminPostStats(),
+        select: (res) => res.data,
+        refetchInterval: 30000,
+    });
+
     const handleRefresh = async () => {
         setIsRefreshing(true);
         await refetch();
@@ -37,6 +44,7 @@ const AdminPosts = () => {
         mutationFn: (postId: string) => postsAPI.approve(postId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'pending-posts'] });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'post-stats'] });
             alert("Đã duyệt tin thành công!");
         },
         onError: (err) => {
@@ -96,7 +104,7 @@ const AdminPosts = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Search by property ID or seller..."
+                        placeholder="Tìm theo mã tin hoặc người đăng..."
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -116,8 +124,8 @@ const AdminPosts = () => {
             {/* Title & Actions */}
             <div className="flex flex-col sm:flex-row justify-between items-end gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Post Approval Queue</h1>
-                    <p className="text-slate-500 mt-1">You have <span className="font-bold text-blue-600">{posts?.length || 0}</span> properties waiting for manual review.</p>
+                    <h1 className="text-3xl font-bold text-slate-900">Duyệt Tin Đăng</h1>
+                    <p className="text-slate-500 mt-1">Bạn có <span className="font-bold text-blue-600">{posts?.length || 0}</span> tin đăng đang chờ duyệt.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -127,20 +135,20 @@ const AdminPosts = () => {
                             className={`flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors ${showFilters ? 'bg-slate-50 border-slate-300' : ''}`}
                         >
                             <Filter size={16} />
-                            Filter
+                            Bộ lọc
                         </button>
 
                         {/* Filter Dropdown */}
                         {showFilters && (
                             <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-lg z-20 p-2 animate-in fade-in zoom-in duration-100">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 py-2">Property Type</div>
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 py-2">Loại Bất Động Sản</div>
                                 {['All', 'SALE', 'RENT'].map(type => (
                                     <button
                                         key={type}
                                         onClick={() => { setFilterType(type); setShowFilters(false); }}
                                         className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${filterType === type ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50'}`}
                                     >
-                                        {type === 'All' ? 'All Properties' : type === 'SALE' ? 'For Sale' : 'For Rent'}
+                                        {type === 'All' ? 'Tất cả' : type === 'SALE' ? 'Cần Bán' : 'Cho Thuê'}
                                     </button>
                                 ))}
                             </div>
@@ -152,7 +160,7 @@ const AdminPosts = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition-colors shadow-sm shadow-blue-200"
                     >
                         <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                        Refresh List
+                        Làm mới
                     </button>
                 </div>
             </div>
@@ -161,7 +169,7 @@ const AdminPosts = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TOTAL PENDING</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG TIN CHỜ DUYỆT</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{posts?.length || 0}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
                             <span>↗</span> +5%
@@ -171,8 +179,8 @@ const AdminPosts = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">REVIEWED TODAY</p>
-                        <p className="text-3xl font-bold text-slate-900 mt-3">0</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ĐÃ DUYỆT HÔM NAY</p>
+                        <p className="text-3xl font-bold text-slate-900 mt-3">{stats?.approvedToday || 0}</p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
                         <CheckSquare size={24} />
@@ -181,7 +189,7 @@ const AdminPosts = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">HIGH RISK/FLAGGED</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">RỦI RO CAO / BỊ BÁO CÁO</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">0</p>
                     </div>
                     <div className="p-3 bg-red-50 text-red-500 rounded-lg">
@@ -197,12 +205,12 @@ const AdminPosts = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">PROPERTY</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">PRICE</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">LOCATION</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">SELLER DETAILS</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">SUBMITTED</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">MODERATION</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">BẤT ĐỘNG SẢN</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">GIÁ</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">VỊ TRÍ</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NGƯỜI ĐĂNG</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NGÀY ĐĂNG</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">KIỂM DUYỆT</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -224,7 +232,7 @@ const AdminPosts = () => {
                                                     </Link>
                                                     <p className="text-xs text-blue-500 font-mono mt-0.5">ID: #PROP-{post._id.slice(-4).toUpperCase()}</p>
                                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1 ${post.transactionType === 'SALE' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                                        {post.transactionType}
+                                                        {post.transactionType === 'SALE' ? 'Cần Bán' : 'Cho Thuê'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -262,13 +270,13 @@ const AdminPosts = () => {
                                                     disabled={approveMutation.isPending}
                                                     className="px-3 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors shadow-sm shadow-green-200"
                                                 >
-                                                    Approve
+                                                    Duyệt
                                                 </button>
                                                 <button
                                                     onClick={() => setRejectModal({ open: true, postId: post._id })}
                                                     className="px-3 py-1.5 rounded-lg bg-white border border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold transition-colors"
                                                 >
-                                                    Reject
+                                                    Từ chối
                                                 </button>
                                             </div>
                                         </td>
@@ -279,7 +287,7 @@ const AdminPosts = () => {
                                     <td colSpan={6} className="py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center justify-center">
                                             <Filter className="h-10 w-10 text-slate-300 mb-3" />
-                                            <p>No pending posts found.</p>
+                                            <p>Không có tin đăng nào đang chờ duyệt.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -297,15 +305,15 @@ const AdminPosts = () => {
                             <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
                                 <AlertTriangle size={16} />
                             </div>
-                            <h3 className="font-bold text-gray-900 text-lg">Reject Posting</h3>
+                            <h3 className="font-bold text-gray-900 text-lg">Từ chối tin đăng</h3>
                         </div>
 
                         <div className="p-6">
                             <p className="text-sm text-gray-600 mb-4">
-                                Please provide a reason for rejection. This will be sent to the seller.
+                                Vui lòng cung cấp lý do từ chối. Lý do này sẽ được gửi cho người đăng.
                             </p>
                             <textarea
-                                placeholder="E.g., Low quality images, incorrect price, spam..."
+                                placeholder="Ví dụ: Hình ảnh kém chất lượng, giá không đúng, tin rác..."
                                 value={rejectReason}
                                 onChange={(e) => setRejectReason(e.target.value)}
                                 rows={4}
@@ -319,14 +327,14 @@ const AdminPosts = () => {
                                 onClick={() => setRejectModal({ open: false, postId: null })}
                                 className="px-4 py-2 rounded-lg text-gray-600 font-medium hover:bg-gray-200 transition-colors text-sm"
                             >
-                                Cancel
+                                Hủy
                             </button>
                             <button
                                 onClick={handleReject}
                                 disabled={rejectMutation.isPending}
                                 className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm flex items-center gap-2 shadow-sm shadow-red-200"
                             >
-                                Confirm Reject
+                                Xác nhận từ chối
                             </button>
                         </div>
                     </div>

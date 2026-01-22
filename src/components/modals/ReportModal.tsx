@@ -10,11 +10,11 @@ interface ReportModalProps {
 }
 
 const REASONS = [
-    { value: 'SCAM', label: 'Fraudulent listing or scam', sub: 'Suspected fake accounts or deceptive behavior' },
-    { value: 'WRONG_INFO', label: 'Incorrect information', sub: 'Details do not match the actual property' },
-    { value: 'DUPLICATE', label: 'Duplicate listing', sub: 'This property is listed multiple times' },
-    { value: 'SPAM', label: 'Offensive content or images', sub: 'Content violates community guidelines' },
-    { value: 'OTHER', label: 'Other', sub: 'Something else not listed above' },
+    { value: 'SCAM', label: 'Lừa đảo', sub: 'Tài khoản giả mạo hoặc hành vi lừa đảo' },
+    { value: 'WRONG_INFO', label: 'Sai thông tin', sub: 'Thông tin không khớp với thực tế' },
+    { value: 'DUPLICATE', label: 'Tin trùng lặp', sub: 'Bất động sản này được đăng nhiều lần' },
+    { value: 'SPAM', label: 'Nội dung không phù hợp', sub: 'Nội dung vi phạm quy tắc cộng đồng' },
+    { value: 'OTHER', label: 'Khác', sub: 'Lý do khác không có trong danh sách' },
 ];
 
 const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
@@ -34,7 +34,7 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
             }, 2000);
         },
         onError: (error: any) => {
-            alert(error.response?.data?.message || 'Failed to submit report');
+            alert(error.response?.data?.message || 'Gửi báo cáo thất bại');
         }
     });
 
@@ -51,7 +51,7 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                    <h3 className="text-xl font-bold text-gray-900">Report Listing</h3>
+                    <h3 className="text-xl font-bold text-gray-900">Báo cáo tin đăng</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
                         <X size={20} />
                     </button>
@@ -64,13 +64,13 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
                             <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
                                 <CheckCircle size={32} />
                             </div>
-                            <h4 className="text-lg font-bold text-gray-900">Report Submitted</h4>
-                            <p className="text-gray-500 mt-1">Thank you for helping keep our marketplace safe.</p>
+                            <h4 className="text-lg font-bold text-gray-900">Báo cáo thành công</h4>
+                            <p className="text-gray-500 mt-1">Cảm ơn bạn đã đóng góp để giữ thị trường an toàn.</p>
                         </div>
                     ) : (
                         <>
                             <p className="text-sm text-gray-500 mb-6">
-                                Please select the reason for reporting this property. Your feedback helps us maintain a safe marketplace.
+                                Vui lòng chọn lý do báo cáo tin đăng này. Phản hồi của bạn giúp chúng tôi duy trì một thị trường an toàn.
                             </p>
 
                             <div className="space-y-3">
@@ -106,12 +106,12 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
 
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                                    Additional details (Optional)
+                                    Thông tin thêm (Tùy chọn)
                                 </label>
                                 <textarea
                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm resize-none"
                                     rows={3}
-                                    placeholder="Provide any additional context here..."
+                                    placeholder="Cung cấp thêm ngữ cảnh tại đây..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                 />
@@ -127,14 +127,14 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
                             onClick={onClose}
                             className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 rounded-lg transition-colors"
                         >
-                            Cancel
+                            Hủy
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={!reason || mutation.isPending}
                             className="px-6 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                         >
-                            {mutation.isPending ? 'Submitting...' : 'Submit Report'}
+                            {mutation.isPending ? 'Đang gửi...' : 'Gửi báo cáo'}
                         </button>
                     </div>
                 )}

@@ -130,7 +130,244 @@ const Profile = () => {
         }
     };
 
-    // Components
+    const AppointmentsTab = () => {
+        const { data: appointmentsRes, isLoading, refetch } = useQuery({
+            queryKey: ['appointments', 'me'],
+            queryFn: () => import('../services/api').then(m => m.appointmentAPI.getMyAppointments()),
+        });
+
+        // 'received' | 'sent'
+        const [subTab, setSubTab] = useState('received');
+
+        const updateStatusMutation = useMutation({
+            mutationFn: ({ id, status }: { id: string, status: string }) =>
+                import('../services/api').then(m => m.appointmentAPI.updateStatus(id, status)),
+            onSuccess: () => {
+                alert("Cập nhật trạng thái thành công!");
+                refetch();
+            },
+            onError: (err: any) => {
+                alert(err.response?.data?.message || "Có lỗi xảy ra");
+            }
+        });
+
+        const deleteMutation = useMutation({
+            mutationFn: (id: string) => import('../services/api').then(m => m.appointmentAPI.delete(id)),
+            onSuccess: () => {
+                alert("Đã xóa lịch hẹn thành công");
+                refetch();
+            },
+            onError: (err: any) => {
+                alert(err.response?.data?.message || "Có lỗi xảy ra khi xóa");
+            }
+        });
+
+        const { buy = [], sell = [] } = appointmentsRes?.data?.data || {};
+
+        if (isLoading) return <div className="py-12 text-center text-gray-500">Đang tải lịch hẹn...</div>;
+
+        const AppointmentCard = ({ ap, isSeller }: { ap: any, isSeller: boolean }) => {
+            const partner = isSeller ? ap.buyerId : ap.sellerId;
+            const post = ap.postId;
+            if (!post) return null;
+
+            return (
+                <div key={ap._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors flex flex-col md:flex-row gap-4 group">
+                    {/* Post Info */}
+                    <div className="md:w-48 shrink-0">
+                        <div className="w-full h-28 bg-gray-200 rounded-lg overflow-hidden relative mb-2">
+                            {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
+                            <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded text-white ${ap.status === 'PENDING' ? 'bg-yellow-500' :
+                                ap.status === 'APPROVED' ? 'bg-green-500' : 'bg-red-500'
+                                }`}>
+                                {ap.status}
+                            </span>
+                        </div>
+                        <h4 className="font-bold text-gray-900 text-sm truncate">{post.title}</h4>
+                        <p className="text-blue-600 text-xs font-bold">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                    </div>
+
+                    {/* Appointment Details */}
+                    <div className="flex-1 text-sm">
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <h5 className="font-bold text-gray-800 text-base mb-1">
+                                    {isSeller ? "Yêu cầu từ: " : "Gửi yêu cầu tới: "}
+                                    <span className="text-blue-600">{partner?.name}</span>
+                                </h5>
+                                <p className="text-gray-500 flex items-center gap-1">
+                                    <Calendar size={14} />
+                                    {new Date(ap.appointmentTime).toLocaleString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                            {isSeller && partner?.phone && ap.status === 'APPROVED' && (
+                                <span className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold border border-green-100">
+                                    {partner.phone}
+                                </span>
+                            )}
+                        </div>
+
+                        <div className="bg-gray-50 p-3 rounded-lg text-gray-600 mb-3 border border-gray-100">
+                            <strong>Ghi chú:</strong> {ap.note || "Không có ghi chú"}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 justify-end items-center">
+                            {/* Delete Button (Always visible for both parties to clear history) */}
+                            <button
+                                onClick={() => {
+                                    if (window.confirm("Bạn có chắc muốn xóa lịch hẹn này không?")) {
+                                        deleteMutation.mutate(ap._id);
+                                    }
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Xóa lịch hẹn"
+                            >
+                                <Trash2 size={16} /> Xóa
+                            </button>
+
+                            {isSeller && ap.status === 'PENDING' && (
+                                <>
+                                    <button
+                                        onClick={() => updateStatusMutation.mutate({ id: ap._id, status: 'REJECTED' })}
+                                        className="px-3 py-1.5 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors"
+                                    >
+                                        Từ chối
+                                    </button>
+                                    <button
+                                        onClick={() => updateStatusMutation.mutate({ id: ap._id, status: 'APPROVED' })}
+                                        className="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200"
+                                    >
+                                        Chấp nhận
+                                    </button>
+                                </>
+                            )}
+                            {isSeller && ap.status === 'APPROVED' && (
+                                <button
+                                    disabled
+                                    className="px-3 py-1.5 bg-green-50 text-green-700 font-bold rounded-lg border border-green-200"
+                                >
+                                    Đã chấp nhận
+                                </button>
+                            )}
+                            {!isSeller && ap.status === 'PENDING' && (
+                                <button className="px-3 py-1.5 text-gray-400 font-medium text-xs cursor-not-allowed">Đang chờ duyệt</button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Lịch hẹn</h2>
+                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => setSubTab('received')}
+                            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${subTab === 'received' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                        >
+                            Yêu cầu nhận được
+                            {sell.length > 0 && <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{sell.length}</span>}
+                        </button>
+                        <button
+                            onClick={() => setSubTab('sent')}
+                            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${subTab === 'sent' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                        >
+                            Yêu cầu đã gửi
+                            {buy.length > 0 && <span className="ml-2 bg-gray-300 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full">{buy.length}</span>}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    {subTab === 'received' ? (
+                        sell.length > 0 ? (
+                            sell.map((ap: any) => <AppointmentCard key={ap._id} ap={ap} isSeller={true} />)
+                        ) : (
+                            <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                Bạn chưa nhận được yêu cầu xem nhà nào.
+                            </div>
+                        )
+                    ) : (
+                        buy.length > 0 ? (
+                            buy.map((ap: any) => <AppointmentCard key={ap._id} ap={ap} isSeller={false} />)
+                        ) : (
+                            <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                Bạn chưa gửi yêu cầu xem nhà nào.
+                            </div>
+                        )
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const FavoritePostsTab = () => {
+        const { data: favoritesRes, isLoading } = useQuery({
+            queryKey: ['favorites', 'me'],
+            queryFn: () => import('../services/api').then(m => m.favoriteAPI.getMyFavorites()),
+        });
+
+        const favorites = favoritesRes?.data?.data || [];
+
+        if (isLoading) return <div className="py-12 text-center text-gray-500">Đang tải tin đã lưu...</div>;
+
+        return (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">Tin đã lưu</h2>
+                {favorites.length > 0 ? (
+                    <div className="space-y-4">
+                        {favorites.map((fav: any) => {
+                            const post = fav.postId;
+                            if (!post) return null; // Handle deleted posts
+                            return (
+                                <div key={fav._id} className="flex flex-col md:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors bg-white">
+                                    <div className="w-full md:w-48 h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
+                                        {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
+                                        <div className="absolute top-2 left-2">
+                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">Saved</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 text-lg truncate pr-4">{post.title}</h3>
+                                            <p className="text-blue-600 font-bold">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
+                                            <Link to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                                Xem tin
+                                            </Link>
+                                            <button
+                                                onClick={async () => {
+                                                    if (window.confirm('Bỏ lưu tin này?')) {
+                                                        await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
+                                                        queryClient.invalidateQueries({ queryKey: ['favorites', 'me'] });
+                                                    }
+                                                }}
+                                                className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                                            >
+                                                Bỏ lưu
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <Heart className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                        <p>Bạn chưa lưu tin nào</p>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const StatusBadge = ({ status }: { status: string }) => {
         let color = "bg-gray-100 text-gray-600";
         let label = status;
@@ -228,47 +465,47 @@ const Profile = () => {
                                         </button>
                                     )}
                                 </div>
-                                
+
                                 <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
-                                        <div className="flex items-center justify-center gap-4">
-                                            <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
-                                                <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
-                                                    {profileForm.avatar ? (
-                                                        <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <UserIcon className="text-gray-400" size={32} />
-                                                    )}
-                                                </div>
-                                                {isEditing && (
-                                                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
-                                                        <Camera className="text-white" size={24} />
-                                                    </div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
+                                    <div className="flex items-center justify-center gap-4">
+                                        <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
+                                            <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                {profileForm.avatar ? (
+                                                    <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <UserIcon className="text-gray-400" size={32} />
                                                 )}
                                             </div>
-
                                             {isEditing && (
-                                                <div className="flex items-center justify-center gap-4">
-                                                    <input
-                                                        type="file"
-                                                        ref={fileInputRef}
-                                                        onChange={handleFileChange}
-                                                        accept="image/*"
-                                                        className="hidden"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        disabled={uploading}
-                                                        className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
-                                                    >
-                                                        {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
-                                                    </button>
-                                                    <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP</p>
+                                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                                                    <Camera className="text-white" size={24} />
                                                 </div>
                                             )}
                                         </div>
+
+                                        {isEditing && (
+                                            <div className="flex items-center justify-center gap-4">
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileChange}
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    disabled={uploading}
+                                                    className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                                                >
+                                                    {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
+                                                </button>
+                                                <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP</p>
+                                            </div>
+                                        )}
                                     </div>
+                                </div>
                                 {success && (
                                     <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
                                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -312,7 +549,7 @@ const Profile = () => {
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
-                                    
+
                                     {isEditing && (
                                         <div className="flex gap-3 pt-2">
                                             <button
@@ -365,7 +602,7 @@ const Profile = () => {
                                 </div>
 
                                 {loadingPosts ? (
-                                    <div className="py-12 text-center text-gray-500">Loading...</div>
+                                    <div className="py-12 text-center text-gray-500">Đang tải...</div>
                                 ) : filteredPosts.length > 0 ? (
                                     <div className="space-y-4">
                                         {filteredPosts.map((post: any) => (
@@ -440,23 +677,11 @@ const Profile = () => {
                         )}
 
                         {activeTab === 'favorites' && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6">Tin đã lưu</h2>
-                                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                    <Heart className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                    <p>Chức năng đang cập nhật</p>
-                                </div>
-                            </div>
+                            <FavoritePostsTab />
                         )}
 
                         {activeTab === 'appointments' && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <h2 className="text-xl font-bold text-gray-900 mb-6">Lịch hẹn</h2>
-                                <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                    <Calendar className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                    <p>Bạn chưa có lịch hẹn nào</p>
-                                </div>
-                            </div>
+                            <AppointmentsTab />
                         )}
 
                         {activeTab === 'wallet' && (

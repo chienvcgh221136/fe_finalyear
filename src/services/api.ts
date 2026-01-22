@@ -39,6 +39,7 @@ export const usersAPI = {
     getAll: () => api.get('/users'),
     ban: (id: string) => api.patch(`/admin/users/${id}/ban`),
     unban: (id: string) => api.patch(`/admin/users/${id}/unban`),
+    delete: (id: string) => api.delete(`/admin/users/${id}`),
 };
 
 export const filesAPI = {
@@ -111,9 +112,22 @@ export const vipAPI = {
     getVipUsers: () => api.get('/vip/admin/users'),
 };
 
+export const favoriteAPI = {
+    toggle: (postId: string) => api.post(`/favorites/${postId}`),
+    getMyFavorites: () => api.get('/favorites/me'),
+};
+
 export const statsAPI = {
     getMyStats: () => api.get('/stats/me'),
     getAdminOverview: () => api.get('/stats/admin/overview'),
+    getAdminPostStats: () => api.get('/stats/admin/posts'),
+};
+
+export const appointmentAPI = {
+    create: (postId: string, data: { appointmentTime: Date; note: string }) => api.post(`/appointments/${postId}`, data),
+    getMyAppointments: () => api.get('/appointments/me'),
+    updateStatus: (id: string, status: string) => api.patch(`/appointments/${id}`, { status }),
+    delete: (id: string) => api.delete(`/appointments/${id}`),
 };
 
 export const leadsAPI = {

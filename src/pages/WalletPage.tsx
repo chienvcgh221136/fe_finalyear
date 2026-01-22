@@ -146,7 +146,7 @@ const WalletPage = () => {
     const transferContent = `NAPTIEN ${user?._id} `;
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.BANK_ID}-${BANK_INFO.ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_INFO.ACCOUNT_NAME)}`;
 
-    if (loadingWallet) return <div className="p-8 text-center">Loading wallet...</div>;
+    if (loadingWallet) return <div className="p-8 text-center">Đang tải ví...</div>;
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -225,7 +225,7 @@ const WalletPage = () => {
                 </div>
 
                 {loadingTransactions ? (
-                    <div className="p-8 text-center text-gray-500">Loading history...</div>
+                    <div className="p-8 text-center text-gray-500">Đang tải lịch sử...</div>
                 ) : transactions?.length === 0 ? (
                     <div className="p-12 text-center text-gray-400">Chưa có giao dịch nào</div>
                 ) : (

@@ -15,7 +15,7 @@ const UserStatsPage = () => {
         },
     });
 
-    if (isLoading) return <div className="p-12 text-center text-gray-500">Loading statistics...</div>;
+    if (isLoading) return <div className="p-12 text-center text-gray-500">Đang tải thống kê...</div>;
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 

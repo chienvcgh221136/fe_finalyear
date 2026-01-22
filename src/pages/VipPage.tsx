@@ -44,7 +44,7 @@ const VipPage = () => {
 
 
 
-    if (loadingPackages) return <div className="p-12 text-center text-gray-500">Loading packages...</div>;
+    if (loadingPackages) return <div className="p-12 text-center text-gray-500">Đang tải gói dịch vụ...</div>;
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -62,7 +62,7 @@ const VipPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative items-start">
                 {packages?.map((pkg, idx) => {
-                    const isPopular = idx === 1; // Assuming middle one is popular/Gold
+                    const isPopular = pkg.isPopular || false;
                     const isActive = user?.vip?.isActive && user.vip.packageId === pkg._id; // Actually comparing ID is safer
                     // Or compare names/types
 

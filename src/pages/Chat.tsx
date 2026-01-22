@@ -303,7 +303,7 @@ const Chat = () => {
                                         <div className="flex justify-between items-baseline mb-1">
                                             {/* Search Highlight Name */}
                                             <h3 className="font-semibold text-gray-900 truncate">
-                                                {highlightText(other?.name || 'Unknown User', searchTerm)}
+                                                {highlightText(other?.name || 'Người dùng không xác định', searchTerm)}
                                             </h3>
                                             <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                                                 {new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
