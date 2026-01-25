@@ -2,20 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { SearchBar } from '../components/SearchBar';
 import ListingCard from '../components/ListingCard';
+import VipPostCard from '../components/post/VipPostCard';
 import { postsAPI } from '../services/api';
 import { ChevronRight, Crown, Clock, Building2, Home as HomeIcon, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 
-// Define Post type interface locally if types file doesn't exist yet
-interface Post {
-    _id: string;
-    title: string;
-    price: number;
-    address: { city: string, state: string };
-    images: string[];
-    [key: string]: any;
-}
+import type { Post } from '../types';
 
 const Home = () => {
     const { data: vipPosts, isLoading: loadingVip } = useQuery({
@@ -131,7 +124,7 @@ const Home = () => {
                     ) : vipPosts && vipPosts.length > 0 ? (
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                             {vipPosts.map((post) => (
-                                <ListingCard key={post._id} post={post} />
+                                <VipPostCard key={post._id} post={post} />
                             ))}
                         </div>
                     ) : (

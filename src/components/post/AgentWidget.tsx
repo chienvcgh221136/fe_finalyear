@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Phone, MessageCircle, AlertCircle, CheckCircle, Star, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { leadsAPI } from '../../services/api';
@@ -39,6 +40,8 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
 
     const [isLoadingPhone, setIsLoadingPhone] = useState(false);
 
+    const queryClient = useQueryClient();
+
     const handleShowPhone = async () => {
         if (showPhone) return;
 
@@ -54,7 +57,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
         }
 
         if (!postId) {
-            // Fallback if no postId provided (should not happen in PostDetail)
+            // Fallback if no postId provided
             setShowPhone(true);
             return;
         }
@@ -63,6 +66,8 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
         try {
             await leadsAPI.showPhone(postId);
             setShowPhone(true);
+            // Refresh VIP and stats immediately
+            queryClient.invalidateQueries({ queryKey: ['vip', 'me'] });
         } catch (error: any) {
             console.error("Show phone error", error);
             const message = error.response?.data?.message || "Không thể xem số điện thoại";

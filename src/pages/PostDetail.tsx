@@ -254,17 +254,8 @@ const PostDetail = () => {
                         )}
 
 
-
-
-                        {/* Location / Map Section */}
-
-
                     </div>
-
-                    {/* RIGHT COLUMN: Sidebar (30%) */}
                     <div className="lg:w-[30%] space-y-6">
-
-                        {/* Agent Widget - Sidebar Position (Next to Image) */}
                         <AgentWidget
                             user={post.user || post.userId}
                             postId={post._id}

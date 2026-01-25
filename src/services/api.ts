@@ -62,6 +62,7 @@ export const postService = {
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),
     delete: (id: string) => api.delete(`/posts/${id}`),
     markSold: (id: string) => api.patch(`/posts/${id}/sold`),
+    markRented: (id: string) => api.patch(`/posts/${id}/rented`),
     getPending: () => api.get('/posts/admin/pending'),
     approve: (id: string) => api.patch(`/posts/${id}/approve`),
     reject: (id: string, reason: string) => api.patch(`/posts/${id}/reject`, { reason }),
@@ -110,6 +111,11 @@ export const vipAPI = {
     deletePackage: (id: string) => api.patch(`/vip/packages/${id}`),
     getAdminStats: () => api.get('/vip/admin/stats'),
     getVipUsers: () => api.get('/vip/admin/users'),
+    updateUserVip: (userId: string, data: any) => api.put(`/vip/admin/users/${userId}`, data),
+
+    // User Actions
+    attach: (postIds: string[]) => api.post('/vip/attach', { postIds }),
+    detach: (postIds: string[]) => api.post('/vip/detach', { postIds }),
 };
 
 export const favoriteAPI = {

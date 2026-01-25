@@ -17,6 +17,7 @@ import AdminReports from './pages/admin/AdminReports';
 import AdminVipPackages from './pages/admin/AdminVipPackages';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals'; // Added
 import Chat from './pages/Chat'; // Added
+import VipManagement from './pages/VipManagement'; // Added
 
 const MainLayout = () => {
   const location = useLocation();
@@ -80,6 +81,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Chat />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vip-management"
+            element={
+              <ProtectedRoute>
+                <VipManagement />
               </ProtectedRoute>
             }
           />

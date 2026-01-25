@@ -7,6 +7,7 @@ import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, Chec
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
 import UserStatsPage from './UserStatsPage';
+import VipManagement from './VipManagement';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -63,6 +64,15 @@ const Profile = () => {
         }
     });
 
+    const markRentedMutation = useMutation({
+        mutationFn: (id: string) => postsAPI.markRented(id),
+        onSuccess: (res) => {
+            queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
+            setSuccess(res.data.message || 'Cập nhật trạng thái thành công');
+            setTimeout(() => setSuccess(''), 3000);
+        }
+    });
+
     const updateProfileMutation = useMutation({
         mutationFn: (data: any) => usersAPI.updateProfile(data),
         onSuccess: (res) => {
@@ -83,6 +93,18 @@ const Profile = () => {
     const handleMarkSold = (id: string) => {
         if (window.confirm('Xác nhận đánh dấu tin này là ĐÃ BÁN?')) {
             markSoldMutation.mutate(id);
+        }
+    };
+
+    const handleMarkRented = (id: string) => {
+        if (window.confirm('Xác nhận đã cho thuê nhà này?')) {
+            markRentedMutation.mutate(id);
+        }
+    };
+
+    const handleMarkAvailable = (id: string) => {
+        if (window.confirm('Xác nhận phòng này đã trống và hiển thị lại?')) {
+            markRentedMutation.mutate(id);
         }
     };
 
@@ -389,6 +411,10 @@ const Profile = () => {
                 color = "bg-gray-100 text-gray-600 border border-gray-200";
                 label = "Đã bán";
                 break;
+            case 'RENTED':
+                color = "bg-orange-100 text-orange-700 border border-orange-200";
+                label = "Đã cho thuê";
+                break;
             default:
                 label = status;
         }
@@ -398,6 +424,17 @@ const Profile = () => {
                 {label}
             </span>
         );
+    };
+
+    const formatPrice = (price: number) => {
+        if (!price) return 'Liên hệ';
+        if (price >= 1000000000) {
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`;
+        }
+        if (price >= 1000000) {
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Triệu`;
+        }
+        return `${price.toLocaleString('vi-VN')} đ`;
     };
 
     const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
@@ -425,6 +462,7 @@ const Profile = () => {
                             {[
                                 { id: 'profile', label: 'Thông tin cá nhân', icon: UserIcon },
                                 { id: 'posts', label: 'Tin của tôi', icon: FileText },
+                                { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
                                 { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
                                 { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
                                 { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
@@ -618,7 +656,7 @@ const Profile = () => {
                                                         <div className="flex justify-between items-start mb-1">
                                                             <h3 className="font-bold text-gray-900 text-lg truncate pr-4" title={post.title}>{post.title}</h3>
                                                             <div className="text-right">
-                                                                <p className="text-blue-600 font-bold text-lg">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                                                                <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-4">
@@ -647,12 +685,30 @@ const Profile = () => {
                                                             </button>
                                                         )}
 
-                                                        {post.status === 'ACTIVE' && (
+                                                        {post.status === 'ACTIVE' && post.transactionType === 'SALE' && (
                                                             <button
                                                                 onClick={() => handleMarkSold(post._id)}
                                                                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
                                                             >
                                                                 <CheckCircle size={14} /> Đã bán
+                                                            </button>
+                                                        )}
+
+                                                        {post.status === 'ACTIVE' && post.transactionType === 'RENT' && (
+                                                            <button
+                                                                onClick={() => handleMarkRented(post._id)}
+                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors"
+                                                            >
+                                                                <CheckCircle size={14} /> Đã cho thuê
+                                                            </button>
+                                                        )}
+
+                                                        {post.status === 'RENTED' && post.transactionType === 'RENT' && (
+                                                            <button
+                                                                onClick={() => handleMarkAvailable(post._id)}
+                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                                            >
+                                                                <CheckCircle size={14} /> Còn trống
                                                             </button>
                                                         )}
 
@@ -699,6 +755,12 @@ const Profile = () => {
                         {activeTab === 'stats' && (
                             <div className="rounded-xl overflow-hidden">
                                 <UserStatsPage />
+                            </div>
+                        )}
+
+                        {activeTab === 'vip-management' && (
+                            <div className="rounded-xl overflow-hidden">
+                                <VipManagement />
                             </div>
                         )}
 

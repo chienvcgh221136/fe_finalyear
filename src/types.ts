@@ -57,6 +57,7 @@ export interface Post {
     viewCount: number;
     createdAt: string;
     updatedAt: string;
+    [key: string]: any;
 }
 
 export interface ChatRoom {

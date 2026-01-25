@@ -135,28 +135,12 @@ const Navbar = () => {
                                                     Tài khoản
                                                 </Link>
                                                 <Link
-                                                    to="/profile?tab=favorites"
-                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                                                    onClick={() => setIsDropdownOpen(false)}
-                                                >
-                                                    <Heart size={18} />
-                                                    Tin đã lưu
-                                                </Link>
-                                                <Link
                                                     to="/profile?tab=wallet"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <CreditCard size={18} />
                                                     Ví của tôi
-                                                </Link>
-                                                <Link
-                                                    to="/profile?tab=vip"
-                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                                                    onClick={() => setIsDropdownOpen(false)}
-                                                >
-                                                    <Crown size={18} />
-                                                    Nâng cấp VIP
                                                 </Link>
                                                 <Link
                                                     to="/profile?tab=stats"

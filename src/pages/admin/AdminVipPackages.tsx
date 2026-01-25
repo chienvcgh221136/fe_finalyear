@@ -4,6 +4,7 @@ import { vipAPI } from '../../services/api';
 import { Users, DollarSign, Star, Plus, Edit, Filter, Download, Box, XCircle } from 'lucide-react';
 
 const AdminVipPackages = () => {
+    // Force Re-render
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'packages' | 'users'>('packages');
     const [showModal, setShowModal] = useState(false);
@@ -16,6 +17,7 @@ const AdminVipPackages = () => {
         durationDays: '',
         priorityScore: '',
         limitViewPhone: '',
+        postLimit: '',
         description: '',
         perks: '',
         isPopular: false
@@ -75,7 +77,7 @@ const AdminVipPackages = () => {
     });
 
     const resetForm = () => {
-        setFormData({ name: '', price: '', durationDays: '', priorityScore: '', limitViewPhone: '', description: '', perks: '', isPopular: false });
+        setFormData({ name: '', price: '', durationDays: '', priorityScore: '', limitViewPhone: '', postLimit: '', description: '', perks: '', isPopular: false });
         setEditingPackage(null);
     };
 
@@ -87,6 +89,7 @@ const AdminVipPackages = () => {
             durationDays: pkg.durationDays.toString(),
             priorityScore: pkg.priorityScore.toString(),
             limitViewPhone: (pkg.limitViewPhone || 0).toString(),
+            postLimit: (pkg.postLimit || 0).toString(),
             description: pkg.description,
             perks: pkg.perks?.join(', ') || '',
             isPopular: pkg.isPopular || false
@@ -102,6 +105,7 @@ const AdminVipPackages = () => {
             durationDays: Number(formData.durationDays),
             priorityScore: Number(formData.priorityScore),
             limitViewPhone: Number(formData.limitViewPhone),
+            postLimit: Number(formData.postLimit),
             perks: formData.perks.split(',').map(s => s.trim()).filter(Boolean),
             isPopular: formData.isPopular
         };
@@ -123,8 +127,52 @@ const AdminVipPackages = () => {
     const packages = packagesRes?.data?.data || [];
     const vipUsers = usersRes?.data?.data || [];
 
+    // User Edit State
+    const [editingUser, setEditingUser] = useState<any | null>(null);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [userFormData, setUserFormData] = useState({
+        expiredAt: '',
+        isActive: true
+    });
+
+    const updateUserMutation = useMutation({
+        mutationFn: ({ userId, data }: { userId: string; data: any }) => vipAPI.updateUserVip(userId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'vip-users'] });
+            setShowUserModal(false);
+            setEditingUser(null);
+            alert("Cập nhật VIP thành công!");
+        },
+        onError: (error: any) => {
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        }
+    });
+
+    const handleUserEdit = (user: any) => {
+        setEditingUser(user);
+        setUserFormData({
+            expiredAt: user.vip?.expiredAt ? new Date(user.vip.expiredAt).toISOString().split('T')[0] : '',
+            isActive: user.vip?.isActive ?? false
+        });
+        setShowUserModal(true);
+    };
+
+    const handleUserSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingUser) return;
+        updateUserMutation.mutate({
+            userId: editingUser._id,
+            data: {
+                expiredAt: userFormData.expiredAt,
+                isActive: userFormData.isActive
+            }
+        });
+    };
+
     return (
         <div className="space-y-6 pb-12">
+            {/* ... Existing UI ... */}
+
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
@@ -234,6 +282,10 @@ const AdminVipPackages = () => {
                                         <span className="text-gray-500">Xem SĐT (Ngày)</span>
                                         <span className="font-medium text-blue-600">{pkg.limitViewPhone || 0} lượt</span>
                                     </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-gray-500">Giới hạn tin VIP/ngày</span>
+                                        <span className="font-bold text-amber-600">{pkg.postLimit || 0} tin</span>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -259,7 +311,7 @@ const AdminVipPackages = () => {
             ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                        <h3 className="font-bold text-gray-700">Theo dõi người dùng VIP</h3>
+                        <h3 className="font-bold text-gray-700">Theo dõi người dùng VIP ({vipUsers.length})</h3>
                         <div className="flex gap-2">
                             <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 <Filter size={16} /> Lọc
@@ -296,15 +348,26 @@ const AdminVipPackages = () => {
                                         </td>
                                         <td className="px-6 py-4 font-medium text-gray-900">{user.vip?.vipType}</td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                Đang hoạt động
-                                            </span>
+                                            {user.vip?.isActive ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Đang hoạt động
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    Đã hết hạn/Hủy
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
                                             {new Date(user.vip?.expiredAt).toLocaleDateString('vi-VN')}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button className="text-blue-600 hover:text-blue-800 font-medium text-xs">Chi tiết</button>
+                                            <button
+                                                onClick={() => handleUserEdit(user)}
+                                                className="text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 px-3 py-1 rounded hover:bg-blue-50"
+                                            >
+                                                Sửa / Gia hạn
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
@@ -321,10 +384,10 @@ const AdminVipPackages = () => {
                 </div>
             )}
 
-            {/* Modal */}
+            {/* Package Modal */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-gray-900">
                                 {editingPackage ? 'Chỉnh sửa Gói' : 'Tạo Gói Mới'}
@@ -394,6 +457,21 @@ const AdminVipPackages = () => {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Giới hạn tin VIP/ngày</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        min="0"
+                                        value={formData.postLimit}
+                                        onChange={e => setFormData({ ...formData, postLimit: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        placeholder="Ví dụ: 5"
+                                    />
+                                </div>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Quyền lợi (Phân cách bằng dấu phẩy)</label>
                                 <textarea
@@ -446,8 +524,78 @@ const AdminVipPackages = () => {
                     </div>
                 </div>
             )}
+
+            {/* User Edit Modal */}
+            {showUserModal && editingUser && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 className="font-bold text-lg text-gray-900">
+                                Chỉnh sửa VIP: {editingUser.name}
+                            </h3>
+                            <button onClick={() => setShowUserModal(false)} className="text-gray-400 hover:text-gray-600">
+                                <XCircle size={24} />
+                            </button>
+                        </div>
+                        <form onSubmit={handleUserSubmit} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Gói hiện tại</label>
+                                <input
+                                    type="text"
+                                    disabled
+                                    value={editingUser.vip?.vipType || 'Không có'}
+                                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
+                                <input
+                                    type="date"
+                                    required
+                                    value={userFormData.expiredAt}
+                                    onChange={e => setUserFormData({ ...userFormData, expiredAt: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Chọn ngày mới để gia hạn hoặc rút ngắn thời gian.</p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="isActiveUser"
+                                    checked={userFormData.isActive}
+                                    onChange={e => setUserFormData({ ...userFormData, isActive: e.target.checked })}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor="isActiveUser" className="text-sm font-medium text-gray-700">
+                                    Đang kích hoạt (Active)
+                                </label>
+                            </div>
+                            <p className="text-xs text-gray-500">Bỏ chọn để hủy tạm thời gói VIP của user này.</p>
+
+                            <div className="pt-4 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUserModal(false)}
+                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                >
+                                    Lưu Thay Đổi
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default AdminVipPackages;
+

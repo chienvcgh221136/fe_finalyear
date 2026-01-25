@@ -3,7 +3,7 @@ import { vipAPI } from '../services/api';
 import type { VipPackage } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Check, Crown, Zap, Shield, Star, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const VipPage = () => {
     const { user } = useAuth();
@@ -42,7 +42,7 @@ const VipPage = () => {
         buyMutation.mutate(pkg._id);
     };
 
-
+    const myVip = user?.vip;
 
     if (loadingPackages) return <div className="p-12 text-center text-gray-500">Đang tải gói dịch vụ...</div>;
 
@@ -55,9 +55,15 @@ const VipPage = () => {
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
                     Nâng cấp tài khoản <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600">Pro</span>
                 </h1>
-                <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-6">
                     Tiếp cận hàng triệu khách hàng tiềm năng, hiển thị tin đăng ở vị trí ưu tiên và chốt giao dịch nhanh chóng hơn.
                 </p>
+                {myVip?.isActive && (
+                    <Link to="/vip-management" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
+                        <Crown size={20} />
+                        Quản lý Slot & Gắn VIP
+                    </Link>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative items-start">
@@ -161,7 +167,7 @@ const VipPage = () => {
                     );
                 })}
             </div>
-        </div>
+        </div >
     );
 };
 

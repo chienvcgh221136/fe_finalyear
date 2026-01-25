@@ -33,15 +33,30 @@ const Search = () => {
 
     const sortListings = (items: any[], sort: string) => {
         const sorted = [...items];
-        switch (sort) {
-            case 'price_asc':
-                return sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
-            case 'price_desc':
-                return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
-            case 'newest':
-            default:
-                return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        }
+
+        // Helper to get sorting value
+        const getVipScore = (item: any) => item.vip?.isActive ? (item.vip.priorityScore || 1) : 0;
+
+        return sorted.sort((a, b) => {
+            // First Priority: VIP Score
+            const vipA = getVipScore(a);
+            const vipB = getVipScore(b);
+
+            if (vipA !== vipB) {
+                return vipB - vipA; // Higher score first
+            }
+
+            // Second Priority: Selected Sort
+            switch (sort) {
+                case 'price_asc':
+                    return (a.price || 0) - (b.price || 0);
+                case 'price_desc':
+                    return (b.price || 0) - (a.price || 0);
+                case 'newest':
+                default:
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+            }
+        });
     };
 
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);

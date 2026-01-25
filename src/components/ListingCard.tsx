@@ -1,8 +1,10 @@
 import { MapPin, Bed, Bath, Square } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import type { Post } from '../types';
+
 interface ListingProps {
-    post: any;
+    post: Post;
 }
 
 const ListingCard = ({ post }: ListingProps) => {
@@ -17,12 +19,28 @@ const ListingCard = ({ post }: ListingProps) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
     };
 
+    const isVip = post.vip?.isActive;
+    const vipType = post.vip?.vipType;
+
     return (
-        <Link to={`/post/${post._id || post.id}`} className="group block bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
+        <Link
+            to={`/post/${post._id || post.id}`}
+            className={`group block bg-white rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 transition-all duration-200 
+                ${isVip ? 'border-2 border-yellow-400 shadow-yellow-100 ring-2 ring-yellow-400/20' : 'border border-gray-100 hover:shadow-md'}
+            `}
+        >
             <div className="relative h-48 overflow-hidden">
-                <span className={`absolute top-3 left-3 z-10 text-white px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${post.transactionType === 'RENT' ? 'bg-orange-500' : 'bg-blue-600'}`}>
-                    {post.transactionType === 'RENT' ? 'Cho thuê' : 'Cần bán'}
-                </span>
+                <div className="absolute top-3 left-3 z-10 flex gap-2">
+                    <span className={`text-white px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${post.transactionType === 'RENT' ? 'bg-orange-500' : 'bg-blue-600'}`}>
+                        {post.transactionType === 'RENT' ? 'Cho thuê' : 'Cần bán'}
+                    </span>
+                    {isVip && (
+                        <span className="bg-yellow-400 text-black px-2.5 py-1 rounded text-xs font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                            Tin nổi bật
+                        </span>
+                    )}
+                </div>
+
                 <img
                     src={post.images?.[0] || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'}
                     alt={post.title}
@@ -33,7 +51,7 @@ const ListingCard = ({ post }: ListingProps) => {
                 </div>
             </div>
 
-            <div className="p-4">
+            <div className={`p-4 ${isVip ? 'bg-yellow-50/30' : ''}`}>
                 <h3 className="font-bold text-gray-900 mb-2 truncate text-base group-hover:text-blue-600 transition-colors">
                     {post.title}
                 </h3>
