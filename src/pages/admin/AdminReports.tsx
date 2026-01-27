@@ -195,13 +195,7 @@ const AdminReports = () => {
                     </table>
                 </div>
                 {/* Footer Pagination (Simple placeholder) */}
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50/50">
-                    <span className="text-xs text-gray-500">Hiển thị tất cả bản ghi</span>
-                    <div className="flex gap-1">
-                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Trước</button>
-                        <button className="px-3 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded hover:bg-gray-50" disabled>Sau</button>
-                    </div>
-                </div>
+
             </div>
         </div>
     );

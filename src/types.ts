@@ -66,9 +66,8 @@ export interface ChatRoom {
     userIds: (string | User)[];
     lastMessage: string;
     lastMessageAt: string;
-    createdAt: string;
-    updatedAt: string;
     unreadCount?: number;
+    nicknames?: Record<string, string>;
 }
 
 export interface MessageItem {

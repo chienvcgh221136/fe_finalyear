@@ -280,7 +280,10 @@ const VipManagement = () => {
                                                 )}
                                             </td>
                                             <td className="p-4 text-right font-bold text-gray-900">
-                                                {(post.price / 1e9).toFixed(2)} tỷ
+                                                {post.price >= 1000000000
+                                                    ? `${(post.price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`
+                                                    : `${(post.price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Triệu`
+                                                }
                                             </td>
                                         </tr>
                                     );

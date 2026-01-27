@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { filesAPI, chatAPI } from '../services/api';
 import type { ChatRoom, MessageData } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { Search, Send, Phone, Video, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { Search, Send, Phone, Video, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil } from 'lucide-react';
 
 const Chat = () => {
     const { user } = useAuth();
@@ -20,7 +20,17 @@ const Chat = () => {
     const [viewingImage, setViewingImage] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
 
+    // Nickname State
+    const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
+    const [nicknameInput, setNicknameInput] = useState('');
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+
+    // Scroll & Badge State
+    const [showNewMessageBadge, setShowNewMessageBadge] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const isNearBottomRef = useRef(true);
+    const prevMessageCountRef = useRef(0);
     const messageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
     const queryClient = useQueryClient();
@@ -35,6 +45,12 @@ const Chat = () => {
 
     const getOtherParticipant = (room: ChatRoom) => {
         return room.userIds.find((p: any) => p._id !== user?.id && p._id !== user?._id) || room.userIds[0];
+    };
+
+    const getDisplayName = (room: ChatRoom, otherUser: any) => {
+        if (!room.nicknames || !otherUser) return otherUser?.name;
+        const otherId = otherUser._id || otherUser.id;
+        return room.nicknames[otherId] || otherUser.name;
     };
 
     // Advanced Search Effect
@@ -65,7 +81,8 @@ const Chat = () => {
         // Prevent showing self if data is corrupted, and filter by search
         if (!other) return false;
 
-        const matchesName = other.name?.toLowerCase().includes(searchTerm.toLowerCase());
+        const displayName = getDisplayName(room, other);
+        const matchesName = displayName?.toLowerCase().includes(searchTerm.toLowerCase()) || other.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
         const post = room.postId as any;
         const myId = user?.id || user?._id;
@@ -129,6 +146,33 @@ const Chat = () => {
         refetchInterval: 3000,
     });
 
+    // Scroll Handler
+    const handleScroll = () => {
+        if (scrollContainerRef.current) {
+            const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+            const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+            const isNear = distanceToBottom <= 100;
+            isNearBottomRef.current = isNear;
+
+            if (isNear) {
+                setShowNewMessageBadge(false);
+            }
+        }
+    };
+
+    const scrollToBottom = (smooth = true) => {
+        messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+        setShowNewMessageBadge(false);
+    };
+
+    // Reset state on room change
+    useEffect(() => {
+        setShowNewMessageBadge(false);
+        isNearBottomRef.current = true;
+        prevMessageCountRef.current = 0;
+    }, [selectedRoomId]);
+
+    // Handle New Messages & Auto-scroll
     useEffect(() => {
         if (highlightedMessageId && messageRefs.current[highlightedMessageId]) {
             messageRefs.current[highlightedMessageId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -136,10 +180,49 @@ const Chat = () => {
                 setHighlightedMessageId(null);
             }, 2000);
             return () => clearTimeout(timer);
-        } else if (!highlightedMessageId && messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messagesData, highlightedMessageId]);
+
+        if (messagesData?.messages) {
+            const messages = messagesData.messages;
+            const count = messages.length;
+            const prevCount = prevMessageCountRef.current;
+
+            // Only act if we have messages
+            if (count > 0) {
+                // If it's a fresh load (prevCount === 0), just scroll to bottom if allowed
+                // (Usually we want to start at bottom on load)
+                if (prevCount === 0) {
+                    if (!highlightedMessageId) {
+                        scrollToBottom(false); // Instant scroll on load
+                    }
+                }
+                // If new messages arrived (count > prevCount)
+                else if (count > prevCount) {
+                    const lastMsg = messages[count - 1];
+                    const myId = user?.id || user?._id;
+                    const senderId = typeof lastMsg.senderId === 'object'
+                        ? (('id' in lastMsg.senderId ? lastMsg.senderId.id : undefined) || ('_id' in lastMsg.senderId ? lastMsg.senderId._id : undefined))
+                        : lastMsg.senderId;
+
+                    const isMe = String(senderId) === String(myId);
+
+                    if (isMe) {
+                        // I sent a message -> Always scroll
+                        scrollToBottom();
+                    } else {
+                        // Incoming message
+                        if (isNearBottomRef.current) {
+                            scrollToBottom();
+                        } else {
+                            setShowNewMessageBadge(true);
+                        }
+                    }
+                }
+            }
+
+            prevMessageCountRef.current = count;
+        }
+    }, [messagesData, highlightedMessageId, user]);
 
     // Mark as Read Mutation
     const markReadMutation = useMutation({
@@ -210,6 +293,34 @@ const Chat = () => {
                 alert("Xóa thất bại");
             }
         }
+    };
+
+    const handleSetNickname = async () => {
+        if (!selectedRoomId || !editingUserId) return;
+        try {
+            await chatAPI.setNickname(selectedRoomId, editingUserId, nicknameInput);
+            queryClient.invalidateQueries({ queryKey: ['chats'] }); // Refresh to get new nicknames
+            setIsNicknameModalOpen(false);
+            setEditingUserId(null);
+            setNicknameInput('');
+        } catch (error) {
+            console.error("Set nickname failed", error);
+            alert("Đặt biệt danh thất bại");
+        }
+    };
+
+    const openNicknameModal = () => {
+        if (!selectedRoomId) return;
+        const room = roomsResponse?.find(r => r._id === selectedRoomId);
+        if (!room) return;
+        const other = getOtherParticipant(room) as any;
+        if (!other) return;
+
+        setEditingUserId(other._id || other.id);
+        setEditingUserId(other._id || other.id);
+        // If nickname is same as name, show empty or name? Let's show current display name
+        setNicknameInput(room.nicknames?.[other._id || other.id] || '');
+        setIsNicknameModalOpen(true);
     };
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -303,7 +414,7 @@ const Chat = () => {
                                         <div className="flex justify-between items-baseline mb-1">
                                             {/* Search Highlight Name */}
                                             <h3 className="font-semibold text-gray-900 truncate">
-                                                {highlightText(other?.name || 'Người dùng không xác định', searchTerm)}
+                                                {highlightText(getDisplayName(room, other) || 'Người dùng không xác định', searchTerm)}
                                             </h3>
                                             <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                                                 {new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -355,10 +466,21 @@ const Chat = () => {
                                                 )}
                                             </div>
                                             <div>
-                                                <h2 className="font-bold text-gray-900">{other?.name}</h2>
-                                                <div className="flex items-center gap-1.5">
-                                                    <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                    <p className="text-xs text-green-600 font-medium">Đang hoạt động</p>
+                                                <div>
+                                                    <div className="flex items-center gap-2">
+                                                        <h2 className="font-bold text-gray-900">{getDisplayName(room, other)}</h2>
+                                                        <button
+                                                            onClick={openNicknameModal}
+                                                            className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                                                            title="Đổi biệt danh"
+                                                        >
+                                                            <Pencil size={14} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                        <p className="text-xs text-green-600 font-medium">Đang hoạt động</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </>
@@ -422,7 +544,11 @@ const Chat = () => {
                         })()}
 
                         {/* Messages List */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        <div
+                            ref={scrollContainerRef}
+                            onScroll={handleScroll}
+                            className="flex-1 overflow-y-auto p-6 space-y-4 relative"
+                        >
                             {loadingMessages ? (
                                 <div className="flex items-center justify-center h-full">
                                     <Loader2 className="animate-spin text-blue-600" size={32} />
@@ -523,6 +649,16 @@ const Chat = () => {
                                     <p>Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</p>
                                 </div>
                             )}
+
+                            {/* Float New Message Badge */}
+                            {showNewMessageBadge && (
+                                <button
+                                    onClick={() => scrollToBottom(true)}
+                                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-blue-700 transition-all z-10 text-sm font-medium animate-bounce"
+                                >
+                                    📩 Tin nhắn mới <ArrowDown size={16} />
+                                </button>
+                            )}
                         </div>
 
                         {/* Input Area */}
@@ -599,6 +735,53 @@ const Chat = () => {
                     </div>
                 )}
             </main>
+
+            {/* Nickname Modal */}
+            {isNicknameModalOpen && (
+                <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="font-bold text-gray-900">Đặt biệt danh</h3>
+                            <button
+                                onClick={() => setIsNicknameModalOpen(false)}
+                                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-sm text-gray-500 mb-4">
+                                Biệt danh sẽ chỉ hiển thị với bạn trong cuộc trò chuyện này.
+                            </p>
+                            <input
+                                type="text"
+                                value={nicknameInput}
+                                onChange={(e) => setNicknameInput(e.target.value)}
+                                placeholder="Nhập biệt danh..."
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleSetNickname();
+                                }}
+                            />
+                        </div>
+                        <div className="p-4 border-t border-gray-100 flex gap-3 justify-end bg-gray-50">
+                            <button
+                                onClick={() => setIsNicknameModalOpen(false)}
+                                className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={handleSetNickname}
+                                className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
+                            >
+                                Lưu
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

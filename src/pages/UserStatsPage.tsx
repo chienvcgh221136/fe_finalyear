@@ -147,8 +147,7 @@ const UserStatsPage = () => {
                     <div className="bg-gray-50 p-6 rounded-full mb-4">
                         <LayoutDashboard className="text-gray-300" size={48} />
                     </div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">Biểu đồ tăng trưởng</h3>
-                    <p className="text-gray-500 max-w-xs">Dữ liệu chi tiết theo thời gian sẽ sớm được cập nhật trong phiên bản tiếp theo.</p>
+
                 </div>
             </div>
         </div>

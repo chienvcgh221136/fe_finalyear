@@ -84,6 +84,7 @@ export const chatAPI = {
     sendMessage: (chatRoomId: string, content: string, type: 'TEXT' | 'IMAGE' = 'TEXT') => api.post(`/chat/${chatRoomId}/send`, { content, type }),
     markAsRead: (chatRoomId: string) => api.put(`/chat/${chatRoomId}/read`),
     searchMessages: (query: string) => api.get('/chat/search', { params: { query } }),
+    setNickname: (chatRoomId: string, targetUserId: string, nickname: string) => api.put(`/chat/${chatRoomId}/nickname`, { targetUserId, nickname }),
     deleteChat: (chatRoomId: string) => api.delete(`/chat/${chatRoomId}`),
 };
 
