@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { postsAPI, usersAPI } from '../../services/api';
 import type { Post, User } from '../../types';
-import { Users, Clock, CheckCircle, Eye, ArrowRight } from 'lucide-react';
+import { Users, Clock, CheckCircle, Eye, ArrowRight, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -35,6 +35,12 @@ const AdminDashboard = () => {
             value: users?.length || 0,
             icon: Users,
             color: 'bg-blue-50 text-blue-600',
+        },
+        {
+            label: 'Người dùng VIP',
+            value: users?.filter(u => u.vip?.isActive).length || 0,
+            icon: Crown,
+            color: 'bg-yellow-50 text-yellow-600',
         },
         {
             label: 'Tin đã duyệt',
