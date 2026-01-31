@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { vipAPI } from '../services/api';
 import type { VipPackage } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Check, Crown, Zap, Shield, Star, Clock } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import UpgradeWizard from '../components/vip/UpgradeWizard';
 
 const VipPage = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [showUpgradeWizard, setShowUpgradeWizard] = useState(false);
 
     const { data: packages, isLoading: loadingPackages } = useQuery({
         queryKey: ['vipPackages'],
@@ -20,16 +23,9 @@ const VipPage = () => {
     const buyMutation = useMutation({
         mutationFn: (packageId: string) => vipAPI.purchase(packageId),
         onSuccess: async () => {
-            // Refresh User Data to get newly purchased VIP status if strictly needed
-            // Usually auth context holds User.vip
-            // We can manually refetch specific parts or just force page reload or invalidate user query
-            alert('Nâng cấp VIP thành công!');
-            // Ideally fetch updated user profile
+            alert('Đăng ký VIP thành công!');
             if (user) {
-                // Trigger a profile refresh ideally, or manually update local user state if we knew the new expiry
-                // For now, simpler to navigate or refresh
                 navigate('/profile');
-                // Or navigate(0) to reload
             }
         },
         onError: (err: any) => {
@@ -38,6 +34,33 @@ const VipPage = () => {
     });
 
     const handleBuy = (pkg: VipPackage) => {
+        // 1. Check if user already has active VIP
+        if (user?.vip?.isActive && user.vip.packageId) {
+
+            // Find current package details to compare price
+            const currentPkg = packages?.find(p => p._id === user.vip?.packageId || p.name === user.vip?.vipType);
+
+            if (currentPkg) {
+                // Prevent purchasing same package again (already handled by disabled button, but safe measure)
+                if (currentPkg._id === pkg._id) return;
+
+                // Check for downgrade (Lower Price)
+                if (pkg.price < currentPkg.price) {
+                    alert(`Bạn đang sử dụng gói ${currentPkg.name} cao cấp hơn gói này. Vui lòng chờ hết hạn để đăng ký gói thấp hơn.`);
+                    return;
+                }
+
+                // Check for upgrade (Higher Price)
+                if (pkg.price > currentPkg.price) {
+                    if (window.confirm("Bạn muốn nâng cấp lên gói VIP cao hơn?")) {
+                        setShowUpgradeWizard(true);
+                    }
+                    return;
+                }
+            }
+        }
+
+        // 2. Normal Purchase Flow (No active VIP or expired)
         if (!confirm(`Bạn có chắc muốn mua gói ${pkg.name} với giá ${pkg.price.toLocaleString()} VNĐ?`)) return;
         buyMutation.mutate(pkg._id);
     };
@@ -47,7 +70,7 @@ const VipPage = () => {
     if (loadingPackages) return <div className="p-12 text-center text-gray-500">Đang tải gói dịch vụ...</div>;
 
     return (
-        <div className="container mx-auto px-4 py-12 max-w-6xl">
+        <div className="container mx-auto px-4 py-12 max-w-6xl relative">
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm uppercase tracking-wider mb-4">
                     <Crown size={18} /> Premium Membership
@@ -59,18 +82,20 @@ const VipPage = () => {
                     Tiếp cận hàng triệu khách hàng tiềm năng, hiển thị tin đăng ở vị trí ưu tiên và chốt giao dịch nhanh chóng hơn.
                 </p>
                 {myVip?.isActive && (
-                    <Link to="/vip-management" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
-                        <Crown size={20} />
-                        Quản lý Slot & Gắn VIP
-                    </Link>
+                    <div className="flex justify-center gap-4">
+                        <Link to="/profile?tab=vip-management" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
+                            <Crown size={20} />
+                            Quản lý Slot & Gắn VIP
+                        </Link>
+                    </div>
                 )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative items-start">
                 {packages?.map((pkg, idx) => {
                     const isPopular = pkg.isPopular || false;
-                    const isActive = user?.vip?.isActive && user.vip.packageId === pkg._id; // Actually comparing ID is safer
-                    // Or compare names/types
+                    // Check purely by ID if possible, otherwise by name
+                    const isActive = user?.vip?.isActive && (user.vip.packageId === pkg._id || user.vip.vipType === pkg.name);
 
                     return (
                         <div
@@ -123,7 +148,6 @@ const VipPage = () => {
                                     <div className="flex items-center gap-3">
                                         <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                             <Shield size={16} />
-                                            {/* Ideally Phone icon but Shield is imported, can reuse or import Phone */}
                                         </div>
                                         <span className="font-medium text-sm">Xem SĐT: <strong>{pkg.limitViewPhone}</strong> lượt/ngày</span>
                                     </div>
@@ -140,7 +164,6 @@ const VipPage = () => {
                                     ))
                                 ) : (
                                     <>
-                                        {/* Fallback if no perks defined (legacy) */}
                                         <div className="flex items-center gap-3">
                                             <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                                 <Star size={16} />
@@ -167,6 +190,16 @@ const VipPage = () => {
                     );
                 })}
             </div>
+
+            {/* Upgrade Modal */}
+            {showUpgradeWizard && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <UpgradeWizard
+                        onClose={() => setShowUpgradeWizard(false)}
+                        onSuccess={() => setShowUpgradeWizard(false)}
+                    />
+                </div>
+            )}
         </div >
     );
 };

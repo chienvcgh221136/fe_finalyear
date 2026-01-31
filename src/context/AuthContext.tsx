@@ -12,7 +12,9 @@ interface AuthContextType {
     register: (data: { name: string; email: string; phone: string; password: string }) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     updateUser: (user: User) => void;
+
 }
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -20,24 +22,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const checkAuth = async () => {
+        try {
+            // Try to fetch profile. If cookies are valid, this will succeed.
+            const res = await usersAPI.getProfile();
+            const userData = res.data.data || res.data;
+            setUser(userData);
+        } catch (error) {
+            // Not authenticated
+            setUser(null);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     // Check auth on mount
     useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                // Try to fetch profile. If cookies are valid, this will succeed.
-                const res = await usersAPI.getProfile();
-                const userData = res.data.data || res.data;
-                setUser(userData);
-            } catch (error) {
-                // Not authenticated
-                setUser(null);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         checkAuth();
     }, []);
+
+
+
 
     const login = async (email: string, password: string) => {
         try {
@@ -119,8 +124,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 register,
                 logout,
                 updateUser,
+
             }}
         >
+
             {children}
         </AuthContext.Provider>
     );

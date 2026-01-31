@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router-dom';
 import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,31 +12,20 @@ import AgentWidget from '../components/post/AgentWidget';
 import ReportModal from '../components/modals/ReportModal';
 
 
+import ReviewSection from '../components/post/ReviewSection';
 import ScheduleModal from '../components/modals/ScheduleModal';
 
 const PostDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
-    const [post, setPost] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchPost = async () => {
-            try {
-                if (!id) return;
-                const response = await postService.getById(id);
-                setPost(response.data.data || response.data);
-            } catch (error) {
-                console.error('Error fetching post details:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPost();
-    }, [id]);
+    const { data: post, isLoading: loading } = useQuery({
+        queryKey: ['post', id],
+        queryFn: () => postService.getById(id!).then(res => res.data.data || res.data),
+        enabled: !!id
+    });
 
     if (loading) return (
         <div className="min-h-screen bg-[#F4F4F4] pt-20 flex justify-center">
@@ -192,7 +182,7 @@ const PostDetail = () => {
                                 {/* Owner Actions */}
                                 {user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId) && (
                                     <>
-                                        <Link to={`/edit-post/${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
+                                        <Link to={`/post-ad?edit=${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
                                             <span className="text-sm">Sửa tin</span>
                                         </Link>
                                     </>
@@ -263,7 +253,8 @@ const PostDetail = () => {
                             onStartChat={handleStartChat}
                         />
 
-                        {/* Vị trí / Map Section - Moved to Sidebar */}
+                        <ReviewSection postId={post._id} />
+
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="font-bold text-gray-900 text-lg mb-4">Vị trí</h3>
                             <div className="bg-gray-100 h-[200px] rounded-xl flex items-center justify-center relative overflow-hidden group border border-gray-200">

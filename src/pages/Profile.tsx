@@ -206,7 +206,7 @@ const Profile = () => {
                             </span>
                         </div>
                         <h4 className="font-bold text-gray-900 text-sm truncate">{post.title}</h4>
-                        <p className="text-blue-600 text-xs font-bold">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                        <p className="text-blue-600 text-xs font-bold">{formatPrice(post.price, post.transactionType)}</p>
                     </div>
 
                     {/* Appointment Details */}
@@ -292,7 +292,7 @@ const Profile = () => {
                                 }`}
                         >
                             Yêu cầu nhận được
-                            {sell.length > 0 && <span className="ml-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{sell.length}</span>}
+                            {sell.length > 0 && <span className="ml-2 bg-gray-300 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full">{sell.length}</span>}
                         </button>
                         <button
                             onClick={() => setSubTab('sent')}
@@ -357,7 +357,7 @@ const Profile = () => {
                                     <div className="flex-1 min-w-0 flex flex-col justify-between">
                                         <div>
                                             <h3 className="font-bold text-gray-900 text-lg truncate pr-4">{post.title}</h3>
-                                            <p className="text-blue-600 font-bold">{(post.price / 1e9).toFixed(2)} tỷ</p>
+                                            <p className="text-blue-600 font-bold">{formatPrice(post.price, post.transactionType)}</p>
                                         </div>
                                         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
                                             <Link to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
@@ -426,8 +426,11 @@ const Profile = () => {
         );
     };
 
-    const formatPrice = (price: number) => {
+    const formatPrice = (price: number, transactionType?: string) => {
         if (!price) return 'Liên hệ';
+        if (transactionType === 'RENT') {
+            return `${price.toLocaleString('vi-VN')} đ/tháng`;
+        }
         if (price >= 1000000000) {
             return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`;
         }
@@ -462,11 +465,11 @@ const Profile = () => {
                             {[
                                 { id: 'profile', label: 'Thông tin cá nhân', icon: UserIcon },
                                 { id: 'posts', label: 'Tin của tôi', icon: FileText },
-                                { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
                                 { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
                                 { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
                                 { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
                                 { id: 'vip', label: 'Gói VIP', icon: Crown },
+                                { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
                                 { id: 'stats', label: 'Thống kê', icon: BarChart2 },
                             ].map(item => (
                                 <button
@@ -656,7 +659,7 @@ const Profile = () => {
                                                         <div className="flex justify-between items-start mb-1">
                                                             <h3 className="font-bold text-gray-900 text-lg truncate pr-4" title={post.title}>{post.title}</h3>
                                                             <div className="text-right">
-                                                                <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price)}</p>
+                                                                <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price, post.transactionType)}</p>
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-4">

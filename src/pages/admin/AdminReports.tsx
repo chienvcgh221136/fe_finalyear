@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { reportsAPI } from '../../services/api';
+import { reportsAPI, usersAPI } from '../../services/api';
 import {
-    Search, CheckCircle, XCircle, Eye
+    Search, CheckCircle, XCircle, Eye, Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -29,6 +29,24 @@ const AdminReports = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
             alert("Đã từ chối báo cáo");
+        }
+    });
+
+    const banMutation = useMutation({
+        mutationFn: usersAPI.ban,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+            alert("Đã cấm người dùng thành công");
+        }
+    });
+
+
+
+    const deleteReportMutation = useMutation({
+        mutationFn: reportsAPI.delete,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
+            alert("Đã xóa lịch sử báo cáo");
         }
     });
 
@@ -142,12 +160,19 @@ const AdminReports = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {/* Mock report count or severity bar */}
                                             <div className="flex items-center gap-2">
-                                                <span className="font-bold text-gray-900">1</span>
+                                                <span className={`font-bold ${report.postId?.userId?.violationCount >= 3 ? 'text-red-600' : 'text-gray-900'}`}>
+                                                    {report.postId?.userId?.violationCount || 0}
+                                                </span>
                                                 <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-red-400 w-[10%]"></div>
+                                                    <div
+                                                        className={`h-full ${report.postId?.userId?.violationCount >= 3 ? 'bg-red-600' : 'bg-blue-400'}`}
+                                                        style={{ width: `${Math.min(((report.postId?.userId?.violationCount || 0) / 5) * 100, 100)}%` }}
+                                                    ></div>
                                                 </div>
+                                                {report.postId?.userId?.violationCount >= 3 && (
+                                                    <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded font-bold">WARNING</span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
@@ -157,6 +182,11 @@ const AdminReports = () => {
                                                         'bg-gray-100 text-gray-500'}`}>
                                                 {report.status === 'PENDING' ? 'Chờ xử lý' : report.status === 'RESOLVED' ? 'Đã giải quyết' : 'Đã từ chối'}
                                             </span>
+                                            {report.postId?.userId?.isBanned && (
+                                                <div className="mt-1">
+                                                    <span className="text-[10px] bg-gray-800 text-white px-1.5 py-0.5 rounded">BANNED</span>
+                                                </div>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-100">
@@ -185,6 +215,36 @@ const AdminReports = () => {
                                                             <XCircle size={16} />
                                                         </button>
                                                     </>
+                                                )}
+
+
+                                                {/* Ban Button if violations >= 3 and not banned */}
+                                                {report.postId?.userId?.violationCount >= 3 && !report.postId?.userId?.isBanned && (
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm(`Bạn có chắc chắn muốn cấm người dùng ${report.postId?.userId?.name}? Hành động này sẽ gỡ toàn bộ bài đăng của họ.`)) {
+                                                                banMutation.mutate(report.postId?.userId?._id);
+                                                            }
+                                                        }}
+                                                        title="Cấm người dùng (Vi phạm nhiều lần)"
+                                                        className="p-1.5 text-white bg-red-600 hover:bg-red-700 rounded shadow-sm ml-2"
+                                                    >
+                                                        <span className="text-xs font-bold px-1">BAN</span>
+                                                    </button>
+                                                )}
+                                                {/* Delete Report History Button (for Resolved/Rejected) */}
+                                                {(report.status === 'RESOLVED' || report.status === 'REJECTED') && (
+                                                    <button
+                                                        onClick={() => {
+                                                            if (window.confirm("Xóa lịch sử báo cáo này?")) {
+                                                                deleteReportMutation.mutate(report._id);
+                                                            }
+                                                        }}
+                                                        title="Xóa lịch sử báo cáo"
+                                                        className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded ml-2"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 )}
                                             </div>
                                         </td>

@@ -73,6 +73,7 @@ export const reportsAPI = {
     getAll: () => api.get('/reports/admin'),
     resolve: (id: string) => api.patch(`/reports/${id}/resolve`),
     reject: (id: string) => api.patch(`/reports/${id}/reject`),
+    delete: (id: string) => api.delete(`/reports/${id}`),
 };
 
 export const postsAPI = postService;
@@ -105,6 +106,9 @@ export const vipAPI = {
     getPackages: () => api.get('/vip/packages'),
     purchase: (packageId: string) => api.post('/vip/purchase', { packageId }),
     getMyVip: () => api.get('/vip/me'),
+    getUpgradeInfo: () => api.get('/vip/upgrade'),
+    upgrade: (targetPackageId: string) => api.post('/vip/upgrade', { targetPackageId }),
+
 
     // Admin Endpoints
     createPackage: (data: any) => api.post('/vip/packages', data),
@@ -124,10 +128,24 @@ export const favoriteAPI = {
     getMyFavorites: () => api.get('/favorites/me'),
 };
 
+export const reviewsAPI = {
+    getBySeller: (sellerId: string) => api.get(`/reviews/seller/${sellerId}`),
+    getByPost: (postId: string) => api.get(`/reviews/post/${postId}`),
+    create: (postId: string, data: any) => api.post(`/reviews/${postId}`, data),
+    update: (id: string, data: any) => api.put(`/reviews/${id}`, data),
+    delete: (id: string) => api.delete(`/reviews/${id}`),
+};
+
 export const statsAPI = {
     getMyStats: () => api.get('/stats/me'),
     getAdminOverview: () => api.get('/stats/admin/overview'),
     getAdminPostStats: () => api.get('/stats/admin/posts'),
+};
+
+export const commentsAPI = {
+    getByPost: (postId: string) => api.get(`/comments/${postId}`),
+    create: (postId: string, content: string) => api.post(`/comments/${postId}`, { content }),
+    delete: (id: string) => api.delete(`/comments/${id}`)
 };
 
 export const appointmentAPI = {

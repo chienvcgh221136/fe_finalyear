@@ -119,7 +119,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
                         <div className="flex items-center gap-2 text-sm mb-1">
                             <div className="flex items-center gap-1">
                                 <Star size={14} className="text-orange-500 fill-orange-500" />
-                                <span className="font-bold text-orange-500">{rating}</span>
+                                <span className="font-bold text-orange-500">{Number(rating).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 1 })}</span>
                             </div>
                             <span className="text-gray-400 text-xs">({reviewCount} Đánh giá)</span>
                         </div>

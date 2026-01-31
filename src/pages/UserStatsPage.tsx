@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { statsAPI } from '../services/api';
 import type { UserStats } from '../types';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package } from 'lucide-react';
+import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package, ArrowUpCircle } from 'lucide-react';
+import UpgradeWizard from '../components/vip/UpgradeWizard';
 
 const UserStatsPage = () => {
     const { user } = useAuth();
+    const [showUpgrade, setShowUpgrade] = useState(false);
+
     const { data: stats, isLoading } = useQuery({
         queryKey: ['userStats'],
         queryFn: async () => {
@@ -29,7 +33,7 @@ const UserStatsPage = () => {
     const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto px-4 py-8 max-w-6xl relative">
             <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
                 <LayoutDashboard className="text-blue-600" size={32} />
                 Thống kê hoạt động
@@ -41,7 +45,7 @@ const UserStatsPage = () => {
                     <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Package size={100} />
                     </div>
-                    <div className="relative z-10 flex items-center justify-between">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
                         <div>
                             <p className="text-amber-100 font-medium text-sm mb-1">Gói thành viên hiện tại</p>
                             <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
@@ -54,9 +58,15 @@ const UserStatsPage = () => {
                                 Chỉ số ưu tiên: <span className="font-bold">{user.vip.priorityScore}</span>
                             </p>
                         </div>
-                        <button className="bg-white text-orange-600 px-6 py-2.5 rounded-xl font-bold shadow-md hover:bg-orange-50 transition-colors">
-                            Nâng cấp
-                        </button>
+                        {user.vip.vipType !== 'PREMIUM' && (
+                            <button
+                                onClick={() => setShowUpgrade(true)}
+                                className="px-6 py-3 bg-white text-orange-600 font-bold rounded-xl shadow-lg hover:bg-orange-50 transition transform hover:-translate-y-1 flex items-center gap-2"
+                            >
+                                <ArrowUpCircle size={20} />
+                                Nâng cấp gói
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
@@ -147,9 +157,19 @@ const UserStatsPage = () => {
                     <div className="bg-gray-50 p-6 rounded-full mb-4">
                         <LayoutDashboard className="text-gray-300" size={48} />
                     </div>
-
+                    <p className="text-gray-500 font-medium">Biểu đồ hoạt động sẽ sớm được cập nhật</p>
                 </div>
             </div>
+
+            {/* Upgrade Modal */}
+            {showUpgrade && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <UpgradeWizard
+                        onClose={() => setShowUpgrade(false)}
+                        onSuccess={() => setShowUpgrade(false)}
+                    />
+                </div>
+            )}
         </div>
     );
 };
