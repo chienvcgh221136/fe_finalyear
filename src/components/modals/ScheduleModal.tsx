@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { appointmentAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 interface ScheduleModalProps {
     isOpen: boolean;
@@ -48,10 +49,11 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
     };
 
     const queryClient = useQueryClient();
+    const { success, error } = useToast();
 
     const handleSubmit = async () => {
         if (!selectedDate || !selectedTime) {
-            alert("Vui lòng chọn ngày và giờ xem nhà.");
+            error("Vui lòng chọn ngày và giờ xem nhà.");
             return;
         }
 
@@ -66,12 +68,12 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                 note
             });
 
-            alert("Đã gửi yêu cầu đặt lịch xem nhà thành công! Người bán sẽ xác nhận sớm.");
+            success("Đã gửi yêu cầu đặt lịch xem nhà thành công! Người bán sẽ xác nhận sớm.");
             queryClient.invalidateQueries({ queryKey: ['appointments', 'me'] });
             onClose();
-        } catch (error: any) {
-            console.error("Booking error:", error);
-            alert(error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch.");
+        } catch (err: any) {
+            console.error("Booking error:", err);
+            error(err.response?.data?.message || "Có lỗi xảy ra khi đặt lịch.");
         } finally {
             setLoading(false);
         }

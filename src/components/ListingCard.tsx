@@ -5,9 +5,28 @@ import type { Post } from '../types';
 
 interface ListingProps {
     post: Post;
+    highlight?: string;
 }
 
-const ListingCard = ({ post }: ListingProps) => {
+const HighlightText = ({ text, highlight }: { text: string; highlight?: string }) => {
+    if (!highlight || !text) return <>{text}</>;
+
+    // Split text by highlight (case insensitive)
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return (
+        <>
+            {parts.map((part, i) =>
+                part.toLowerCase() === highlight.toLowerCase() ? (
+                    <span key={i} className="bg-yellow-200 text-gray-900">{part}</span>
+                ) : (
+                    part
+                )
+            )}
+        </>
+    );
+};
+
+const ListingCard = ({ post, highlight }: ListingProps) => {
     // Format price
     const formatPrice = (price: number) => {
         if (price >= 1000000000) {
@@ -53,12 +72,17 @@ const ListingCard = ({ post }: ListingProps) => {
 
             <div className={`p-4 ${isVip ? 'bg-yellow-50/30' : ''}`}>
                 <h3 className="font-bold text-gray-900 mb-2 truncate text-base group-hover:text-blue-600 transition-colors">
-                    {post.title}
+                    <HighlightText text={post.title} highlight={highlight} />
                 </h3>
 
                 <p className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
                     <MapPin size={16} className="text-gray-400" />
-                    <span className="truncate">{post.address?.district || post.district || 'Chưa rõ'}, {post.address?.city || post.city || 'Chưa rõ'}</span>
+                    <span className="truncate">
+                        <HighlightText
+                            text={`${post.address?.district || post.district || 'Chưa rõ'}, ${post.address?.city || post.city || 'Chưa rõ'}`}
+                            highlight={highlight}
+                        />
+                    </span>
                 </p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">

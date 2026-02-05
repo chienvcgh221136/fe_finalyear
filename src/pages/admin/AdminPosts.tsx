@@ -3,8 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
 import {
-    Search, Filter, MapPin,
-    CheckSquare, Flag, AlertTriangle, RefreshCw, Bell, HelpCircle
+    CheckSquare, RefreshCw, Search, Filter, MapPin, AlertTriangle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -111,13 +110,7 @@ const AdminPosts = () => {
                     />
                 </div>
                 <div className="flex items-center gap-3 text-slate-500">
-                    <button className="p-2 hover:bg-slate-50 rounded-full relative">
-                        <Bell size={20} />
-                        <span className="absolute top-1.5 right-2 w-2 h-2 bg-blue-500 rounded-full border border-white"></span>
-                    </button>
-                    <button className="p-2 hover:bg-slate-50 rounded-full">
-                        <HelpCircle size={20} />
-                    </button>
+                    {/* Icons removed as per user request */}
                 </div>
             </div>
 
@@ -166,7 +159,7 @@ const AdminPosts = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG TIN CHỜ DUYỆT</p>
@@ -184,16 +177,6 @@ const AdminPosts = () => {
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
                         <CheckSquare size={24} />
-                    </div>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
-                    <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">RỦI RO CAO / BỊ BÁO CÁO</p>
-                        <p className="text-3xl font-bold text-slate-900 mt-3">0</p>
-                    </div>
-                    <div className="p-3 bg-red-50 text-red-500 rounded-lg">
-                        <Flag size={24} />
                     </div>
                 </div>
             </div>

@@ -149,7 +149,7 @@ const WalletPage = () => {
     if (loadingWallet) return <div className="p-8 text-center">Đang tải ví...</div>;
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <div className="w-full px-4 md:px-8 py-8">
             <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
                 <WalletIcon className="text-blue-600" size={32} />
                 Ví của tôi

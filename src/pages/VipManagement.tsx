@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vipAPI, postsAPI } from '../services/api';
-import { Crown, CheckCircle, Clock } from 'lucide-react';
+import { Crown, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const VipManagement = () => {
@@ -126,7 +126,7 @@ const VipManagement = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
-            <div className="container mx-auto px-4 py-8">
+            <div className="w-full px-4 md:px-8 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Quản lý VIP</h1>

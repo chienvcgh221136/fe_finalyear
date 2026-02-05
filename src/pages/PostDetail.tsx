@@ -14,18 +14,86 @@ import ReportModal from '../components/modals/ReportModal';
 
 import ReviewSection from '../components/post/ReviewSection';
 import ScheduleModal from '../components/modals/ScheduleModal';
+import { useToast } from '../context/ToastContext';
+
+import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 const PostDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+    const { success, error, info, warning } = useToast();
+    const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
 
     const { data: post, isLoading: loading } = useQuery({
         queryKey: ['post', id],
         queryFn: () => postService.getById(id!).then(res => res.data.data || res.data),
         enabled: !!id
     });
+
+    // Geocoding effect
+    // Geocoding effect
+    // Geocoding effect
+    useEffect(() => {
+        if (!post) return;
+
+        const token = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+        if (!token) {
+            console.error("Mapbox token not found");
+            return;
+        }
+
+        const fetchCoordinates = async (query: string) => {
+            try {
+                const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&country=VN&limit=1`);
+                const data = await res.json();
+                if (data.features && data.features.length > 0) {
+                    const [lng, lat] = data.features[0].center;
+                    return { latitude: lat, longitude: lng };
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+            }
+            return null;
+        };
+
+        const getBestCoordinates = async () => {
+            // 1. Try Specific Address
+            const fullAddress = `${post.address?.street ? `${post.address.street}, ` : ''}${post.address?.ward ? `${post.address.ward}, ` : ''}${post.address?.district || post.district || ''}, ${post.address?.city || post.city || ''}`;
+            let coords = await fetchCoordinates(fullAddress);
+            if (coords) {
+                setCoordinates(coords);
+                return;
+            }
+
+            // 2. Try District + City (Fallback 1)
+            const districtCity = `${post.address?.district || post.district || ''}, ${post.address?.city || post.city || ''}`;
+            coords = await fetchCoordinates(districtCity);
+            if (coords) {
+                console.log("Fallback to District+City:", districtCity);
+                setCoordinates(coords);
+                return;
+            }
+
+            // 3. Try City Only (Fallback 2)
+            const city = post.address?.city || post.city || '';
+            if (city) {
+                coords = await fetchCoordinates(city);
+                if (coords) {
+                    console.log("Fallback to City:", city);
+                    setCoordinates(coords);
+                    return;
+                }
+            }
+
+            // 4. Default to Ho Chi Minh City
+            setCoordinates({ latitude: 10.762622, longitude: 106.660172 });
+        };
+
+        getBestCoordinates();
+    }, [post]);
 
     if (loading) return (
         <div className="min-h-screen bg-[#F4F4F4] pt-20 flex justify-center">
@@ -62,7 +130,7 @@ const PostDetail = () => {
 
     const handleStartChat = async () => {
         if (!user) {
-            alert("Vui lòng đăng nhập để chat với người bán");
+            warning("Vui lòng đăng nhập để chat với người bán");
             return;
         }
         try {
@@ -72,9 +140,9 @@ const PostDetail = () => {
             }));
             // Redirect to chat
             window.location.href = '/chat';
-        } catch (error) {
-            console.error("Chat error", error);
-            alert("Không thể bắt đầu cuộc trò chuyện");
+        } catch (err) {
+            console.error("Chat error", err);
+            error("Không thể bắt đầu cuộc trò chuyện");
         }
     };
 
@@ -153,13 +221,13 @@ const PostDetail = () => {
                                 <button
                                     onClick={async () => {
                                         if (!user) {
-                                            alert("Vui lòng đăng nhập để lưu tin");
+                                            warning("Vui lòng đăng nhập để lưu tin");
                                             return;
                                         }
                                         try {
                                             const res = await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
                                             if (res.data.success) {
-                                                alert(res.data.message === 'Favorited' ? 'Đã lưu tin' : 'Đã bỏ lưu tin');
+                                                success(res.data.message === 'Favorited' ? 'Đã lưu tin' : 'Đã bỏ lưu tin');
                                                 // Ideally, toggle a local state here to change icon style
                                             }
                                         } catch (error) {
@@ -211,6 +279,41 @@ const PostDetail = () => {
                             </div>
                         </div>
 
+                        {/* Map Section */}
+                        <div className="mb-8">
+                            <h3 className="font-bold text-gray-900 text-xl mb-4">Vị trí</h3>
+                            <div className="h-[400px] rounded-xl overflow-hidden border border-gray-200 relative bg-gray-100 shadow-sm">
+                                {coordinates ? (
+                                    <Map
+                                        key={`${coordinates.latitude}-${coordinates.longitude}`}
+                                        mapboxAccessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+                                        initialViewState={{
+                                            longitude: coordinates.longitude,
+                                            latitude: coordinates.latitude,
+                                            zoom: 15
+                                        }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        mapStyle="mapbox://styles/mapbox/streets-v12"
+                                    >
+                                        <Marker longitude={coordinates.longitude} latitude={coordinates.latitude} color="red" />
+                                        <NavigationControl position="bottom-right" />
+                                    </Map>
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mt-4 flex items-start gap-2 text-gray-600">
+                                <MapPin size={18} className="mt-0.5 shrink-0 text-gray-400" />
+                                <span className="font-medium">
+                                    {post.address?.street ? `${post.address.street}, ` : ''}
+                                    {post.address?.ward ? `${post.address.ward}, ` : ''}
+                                    {post.address?.district || post.district}, {post.address?.city || post.city}
+                                </span>
+                            </div>
+                        </div>
+
                         {/* Legal / Redbook Images */}
                         {post.redbookImages && post.redbookImages.length > 0 && (
                             <div className="mb-8">
@@ -255,16 +358,7 @@ const PostDetail = () => {
 
                         <ReviewSection postId={post._id} />
 
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="font-bold text-gray-900 text-lg mb-4">Vị trí</h3>
-                            <div className="bg-gray-100 h-[200px] rounded-xl flex items-center justify-center relative overflow-hidden group border border-gray-200">
-                                <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
-                                <div className="bg-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 z-10 hover:scale-105 transition-transform cursor-pointer">
-                                    <MapPin className="text-blue-600" size={16} />
-                                    <span className="font-bold text-gray-900 text-sm">Xem bản đồ</span>
-                                </div>
-                            </div>
-                        </div>
+
 
 
 

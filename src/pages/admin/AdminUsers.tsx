@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersAPI } from '../../services/api';
 import type { User } from '../../types';
 import {
-    Search, Filter, MoreVertical, Ban,
+    Search, Filter, Ban,
     UserPlus, Users, ShieldCheck, ChevronDown, AlertTriangle, Trash2
 } from 'lucide-react';
 
@@ -82,6 +82,11 @@ const AdminUsers = () => {
     const activeUsers = users?.filter(u => !u.isBanned).length || 0;
     const bannedUsers = users?.filter(u => u.isBanned).length || 0;
 
+    // Growth Calculation (New users this month)
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const usersThisMonth = users?.filter(u => u.createdAt && new Date(u.createdAt).getTime() >= startOfMonth.getTime()).length || 0;
+
     // Filter Logic
     const filteredUsers = users?.filter(user => {
         const matchesSearch =
@@ -126,7 +131,7 @@ const AdminUsers = () => {
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG NGƯỜI DÙNG</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{totalUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +12% tháng này
+                            <span>↗</span> +{usersThisMonth} trong tháng này
                         </p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
@@ -138,8 +143,8 @@ const AdminUsers = () => {
                     <div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN HOẠT ĐỘNG</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{activeUsers.toLocaleString()}</p>
-                        <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +5% từ tuần trước
+                        <p className="text-xs font-medium text-slate-500 mt-2">
+                            {(totalUsers > 0 ? (activeUsers / totalUsers * 100).toFixed(1) : 0)}% tổng số
                         </p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
@@ -151,8 +156,8 @@ const AdminUsers = () => {
                     <div>
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN BỊ KHÓA</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{bannedUsers.toLocaleString()}</p>
-                        <p className="text-xs font-medium text-red-500 mt-2 flex items-center gap-1">
-                            <span>⚠</span> 2 đang chờ xem xét
+                        <p className="text-xs font-medium text-slate-500 mt-2">
+                            {(totalUsers > 0 ? (bannedUsers / totalUsers * 100).toFixed(1) : 0)}% tổng số
                         </p>
                     </div>
                     <div className="p-3 bg-red-50 text-red-500 rounded-lg">

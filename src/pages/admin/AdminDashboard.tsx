@@ -1,8 +1,8 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { postsAPI, usersAPI } from '../../services/api';
+import { postsAPI, usersAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
-import { Users, Clock, CheckCircle, Eye, ArrowRight, Crown } from 'lucide-react';
+import { Users, Clock, CheckCircle, Eye, ArrowRight, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -20,8 +20,12 @@ const AdminDashboard = () => {
         select: (res) => res.data.data as User[], // Check if API wraps in data.data
     });
 
-    // We don't have endpoints for "Approved Today" or "Views Today" yet without more backend work,
-    // so we'll mock or leave them as 0 for now.
+    // Fetch Admin Overview Stats
+    const { data: overviewStats } = useQuery({
+        queryKey: ['admin', 'overview-stats'],
+        queryFn: () => statsAPI.getAdminOverview(),
+        select: (res) => res.data,
+    });
 
     const stats = [
         {
@@ -32,25 +36,20 @@ const AdminDashboard = () => {
         },
         {
             label: 'Tổng người dùng',
-            value: users?.length || 0,
+            value: overviewStats?.totalUsers || 0,
             icon: Users,
             color: 'bg-blue-50 text-blue-600',
         },
+        // VIP stat removed as per user request
         {
-            label: 'Người dùng VIP',
-            value: users?.filter(u => u.vip?.isActive).length || 0,
-            icon: Crown,
-            color: 'bg-yellow-50 text-yellow-600',
-        },
-        {
-            label: 'Tin đã duyệt',
-            value: '---', // Placeholder
+            label: 'Tổng bài đăng',
+            value: overviewStats?.totalPosts || 0,
             icon: CheckCircle,
             color: 'bg-green-50 text-green-600',
         },
         {
             label: 'Lượt xem',
-            value: '---', // Placeholder
+            value: overviewStats?.totalViews || 0,
             icon: Eye,
             color: 'bg-purple-50 text-purple-600',
         },
@@ -58,6 +57,19 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-8">
+            {/* Quick Actions */}
+            <div className="grid gap-4 md:grid-cols-3">
+                <Link to="/admin/notifications" className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Bell size={24} />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900">Quản lý thông báo</h3>
+                        <p className="text-sm text-gray-500">Gửi thông báo hệ thống</p>
+                    </div>
+                </Link>
+            </div>
+
             {/* Stats Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat) => (

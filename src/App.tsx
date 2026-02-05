@@ -8,6 +8,7 @@ import Search from './pages/Search';
 import PostDetail from './pages/PostDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import Profile from './pages/Profile';
+import UserProfile from './pages/UserProfile';
 import CreatePost from './pages/CreatePost';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -15,7 +16,8 @@ import AdminPosts from './pages/admin/AdminPosts';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminReports from './pages/admin/AdminReports';
 import AdminVipPackages from './pages/admin/AdminVipPackages';
-import AdminWithdrawals from './pages/admin/AdminWithdrawals'; // Added
+import AdminWithdrawals from './pages/admin/AdminWithdrawals';
+import AdminNotifications from './pages/admin/AdminNotifications';
 import Chat from './pages/Chat'; // Added
 import VipManagement from './pages/VipManagement'; // Added
 
@@ -68,6 +70,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/user/:userId" element={<UserProfile />} />
           <Route
             path="/post-ad"
             element={
@@ -109,6 +112,7 @@ function App() {
           <Route path="vip" element={<AdminVipPackages />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="withdrawals" element={<AdminWithdrawals />} />
+          <Route path="notifications" element={<AdminNotifications />} />
         </Route>
       </Routes>
     </Router>

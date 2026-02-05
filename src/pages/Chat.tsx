@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { filesAPI, chatAPI } from '../services/api';
 import type { ChatRoom, MessageData } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { Search, Send, Phone, Video, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil } from 'lucide-react';
+import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil, ChevronLeft } from 'lucide-react';
 
 const Chat = () => {
     const { user } = useAuth();
@@ -333,7 +333,7 @@ const Chat = () => {
     return (
         <div className="flex bg-gray-50 h-[calc(100vh-74px)] relative">
             {/* Sidebar */}
-            <aside className="w-full md:w-80 border-r border-gray-200 bg-white flex flex-col h-full">
+            <aside className={`w-full md:w-80 border-r border-gray-200 bg-white flex flex-col h-full ${selectedRoomId ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-gray-200">
                     <h1 className="text-xl font-bold text-gray-900 mb-4">Tin nhắn</h1>
 
@@ -446,12 +446,18 @@ const Chat = () => {
             </aside>
 
             {/* Chat Area */}
-            <main className="hidden md:flex flex-1 flex-col h-full bg-white/50 relative">
+            <main className={`flex-1 flex-col h-full bg-white/50 relative ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
                 {selectedRoomId ? (
                     <>
                         {/* Header */}
-                        <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
+                        <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-6 shrink-0">
                             <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setSelectedRoomId(null)}
+                                    className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
                                 {roomsResponse && (() => {
                                     const room = roomsResponse.find(r => r._id === selectedRoomId);
                                     if (!room) return null;
@@ -488,12 +494,7 @@ const Chat = () => {
                                 })()}
                             </div>
                             <div className="flex items-center gap-3 text-gray-400">
-                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                    <Phone size={20} />
-                                </button>
-                                <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                    <Video size={20} />
-                                </button>
+
                                 <button
                                     className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
                                     onClick={handleDeleteChat}

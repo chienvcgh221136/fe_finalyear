@@ -1,14 +1,16 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Package, Home, Building2, User, LogOut, Heart, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2 } from 'lucide-react';
+import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { chatAPI } from '../services/api';
+import NotificationDropdown from './notifications/NotificationDropdown';
+import { useToast } from '../context/ToastContext';
 
 const Navbar = () => {
     const { user, isAuthenticated, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [logoutSuccess, setLogoutSuccess] = useState('');
+    const { success } = useToast();
 
     // Fetch unread messages count
     const { data: chatsData } = useQuery({
@@ -24,18 +26,12 @@ const Navbar = () => {
     const handleLogout = () => {
         logout();
         setIsDropdownOpen(false);
-        setLogoutSuccess('Đăng xuất thành công!');
-        setTimeout(() => setLogoutSuccess(''), 3000);
+        success('Đăng xuất thành công!');
     };
 
     return (
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
-            {logoutSuccess && (
-                <div className="toast toast-success" style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 100 }}>
-                    <span>✓</span> {logoutSuccess}
-                </div>
-            )}
-            <div className="container mx-auto px-4 h-[72px] flex justify-between items-center">
+            <div className="w-full px-4 md:px-8 h-[72px] flex justify-between items-center">
                 {/* Logo */}
                 <Link to="/" className="flex items-center gap-2">
                     <div className="bg-blue-600 p-1.5 rounded-lg text-white">
@@ -65,6 +61,8 @@ const Navbar = () => {
                                 <PlusCircle size={18} />
                                 <span className="hidden md:inline">Đăng tin</span>
                             </Link>
+
+                            <NotificationDropdown />
 
                             <Link to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
                                 <MessageCircle size={24} />
@@ -141,6 +139,14 @@ const Navbar = () => {
                                                 >
                                                     <CreditCard size={18} />
                                                     Ví của tôi
+                                                </Link>
+                                                <Link
+                                                    to={`/user/${user?._id}`}
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <User size={18} />
+                                                    Trang của tôi (Public)
                                                 </Link>
                                                 <Link
                                                     to="/profile?tab=stats"

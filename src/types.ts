@@ -23,6 +23,17 @@ export interface User {
     wallet?: {
         balance: number;
     };
+    isAuthenticated?: boolean;
+}
+
+export interface Review {
+    _id: string;
+    buyerId: User | string;
+    sellerId: User | string;
+    postId: string;
+    rating: number;
+    comment: string;
+    createdAt: string;
 }
 
 export interface Address {
@@ -126,6 +137,12 @@ export interface UserStats {
     totalLeads: number;
     vipPosts: number;
     totalSpent: number;
+    chartData: {
+        name: string;
+        views: number;
+        leads: number;
+        posts: number;
+    }[];
 }
 
 

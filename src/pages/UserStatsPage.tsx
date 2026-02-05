@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { statsAPI } from '../services/api';
 import type { UserStats } from '../types';
-import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Bar, Area, CartesianGrid, XAxis, YAxis, Legend } from 'recharts';
 import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package, ArrowUpCircle } from 'lucide-react';
 import UpgradeWizard from '../components/vip/UpgradeWizard';
 
@@ -33,7 +33,7 @@ const UserStatsPage = () => {
     const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-6xl relative">
+        <div className="w-full px-4 md:px-8 py-8 relative">
             <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
                 <LayoutDashboard className="text-blue-600" size={32} />
                 Thống kê hoạt động
@@ -152,12 +152,64 @@ const UserStatsPage = () => {
                     </div>
                 </div>
 
-                {/* Placeholder Activity Chart (Can be replaced with real timeseries data if backend supports it) */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96 flex flex-col items-center justify-center text-center">
-                    <div className="bg-gray-50 p-6 rounded-full mb-4">
-                        <LayoutDashboard className="text-gray-300" size={48} />
-                    </div>
-                    <p className="text-gray-500 font-medium">Biểu đồ hoạt động sẽ sớm được cập nhật</p>
+                {/* Activity Chart */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
+                    <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <LayoutDashboard size={20} className="text-blue-500" />
+                        Hoạt động 7 ngày qua
+                    </h3>
+                    <ResponsiveContainer width="100%" height="85%">
+                        <ComposedChart data={stats?.chartData || []}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                            <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#666', fontSize: 12 }}
+                                dy={10}
+                            />
+                            <YAxis
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#666', fontSize: 12 }}
+                            />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                            />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+
+                            <Bar
+                                name="Tin đăng"
+                                dataKey="posts"
+                                fill="#3b82f6"
+                                radius={[4, 4, 0, 0]}
+                                barSize={20}
+                            />
+                            <Area
+                                type="monotone"
+                                name="Lượt xem"
+                                dataKey="views"
+                                fill="url(#colorViews)"
+                                stroke="#10b981"
+                                strokeWidth={2}
+                            />
+                            <Area
+                                type="monotone"
+                                name="Leads"
+                                dataKey="leads"
+                                fill="none"
+                                stroke="#8b5cf6"
+                                strokeWidth={2}
+                            />
+                            <defs>
+                                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
+                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                </linearGradient>
+                            </defs>
+                        </ComposedChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
 

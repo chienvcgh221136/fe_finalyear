@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, postsAPI, filesAPI } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
@@ -13,9 +14,8 @@ const Profile = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { user, logout, updateUser } = useAuth();
+    const { success: toastSuccess, error: toastError } = useToast();
     const activeTab = searchParams.get('tab') || 'profile';
-
-    const [success, setSuccess] = useState('');
     const [isEditing, setIsEditing] = useState(false);
 
     // Form State
@@ -50,8 +50,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            setSuccess('Đã xóa tin đăng thành công');
-            setTimeout(() => setSuccess(''), 3000);
+            toastSuccess('Đã xóa tin đăng thành công');
         }
     });
 
@@ -59,8 +58,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.markSold(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            setSuccess('Đã đánh dấu đã bán');
-            setTimeout(() => setSuccess(''), 3000);
+            toastSuccess('Đã đánh dấu đã bán');
         }
     });
 
@@ -68,8 +66,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.markRented(id),
         onSuccess: (res) => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            setSuccess(res.data.message || 'Cập nhật trạng thái thành công');
-            setTimeout(() => setSuccess(''), 3000);
+            toastSuccess(res.data.message || 'Cập nhật trạng thái thành công');
         }
     });
 
@@ -78,8 +75,7 @@ const Profile = () => {
         onSuccess: (res) => {
             updateUser(res.data.data || res.data);
             setIsEditing(false);
-            setSuccess('Cập nhật thông tin thành công!');
-            setTimeout(() => setSuccess(''), 3000);
+            toastSuccess('Cập nhật thông tin thành công!');
         },
     });
 
@@ -122,11 +118,11 @@ const Profile = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            alert('Vui lòng chọn file ảnh');
+            toastError('Vui lòng chọn file ảnh');
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            alert('File ảnh quá lớn (tối đa 5MB)');
+            toastError('File ảnh quá lớn (tối đa 5MB)');
             return;
         }
 
@@ -142,11 +138,10 @@ const Profile = () => {
             // Auto-save to backend
             updateProfileMutation.mutate(newFormState);
 
-            setSuccess('Tải ảnh đại diện thành công!');
-            setTimeout(() => setSuccess(''), 3000);
+            toastSuccess('Tải ảnh đại diện thành công!');
         } catch (error) {
             console.error('Upload error:', error);
-            alert('Lỗi tải ảnh lên. Vui lòng thử lại.');
+            toastError('Lỗi tải ảnh lên. Vui lòng thử lại.');
         } finally {
             setUploading(false);
         }
@@ -165,22 +160,22 @@ const Profile = () => {
             mutationFn: ({ id, status }: { id: string, status: string }) =>
                 import('../services/api').then(m => m.appointmentAPI.updateStatus(id, status)),
             onSuccess: () => {
-                alert("Cập nhật trạng thái thành công!");
+                toastSuccess("Cập nhật trạng thái thành công!");
                 refetch();
             },
             onError: (err: any) => {
-                alert(err.response?.data?.message || "Có lỗi xảy ra");
+                toastError(err.response?.data?.message || "Có lỗi xảy ra");
             }
         });
 
         const deleteMutation = useMutation({
             mutationFn: (id: string) => import('../services/api').then(m => m.appointmentAPI.delete(id)),
             onSuccess: () => {
-                alert("Đã xóa lịch hẹn thành công");
+                toastSuccess("Đã xóa lịch hẹn thành công");
                 refetch();
             },
             onError: (err: any) => {
-                alert(err.response?.data?.message || "Có lỗi xảy ra khi xóa");
+                toastError(err.response?.data?.message || "Có lỗi xảy ra khi xóa");
             }
         });
 
@@ -368,6 +363,7 @@ const Profile = () => {
                                                     if (window.confirm('Bỏ lưu tin này?')) {
                                                         await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
                                                         queryClient.invalidateQueries({ queryKey: ['favorites', 'me'] });
+                                                        toastSuccess('Đã bỏ lưu tin thành công');
                                                     }
                                                 }}
                                                 className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
@@ -444,7 +440,7 @@ const Profile = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-8">
-            <div className="container mx-auto px-4">
+            <div className="w-full px-4 md:px-8">
                 <div className="grid gap-6 md:grid-cols-[280px_1fr]">
 
                     {/* Sidebar */}
@@ -547,12 +543,7 @@ const Profile = () => {
                                         )}
                                     </div>
                                 </div>
-                                {success && (
-                                    <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
-                                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                        {success}
-                                    </div>
-                                )}
+
 
                                 <div className="space-y-4 max-w-lg">
                                     {/* Name Input */}

@@ -1,34 +1,33 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../services/api';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../context/ToastContext';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const navigate = useNavigate();
     const { login, googleLogin } = useAuth();
+    const { success, error } = useToast();
 
     const handleGoogleLoginSuccess = async (credentialResponse: any) => {
         try {
             if (credentialResponse.credential) {
                 const result = await googleLogin(credentialResponse.credential);
                 if (result.success) {
-                    setSuccess('Đăng nhập Google thành công! Đang chuyển hướng...');
+                    success('Đăng nhập Google thành công! Đang chuyển hướng...');
                     setTimeout(() => {
                         navigate('/');
                     }, 1000);
                 } else {
-                    setError(result.error || 'Đăng nhập Google thất bại');
+                    error(result.error || 'Đăng nhập Google thất bại');
                 }
             }
         } catch (err) {
-            setError('Đăng nhập Google thất bại');
+            error('Đăng nhập Google thất bại');
         }
     };
 
@@ -36,32 +35,20 @@ const Login = () => {
         try {
             const result = await login(data.email, data.password);
             if (result.success) {
-                setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
+                success('Đăng nhập thành công! Đang chuyển hướng...');
                 setTimeout(() => {
                     navigate('/');
                 }, 1000);
             } else {
-                setError(result.error || 'Đăng nhập thất bại');
+                error(result.error || 'Đăng nhập thất bại');
             }
         } catch (err) {
-            setError('Đăng nhập thất bại');
+            error('Đăng nhập thất bại');
         }
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
-            {/* Toast Notifications */}
-            {success && (
-                <div className="toast toast-success fixed top-4 right-4 z-50">
-                    <span>✓</span> {success}
-                </div>
-            )}
-            {error && (
-                <div className="toast toast-error fixed top-4 right-4 z-50">
-                    <span>⚠</span> {error}
-                </div>
-            )}
-
             <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-bold text-gray-900">Chào mừng trở lại</h2>
@@ -123,7 +110,7 @@ const Login = () => {
                 <div className="flex justify-center w-full">
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}
-                        onError={() => setError("Đăng nhập Google thất bại")}
+                        onError={() => error("Đăng nhập Google thất bại")}
                         theme="outline"
                         size="large"
                         width="100%"

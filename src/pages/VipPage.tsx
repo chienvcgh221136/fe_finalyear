@@ -70,7 +70,7 @@ const VipPage = () => {
     if (loadingPackages) return <div className="p-12 text-center text-gray-500">Đang tải gói dịch vụ...</div>;
 
     return (
-        <div className="container mx-auto px-4 py-12 max-w-6xl relative">
+        <div className="w-full px-4 md:px-8 py-12 relative">
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm uppercase tracking-wider mb-4">
                     <Crown size={18} /> Premium Membership

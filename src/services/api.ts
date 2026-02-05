@@ -40,6 +40,7 @@ export const usersAPI = {
     ban: (id: string) => api.patch(`/admin/users/${id}/ban`),
     unban: (id: string) => api.patch(`/admin/users/${id}/unban`),
     delete: (id: string) => api.delete(`/admin/users/${id}`),
+    getById: (id: string) => api.get(`/users/${id}`),
 };
 
 export const filesAPI = {
@@ -58,6 +59,7 @@ export const postService = {
     getAll: (params?: any) => api.get('/posts', { params }),
     getById: (id: string) => api.get(`/posts/${id}`),
     getMyPosts: () => api.get('/posts/me/list'), // Corrected endpoint
+    getByUser: (userId: string) => api.get(`/posts/user/${userId}/list`),
     create: (data: any) => api.post('/posts', data),
     update: (id: string, data: any) => api.put(`/posts/${id}`, data),
     delete: (id: string) => api.delete(`/posts/${id}`),
@@ -157,6 +159,18 @@ export const appointmentAPI = {
 
 export const leadsAPI = {
     showPhone: (postId: string) => api.post(`/leads/show-phone/${postId}`),
+};
+
+export const notificationAPI = {
+    getAll: () => api.get('/notifications'),
+    markRead: (id: string) => api.put(`/notifications/${id}/read`),
+    markAllRead: () => api.put('/notifications/mark-all-read'),
+
+    // Admin
+    createSystemNotification: (data: any) => api.post('/notifications/admin/create', data),
+    getSystemNotifications: () => api.get('/notifications/admin/list'),
+    updateNotification: (id: string, message: string) => api.put(`/notifications/admin/${id}`, { message }),
+    deleteNotification: (id: string) => api.delete(`/notifications/admin/${id}`),
 };
 
 export default api;

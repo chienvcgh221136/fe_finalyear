@@ -5,6 +5,7 @@ import { reviewsAPI } from '../../services/api';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 
 interface ReviewSectionProps {
     postId: string;
@@ -28,6 +29,8 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
         enabled: !!postId
     });
 
+    const { success, error } = useToast();
+
     const createMutation = useMutation({
         mutationFn: (data: any) => reviewsAPI.create(postId, data),
         onSuccess: () => {
@@ -35,10 +38,10 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
             setRating(5);
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            alert("Cảm ơn đánh giá của bạn!");
+            success("Cảm ơn đánh giá của bạn!");
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || "Có lỗi xảy ra");
+            error(err.response?.data?.message || "Có lỗi xảy ra");
         }
     });
 
@@ -47,9 +50,9 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            alert("Đã xóa đánh giá");
+            success("Đã xóa đánh giá");
         },
-        onError: (err: any) => alert(err.response?.data?.message || "Lỗi khi xóa")
+        onError: (err: any) => error(err.response?.data?.message || "Lỗi khi xóa")
     });
 
     const updateMutation = useMutation({
@@ -58,9 +61,9 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
             setEditingReviewId(null);
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            alert("Đã cập nhật đánh giá");
+            success("Đã cập nhật đánh giá");
         },
-        onError: (err: any) => alert(err.response?.data?.message || "Lỗi khi cập nhật")
+        onError: (err: any) => error(err.response?.data?.message || "Lỗi khi cập nhật")
     });
 
     const handleSubmit = (e: React.FormEvent) => {

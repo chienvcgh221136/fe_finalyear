@@ -4,7 +4,7 @@ import { Facebook, Instagram, Twitter, Linkedin, Send, Package } from 'lucide-re
 const Footer = () => {
     return (
         <footer className="footer">
-            <div className="container">
+            <div className="w-full px-4 md:px-8">
                 {/* Top Section */}
                 <div className="footer-top">
                     <div className="grid-4">
@@ -72,7 +72,7 @@ const Footer = () => {
 
                 {/* Bottom Section */}
                 <div className="footer-bottom">
-                    <p>&copy; 2024 EstateMarket Inc. All rights reserved.</p>
+                    <p>&copy; 2026 EstateMarket Inc. All rights reserved.</p>
                 </div>
             </div>
         </footer>

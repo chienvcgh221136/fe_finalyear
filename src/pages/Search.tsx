@@ -297,7 +297,7 @@ const Search = () => {
     };
 
     return (
-        <div className="container">
+        <div className="w-full px-4 md:px-8">
             <div className="page-layout">
                 {/* Sidebar */}
                 <aside className="sidebar">

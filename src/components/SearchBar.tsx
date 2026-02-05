@@ -1,19 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, ChevronRight } from 'lucide-react';
+import { Search, MapPin, ChevronRight, ChevronDown } from 'lucide-react';
 import { Button } from './ui/Button';
 
 export function SearchBar() {
     const navigate = useNavigate();
     const [keyword, setKeyword] = useState('');
     const [type, setType] = useState('SALE'); // SALE or RENT
+    const [city, setCity] = useState(''); // Empty = Toàn quốc
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         const params = new URLSearchParams();
         if (keyword) params.append('q', keyword);
-        if (type) params.append('transactionType', type);
-        navigate(`/search?${params.toString()}`); // Navigate to generic search page
+
+        if (city) params.append('city', city);
+
+        const path = type === 'SALE' ? '/buy' : '/rent';
+
+        params.append('transactionType', type);
+
+        navigate(`${path}?${params.toString()}`);
     };
 
     return (
@@ -44,18 +51,30 @@ export function SearchBar() {
             <form onSubmit={handleSearch} className="bg-white rounded-b-2xl rounded-tr-2xl shadow-2xl p-6 md:p-8 pt-6 relative z-0 border border-gray-100">
                 <div className="flex flex-col md:flex-row gap-4">
 
-                    {/* Location 'Fake' Dropdown */}
+                    {/* Location Dropdown */}
                     <div className="md:w-1/4 relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <MapPin className="text-gray-400" size={20} />
                         </div>
-                        <div className="flex items-center justify-between w-full h-full min-h-[56px] pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-xl cursor-not-allowed text-gray-700 font-medium group-hover:bg-gray-100 transition-colors">
-                            <span>Toàn quốc</span>
-                            <span className="text-xs bg-gray-200 px-2 py-1 rounded text-gray-500">Mở rộng</span>
+                        <select
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                            className="w-full h-full min-h-[56px] pl-12 pr-10 bg-gray-50 border border-gray-200 rounded-xl appearance-none cursor-pointer text-gray-700 font-medium hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        >
+                            <option value="">Toàn quốc</option>
+                            {[
+                                "Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Bình Dương", "Đồng Nai",
+                                "Cần Thơ", "Hải Phòng", "Long An", "Bà Rịa - Vũng Tàu",
+                                "Tiền Giang", "Khánh Hòa", "Bình Thuận", "Quảng Ninh",
+                                "Lâm Đồng", "Thanh Hóa", "Nghệ An", "Bắc Ninh"
+                            ].map(c => (
+                                <option key={c} value={c}>{c}</option>
+                            ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                            <ChevronDown className="text-gray-400" size={16} />
                         </div>
                     </div>
-
-                    {/* Divider for Desktop - Visual Separation if needed, but managing with gap is cleaner in Flex */}
 
                     {/* Keyword Input */}
                     <div className="flex-1 relative">
@@ -85,10 +104,10 @@ export function SearchBar() {
                 {/* Quick Filters / Suggestions */}
                 <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
                     <span className="text-gray-400 font-medium mr-2">Gợi ý:</span>
-                    <button type="button" onClick={() => setKeyword('Hồ Chí Minh')} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
+                    <button type="button" onClick={() => { setCity('Hồ Chí Minh'); setKeyword(''); }} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
                         Hồ Chí Minh
                     </button>
-                    <button type="button" onClick={() => setKeyword('Hà Nội')} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
+                    <button type="button" onClick={() => { setCity('Hà Nội'); setKeyword(''); }} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
                         Hà Nội
                     </button>
                     <button type="button" onClick={() => { setType('RENT'); setKeyword('Căn hộ'); }} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">

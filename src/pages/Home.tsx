@@ -41,7 +41,7 @@ const Home = () => {
                     <div className="absolute right-0 top-0 -z-10 h-full w-1/2 bg-gradient-to-b from-blue-50/50 to-transparent blur-3xl"></div>
                 </div>
 
-                <div className="container mx-auto px-4 relative z-10">
+                <div className="w-full px-4 md:px-8 relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -71,7 +71,7 @@ const Home = () => {
 
             {/* Categories */}
             <section className="py-12 bg-white border-b border-gray-100">
-                <div className="container mx-auto px-4">
+                <div className="w-full px-4 md:px-8">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                         {categories.map((cat, i) => (
                             <motion.div
@@ -98,7 +98,7 @@ const Home = () => {
 
             {/* VIP Posts */}
             <section className="py-16 md:py-24 bg-white relative">
-                <div className="container mx-auto px-4">
+                <div className="w-full px-4 md:px-8">
                     <div className="flex items-end justify-between mb-10 md:mb-12">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -144,7 +144,7 @@ const Home = () => {
 
             {/* Recent Posts */}
             <section className="py-16 md:py-24 bg-gray-50/50">
-                <div className="container mx-auto px-4">
+                <div className="w-full px-4 md:px-8">
                     <div className="flex items-end justify-between mb-10 md:mb-12">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -190,7 +190,7 @@ const Home = () => {
 
             {/* CTA Section */}
             <section className="py-20 bg-white">
-                <div className="container mx-auto px-4">
+                <div className="w-full px-4 md:px-8">
                     <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0A0A0A] px-6 py-16 md:px-16 md:py-24 text-center text-white shadow-2xl">
                         {/* Abstract Shapes */}
                         <div className="absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3 w-96 h-96 bg-blue-600/30 rounded-full blur-3xl"></div>

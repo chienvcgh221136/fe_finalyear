@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Phone, MessageCircle, AlertCircle, CheckCircle, Star, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { leadsAPI } from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 interface AgentWidgetProps {
     user?: {
@@ -25,8 +27,8 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
     const { user: currentUser } = useAuth();
     // Generate member since date from USER data
     const memberSince = user?.createdAt
-        ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
-        : (updatedAt ? new Date(updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : 'Unknown');
+        ? `tháng ${new Date(user.createdAt).getMonth() + 1}/${new Date(user.createdAt).getFullYear()}`
+        : (updatedAt ? `tháng ${new Date(updatedAt).getMonth() + 1}/${new Date(updatedAt).getFullYear()}` : 'Chưa rõ');
 
     const userName = user?.name || "Unverified User";
     const firstLetter = userName.charAt(0).toUpperCase();
@@ -42,6 +44,8 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
 
     const queryClient = useQueryClient();
 
+    const { warning, error: toastError } = useToast();
+
     const handleShowPhone = async () => {
         if (showPhone) return;
 
@@ -52,7 +56,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
         }
 
         if (!currentUser) {
-            alert("Vui lòng đăng nhập để xem số điện thoại");
+            warning("Vui lòng đăng nhập để xem số điện thoại");
             return;
         }
 
@@ -71,7 +75,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
         } catch (error: any) {
             console.error("Show phone error", error);
             const message = error.response?.data?.message || "Không thể xem số điện thoại";
-            alert(message);
+            toastError(message);
         } finally {
             setIsLoadingPhone(false);
         }
@@ -93,24 +97,28 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
             {/* Profile Section */}
             <div className="flex items-start gap-4 mb-6">
                 <div className="relative">
-                    <div className="p-0.5 rounded-full border-2 border-blue-100">
-                        {user?.avatar ? (
-                            <img
-                                src={user.avatar}
-                                alt="Agent"
-                                className="w-14 h-14 rounded-full object-cover"
-                            />
-                        ) : (
-                            <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-2xl font-bold uppercase">
-                                {firstLetter}
-                            </div>
-                        )}
-                    </div>
+                    <Link to={user?._id ? `/user/${user._id}` : '#'}>
+                        <div className="p-0.5 rounded-full border-2 border-blue-100 hover:opacity-80 transition-opacity">
+                            {user?.avatar ? (
+                                <img
+                                    src={user.avatar}
+                                    alt="Agent"
+                                    className="w-14 h-14 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-2xl font-bold uppercase">
+                                    {firstLetter}
+                                </div>
+                            )}
+                        </div>
+                    </Link>
                 </div>
 
                 <div className="flex flex-col pt-0.5 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
-                        <h3 className="font-bold text-gray-900 text-lg leading-none truncate">{userName}</h3>
+                        <Link to={user?._id ? `/user/${user._id}` : '#'} className="font-bold text-gray-900 text-lg leading-none truncate hover:underline hover:text-blue-600 transition-colors">
+                            {userName}
+                        </Link>
                         <CheckCircle size={16} className="text-blue-600 fill-blue-600 text-white flex-shrink-0" />
                     </div>
 

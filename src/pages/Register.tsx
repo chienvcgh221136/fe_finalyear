@@ -1,36 +1,20 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/api';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const Register = () => {
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const { success, error } = useToast();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
-
-    useEffect(() => {
-        if (error || success) {
-            const timer = setTimeout(() => {
-                setError('');
-                if (success) {
-
-                    setSuccess('');
-                }
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [error, success]);
-
     const onSubmit = async (data: any) => {
-        setError('');
-        setSuccess('');
         try {
             if (data.password !== data.confirmPassword) {
-                setError('Mật khẩu không khớp');
+                error('Mật khẩu không khớp');
                 return;
             }
 
@@ -44,32 +28,21 @@ const Register = () => {
             const response = await authService.register(payload);
 
             if (response.data.success) {
-                setSuccess('Đăng ký thành công! Đang chuyển hướng đến đăng nhập...');
+                success('Đăng ký thành công! Đang chuyển hướng đến đăng nhập...');
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
             } else {
-                setError(response.data.message || 'Đăng ký thất bại');
+                error(response.data.message || 'Đăng ký thất bại');
             }
         } catch (err: any) {
             console.error('Registration Error:', err);
-            setError(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+            error(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
         }
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen">
-            {/* Toast Notifications */}
-            {success && (
-                <div className="toast toast-success">
-                    <span>✓</span> {success}
-                </div>
-            )}
-            {error && (
-                <div className="toast toast-error">
-                    <span>⚠</span> {error}
-                </div>
-            )}
+        <div className="flex items-center justify-center min-h-screen ml-auto mr-auto">
 
             <div className="auth-container" style={{ maxWidth: '500px' }}>
                 <div className="auth-header">
