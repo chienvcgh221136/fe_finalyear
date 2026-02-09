@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { postsAPI, usersAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
-import { Users, Clock, CheckCircle, Eye, ArrowRight, Bell } from 'lucide-react';
+import { Users, Clock, CheckCircle, Eye, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
@@ -57,18 +57,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-8">
-            {/* Quick Actions */}
-            <div className="grid gap-4 md:grid-cols-3">
-                <Link to="/admin/notifications" className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-shadow group">
-                    <div className="w-12 h-12 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Bell size={24} />
-                    </div>
-                    <div>
-                        <h3 className="font-bold text-gray-900">Quản lý thông báo</h3>
-                        <p className="text-sm text-gray-500">Gửi thông báo hệ thống</p>
-                    </div>
-                </Link>
-            </div>
+
 
             {/* Stats Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -114,7 +103,7 @@ const AdminDashboard = () => {
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Chờ duyệt</span>
-                                            <span className="text-xs text-gray-400">• {new Date(post.createdAt ?? Date.now()).toLocaleDateString('vi-VN')}</span>
+                                            <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -148,7 +137,7 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500 truncate">{u.email}</p>
                                     </div>
                                     <div className="text-xs text-gray-400 font-medium">
-                                        {new Date(u.createdAt ?? Date.now()).toLocaleDateString('vi-VN')}
+                                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong'}
                                     </div>
                                 </div>
                             ))}

@@ -41,6 +41,9 @@ export const usersAPI = {
     unban: (id: string) => api.patch(`/admin/users/${id}/unban`),
     delete: (id: string) => api.delete(`/admin/users/${id}`),
     getById: (id: string) => api.get(`/users/${id}`),
+    block: (userIdToBlock: string) => api.post('/users/block', { userIdToBlock }),
+    unblock: (userIdToUnblock: string) => api.post('/users/unblock', { userIdToUnblock }),
+    getBlockedUsers: () => api.get('/users/blocked/all'),
 };
 
 export const filesAPI = {
@@ -72,6 +75,7 @@ export const postService = {
 
 export const reportsAPI = {
     create: (postId: string, data: { reason: string; description: string }) => api.post(`/reports/${postId}`, data),
+    createUserReport: (data: { targetUserId: string; chatRoomId?: string; reason: string; description: string }) => api.post(`/reports/user/report`, data),
     getAll: () => api.get('/reports/admin'),
     resolve: (id: string) => api.patch(`/reports/${id}/resolve`),
     reject: (id: string) => api.patch(`/reports/${id}/reject`),
@@ -161,6 +165,7 @@ export const leadsAPI = {
     showPhone: (postId: string) => api.post(`/leads/show-phone/${postId}`),
 };
 
+
 export const notificationAPI = {
     getAll: () => api.get('/notifications'),
     markRead: (id: string) => api.put(`/notifications/${id}/read`),
@@ -171,6 +176,19 @@ export const notificationAPI = {
     getSystemNotifications: () => api.get('/notifications/admin/list'),
     updateNotification: (id: string, message: string) => api.put(`/notifications/admin/${id}`, { message }),
     deleteNotification: (id: string) => api.delete(`/notifications/admin/${id}`),
+};
+
+export const pointsAPI = {
+    getMyPoints: () => api.get('/points/me'),
+    getVipItemsHistory: () => api.get('/points/vip-items-history'),
+    redeem: (rewardKey: string) => api.post('/points/redeem', { rewardKey }),
+    useItem: (itemKey: string, postId?: string, quantity: number = 1) => api.post('/points/use-item', { itemKey, postId, quantity }),
+
+    // Admin
+    getAllLogs: (params?: any) => api.get('/points/admin/logs', { params }),
+    getAdminStats: () => api.get('/points/admin/stats'),
+    getUsersWithPoints: (params?: any) => api.get('/points/admin/users-points', { params }),
+    adjustUserPoints: (data: any) => api.post('/points/admin/adjust-points', data),
 };
 
 export default api;

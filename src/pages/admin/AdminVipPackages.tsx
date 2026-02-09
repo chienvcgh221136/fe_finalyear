@@ -127,47 +127,7 @@ const AdminVipPackages = () => {
     const packages = packagesRes?.data?.data || [];
     const vipUsers = usersRes?.data?.data || [];
 
-    // User Edit State
-    const [editingUser, setEditingUser] = useState<any | null>(null);
-    const [showUserModal, setShowUserModal] = useState(false);
-    const [userFormData, setUserFormData] = useState({
-        expiredAt: '',
-        isActive: true
-    });
 
-    const updateUserMutation = useMutation({
-        mutationFn: ({ userId, data }: { userId: string; data: any }) => vipAPI.updateUserVip(userId, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['admin', 'vip-users'] });
-            setShowUserModal(false);
-            setEditingUser(null);
-            alert("Cập nhật VIP thành công!");
-        },
-        onError: (error: any) => {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra');
-        }
-    });
-
-    const handleUserEdit = (user: any) => {
-        setEditingUser(user);
-        setUserFormData({
-            expiredAt: user.vip?.expiredAt ? new Date(user.vip.expiredAt).toISOString().split('T')[0] : '',
-            isActive: user.vip?.isActive ?? false
-        });
-        setShowUserModal(true);
-    };
-
-    const handleUserSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingUser) return;
-        updateUserMutation.mutate({
-            userId: editingUser._id,
-            data: {
-                expiredAt: userFormData.expiredAt,
-                isActive: userFormData.isActive
-            }
-        });
-    };
 
     return (
         <div className="space-y-6 pb-12">
@@ -316,9 +276,7 @@ const AdminVipPackages = () => {
                             <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 <Filter size={16} /> Lọc
                             </button>
-                            <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                <Download size={16} /> Xuất file
-                            </button>
+
                         </div>
                     </div>
                     <div className="overflow-x-auto">
@@ -329,7 +287,6 @@ const AdminVipPackages = () => {
                                     <th className="px-6 py-4 font-medium">Gói hiện tại</th>
                                     <th className="px-6 py-4 font-medium">Trạng thái</th>
                                     <th className="px-6 py-4 font-medium">Hết hạn ngày</th>
-                                    <th className="px-6 py-4 font-medium text-right">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -361,19 +318,11 @@ const AdminVipPackages = () => {
                                         <td className="px-6 py-4 text-gray-500">
                                             {new Date(user.vip?.expiredAt).toLocaleDateString('vi-VN')}
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleUserEdit(user)}
-                                                className="text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 px-3 py-1 rounded hover:bg-blue-50"
-                                            >
-                                                Sửa / Gia hạn
-                                            </button>
-                                        </td>
                                     </tr>
                                 ))}
                                 {vipUsers.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                                             Không có người dùng nào đang sử dụng gói VIP.
                                         </td>
                                     </tr>
@@ -399,14 +348,17 @@ const AdminVipPackages = () => {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Tên Gói</label>
-                                <input
-                                    type="text"
+                                <select
                                     required
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    placeholder="Ví dụ: Gói Vàng"
-                                />
+                                >
+                                    <option value="" disabled>-- Chọn loại gói --</option>
+                                    <option value="VIP Bronze">VIP Bronze</option>
+                                    <option value="VIP Silver">VIP Silver</option>
+                                    <option value="VIP Gold">VIP Gold</option>
+                                </select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -525,74 +477,7 @@ const AdminVipPackages = () => {
                 </div>
             )}
 
-            {/* User Edit Modal */}
-            {showUserModal && editingUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 className="font-bold text-lg text-gray-900">
-                                Chỉnh sửa VIP: {editingUser.name}
-                            </h3>
-                            <button onClick={() => setShowUserModal(false)} className="text-gray-400 hover:text-gray-600">
-                                <XCircle size={24} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleUserSubmit} className="p-6 space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Gói hiện tại</label>
-                                <input
-                                    type="text"
-                                    disabled
-                                    value={editingUser.vip?.vipType || 'Không có'}
-                                    className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-500"
-                                />
-                            </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Ngày hết hạn</label>
-                                <input
-                                    type="date"
-                                    required
-                                    value={userFormData.expiredAt}
-                                    onChange={e => setUserFormData({ ...userFormData, expiredAt: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                                <p className="text-xs text-gray-500 mt-1">Chọn ngày mới để gia hạn hoặc rút ngắn thời gian.</p>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    id="isActiveUser"
-                                    checked={userFormData.isActive}
-                                    onChange={e => setUserFormData({ ...userFormData, isActive: e.target.checked })}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                />
-                                <label htmlFor="isActiveUser" className="text-sm font-medium text-gray-700">
-                                    Đang kích hoạt (Active)
-                                </label>
-                            </div>
-                            <p className="text-xs text-gray-500">Bỏ chọn để hủy tạm thời gói VIP của user này.</p>
-
-                            <div className="pt-4 flex justify-end gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowUserModal(false)}
-                                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                                >
-                                    Lưu Thay Đổi
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -53,7 +53,20 @@ const UserStatsPage = () => {
                                 {user.vip.vipType}
                             </h2>
                             <p className="text-sm opacity-90">
-                                Hết hạn: <span className="font-bold">{new Date(user.vip.expiredAt || '').toLocaleDateString('vi-VN')}</span>
+                                {(() => {
+                                    const end = new Date(user.vip.expiredAt || '');
+                                    const diff = end.getTime() - new Date().getTime();
+                                    const hours = Math.ceil(diff / (1000 * 60 * 60));
+
+                                    if (diff > 0 && hours < 24) {
+                                        return <span className="font-bold text-white bg-red-500/20 px-2 py-0.5 rounded">Hết hạn trong {hours} giờ nữa</span>;
+                                    }
+                                    return (
+                                        <>
+                                            Hết hạn: <span className="font-bold">{end.toLocaleDateString('vi-VN')}</span>
+                                        </>
+                                    );
+                                })()}
                                 <span className="mx-2">•</span>
                                 Chỉ số ưu tiên: <span className="font-bold">{user.vip.priorityScore}</span>
                             </p>

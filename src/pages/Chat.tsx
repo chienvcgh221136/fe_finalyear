@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { filesAPI, chatAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { filesAPI, chatAPI, usersAPI } from '../services/api';
 import type { ChatRoom, MessageData } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil, ChevronLeft } from 'lucide-react';
+import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil, ChevronLeft, MoreVertical, Shield, Ban, User, Image } from 'lucide-react';
+import ReportModal from '../components/modals/ReportModal';
 
 const Chat = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +27,10 @@ const Chat = () => {
     const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
     const [nicknameInput, setNicknameInput] = useState('');
     const [editingUserId, setEditingUserId] = useState<string | null>(null);
+
+    // Sidebar & Modal State
+    const [isDetailsOpen, setIsDetailsOpen] = useState(true); // Default open on desktop
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
     // Scroll & Badge State
     const [showNewMessageBadge, setShowNewMessageBadge] = useState(false);
@@ -317,10 +324,67 @@ const Chat = () => {
         if (!other) return;
 
         setEditingUserId(other._id || other.id);
-        setEditingUserId(other._id || other.id);
+        const otherId = other._id || other.id;
         // If nickname is same as name, show empty or name? Let's show current display name
-        setNicknameInput(room.nicknames?.[other._id || other.id] || '');
+        setNicknameInput(room.nicknames?.[otherId] || '');
         setIsNicknameModalOpen(true);
+    };
+
+    const handleBlockUser = async () => {
+        if (!selectedRoomId) return;
+        const room = roomsResponse?.find(r => r._id === selectedRoomId);
+        if (!room) return;
+        const other = getOtherParticipant(room) as any;
+        if (!other) return;
+        const otherId = other._id || other.id;
+
+        if (window.confirm(`Bạn có chắc chắn muốn chặn người dùng ${other.name}? Họ sẽ không thể nhắn tin cho bạn.`)) {
+            try {
+                await usersAPI.block(otherId);
+                alert("Đã chặn người dùng thành công");
+                // Refresh auth user to update blocked list
+                queryClient.invalidateQueries({ queryKey: ['chats'] });
+                window.location.reload(); // Simple way to refresh auth context for now
+            } catch (error) {
+                console.error("Block failed", error);
+                alert("Chặn thất bại");
+            }
+        }
+    };
+
+    const handleUnblockUser = async () => {
+        if (!selectedRoomId) return;
+        const room = roomsResponse?.find(r => r._id === selectedRoomId);
+        if (!room) return;
+        const other = getOtherParticipant(room) as any;
+        if (!other) return;
+        const otherId = other._id || other.id;
+
+        if (window.confirm(`Bạn có chắc chắn muốn bỏ chặn người dùng ${other.name}?`)) {
+            try {
+                await usersAPI.unblock(otherId);
+                alert("Đã bỏ chặn người dùng thành công");
+                window.location.reload();
+            } catch (error) {
+                console.error("Unblock failed", error);
+                alert("Bỏ chặn thất bại");
+            }
+        }
+    };
+
+    // Check if I blocked this user
+    const isBlockedByMe = () => {
+        if (!selectedRoomId || !user?.blockedUsers) return false;
+        const room = roomsResponse?.find(r => r._id === selectedRoomId);
+        if (!room) return false;
+        const other = getOtherParticipant(room) as any;
+        if (!other) return false;
+        const otherId = other._id || other.id;
+        return user.blockedUsers.includes(otherId);
+    };
+
+    const handleReportUser = () => {
+        setIsReportModalOpen(true);
     };
 
     const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -446,268 +510,444 @@ const Chat = () => {
             </aside>
 
             {/* Chat Area */}
-            <main className={`flex-1 flex-col h-full bg-white/50 relative ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
+            <main className={`flex-1 h-full bg-white/50 relative ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
                 {selectedRoomId ? (
                     <>
-                        {/* Header */}
-                        <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-6 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <button
-                                    onClick={() => setSelectedRoomId(null)}
-                                    className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
-                                >
-                                    <ChevronLeft size={24} />
-                                </button>
+                        <div className="flex-1 flex flex-col min-w-0 h-full">
+                            {/* Header */}
+                            <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-6 shrink-0">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setSelectedRoomId(null)}
+                                        className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                    >
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    {roomsResponse && (() => {
+                                        const room = roomsResponse.find(r => r._id === selectedRoomId);
+                                        if (!room) return null;
+                                        const other = getOtherParticipant(room) as any;
+                                        return (
+                                            <>
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border border-gray-100">
+                                                    {other?.avatar ? (
+                                                        <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        other?.name?.charAt(0).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <h2 className="font-bold text-gray-900">{getDisplayName(room, other)}</h2>
+                                                            <button
+                                                                onClick={openNicknameModal}
+                                                                className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                                                                title="Đổi biệt danh"
+                                                            >
+                                                                <Pencil size={14} />
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                                            <p className="text-xs text-green-600 font-medium">Đang hoạt động</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-400">
+                                    <button
+                                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+                                        onClick={handleDeleteChat}
+                                        title="Xóa cuộc trò chuyện"
+                                    >
+                                        <Trash2 size={20} />
+                                    </button>
+                                    <button
+                                        className={`p-2 hover:bg-gray-100 rounded-full transition-colors ${isDetailsOpen ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}
+                                        onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                                        title="Thông tin hội thoại"
+                                    >
+                                        <MoreVertical size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Post Context Bar */}
+                            {roomsResponse && (() => {
+                                const room = roomsResponse.find(r => r._id === selectedRoomId);
+                                const post = room?.postId as any;
+
+                                if (!post || typeof post === 'string') return null;
+
+                                return (<div className="bg-blue-50/50 border-b border-blue-100 p-3 flex items-center gap-4 px-6">
+                                    <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0 border border-gray-200">
+                                        <img
+                                            src={post.images?.[0] || 'https://placehold.co/100'}
+                                            alt={post.title}
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Image';
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-blue-600 font-bold mb-0.5 uppercase tracking-wide">Đang trao đổi về</p>
+                                        <h3 className="font-bold text-gray-900 truncate text-sm mb-0.5">{post.title}</h3>
+                                        <p className="text-red-600 font-bold text-sm">
+                                            {post.price >= 1000000000
+                                                ? `${(post.price / 1000000000).toLocaleString('vi-VN')} Tỷ`
+                                                : `${(post.price / 1000000).toLocaleString('vi-VN')} Triệu`}
+                                        </p>
+                                    </div>
+                                    <a
+                                        href={`/post/${post._id}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
+                                    >
+                                        Xem tin
+                                    </a>
+                                </div>
+                                );
+                            })()}
+
+                            {/* Messages List */}
+                            <div
+                                ref={scrollContainerRef}
+                                onScroll={handleScroll}
+                                className="flex-1 overflow-y-auto p-6 space-y-4 relative"
+                            >
+                                {loadingMessages ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <Loader2 className="animate-spin text-blue-600" size={32} />
+                                    </div>
+                                ) : messagesData && messagesData.messages && messagesData.messages.length > 0 ? (
+                                    (() => {
+                                        const messages = messagesData.messages;
+                                        const currentUserId = user?.id || user?._id;
+                                        let lastMyMessageIdx = -1;
+
+                                        for (let i = messages.length - 1; i >= 0; i--) {
+                                            const msg = messages[i];
+                                            const senderId = typeof msg.senderId === 'object'
+                                                ? (('id' in msg.senderId ? msg.senderId.id : undefined) || ('_id' in msg.senderId ? msg.senderId._id : undefined))
+                                                : msg.senderId;
+
+                                            if (String(senderId) === String(currentUserId)) {
+                                                lastMyMessageIdx = i;
+                                                break;
+                                            }
+                                        }
+
+                                        return (
+                                            <>
+                                                {messages.map((msg, idx) => {
+                                                    const senderId = typeof msg.senderId === 'object'
+                                                        ? (('id' in msg.senderId ? msg.senderId.id : undefined) || ('_id' in msg.senderId ? msg.senderId._id : undefined))
+                                                        : msg.senderId;
+
+                                                    const isMe = String(senderId) === String(currentUserId);
+                                                    const isLastMyMsg = isMe && idx === lastMyMessageIdx;
+                                                    const isHighlighted = highlightedMessageId === msg._id;
+
+                                                    const isImage = msg.type === 'IMAGE' || (msg.content.startsWith('http') && (msg.content.includes('/uploads/') || msg.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)));
+
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            ref={(el) => {
+                                                                if (msg._id) messageRefs.current[msg._id] = el;
+                                                            }}
+                                                            className={`flex flex-col mb-1 ${isMe ? 'items-end' : 'items-start'} ${isHighlighted ? 'bg-yellow-50/50 p-2 rounded -mx-2 transition-all duration-1000' : ''}`}
+                                                        >
+                                                            <div className={`max-w-[70%] rounded-2xl shadow-sm relative ${isHighlighted ? 'ring-2 ring-yellow-400 ring-offset-2' : ''} ${isImage
+                                                                ? `p-0 overflow-hidden ${isMe ? 'rounded-br-none' : 'rounded-bl-none'}`
+                                                                : `px-5 py-3 ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'}`
+                                                                }`}>
+                                                                {isImage ? (
+                                                                    <img
+                                                                        src={msg.content}
+                                                                        alt="Sent image"
+                                                                        className="max-w-full rounded-none max-h-60 object-cover cursor-pointer hover:opacity-95 transition-opacity block"
+                                                                        onClick={() => setViewingImage(msg.content)}
+                                                                    />
+                                                                ) : (
+                                                                    <p className="text-sm leading-relaxed">
+                                                                        {/* Highlight content search match only if this is the highlighted message for better UX */}
+                                                                        {isHighlighted && searchTerm ? highlightText(msg.content, searchTerm) : msg.content}
+                                                                    </p>
+                                                                )}
+
+                                                                <div className={`flex items-center gap-1 ${isImage
+                                                                    ? 'absolute bottom-2 right-2 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm text-white'
+                                                                    : `justify-end mt-1 ${isMe ? 'text-blue-100' : 'text-gray-400'}`
+                                                                    }`}>
+                                                                    <p className="text-[10px]">
+                                                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </p>
+                                                                    {isMe && (
+                                                                        msg.isRead ? (
+                                                                            <CheckCheck size={12} className={isImage ? "text-white" : "text-blue-100"} />
+                                                                        ) : (
+                                                                            <Check size={12} className={isImage ? "text-white/70" : "text-blue-100"} />
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            {isLastMyMsg && !isImage && (
+                                                                <span className="text-[10px] text-gray-400 mt-1 mr-1">
+                                                                    {msg.isRead ? 'Đã xem' : 'Đã gửi'}
+                                                                </span>
+                                                            )}
+                                                            {isLastMyMsg && isImage && (
+                                                                <span className="text-[10px] text-gray-400 mt-1 mr-1">
+                                                                    {msg.isRead ? 'Đã xem' : 'Đã gửi'}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                                <div ref={messagesEndRef} />
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                                        <MessageCircle size={48} className="mb-4 opacity-20" />
+                                        <p>Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</p>
+                                    </div>
+                                )}
+
+                                {/* Float New Message Badge */}
+                                {showNewMessageBadge && (
+                                    <button
+                                        onClick={() => scrollToBottom(true)}
+                                        className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-blue-700 transition-all z-10 text-sm font-medium animate-bounce"
+                                    >
+                                        📩 Tin nhắn mới <ArrowDown size={16} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="p-4 bg-white border-t border-gray-200">
+                                {/* Image Preview */}
+                                {previewImage && (
+                                    <div className="mb-4 relative inline-block">
+                                        <img src={previewImage.url} alt="Preview" className="h-24 rounded-lg border border-gray-200" />
+                                        <button
+                                            onClick={() => setPreviewImage(null)}
+                                            className="absolute -top-2 -right-2 bg-gray-900/50 text-white rounded-full p-1 hover:bg-gray-900 transition-colors"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {isBlockedByMe() ? (
+                                    <div className="flex items-center justify-center p-4 bg-gray-100 rounded-xl text-gray-500 gap-2">
+                                        <Ban size={20} />
+                                        <span>Bạn đã chặn người dùng này. Bỏ chặn để gửi tin nhắn.</span>
+                                        <button
+                                            onClick={handleUnblockUser}
+                                            className="ml-2 text-blue-600 hover:underline font-medium"
+                                        >
+                                            Bỏ chặn
+                                        </button>
+                                    </div>
+                                ) : (
+                                    (() => {
+                                        const room = roomsResponse?.find(r => r._id === selectedRoomId);
+                                        if (room?.blockedByOther) {
+                                            return (
+                                                <div className="flex items-center justify-center p-4 bg-red-50 rounded-xl text-red-500 gap-2">
+                                                    <Ban size={20} />
+                                                    <span>Bạn không thể liên lạc với người này.</span>
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <form
+                                                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                                                className="flex gap-3 max-w-4xl mx-auto items-center"
+                                            >
+                                                <label className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer transition-colors">
+                                                    <ImageIcon size={20} />
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleImageSelect}
+                                                    />
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    placeholder="Nhập tin nhắn..."
+                                                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all disabled:opacity-50"
+                                                    value={newMessage}
+                                                    onChange={(e) => setNewMessage(e.target.value)}
+                                                    disabled={!!previewImage}
+                                                />
+                                                <button
+                                                    type="submit"
+                                                    disabled={(!newMessage.trim() && !previewImage) || sendMessageMutation.isPending || isUploading}
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-blue-600/20"
+                                                >
+                                                    {(sendMessageMutation.isPending || isUploading) ? <Loader2 className="animate-spin" /> : <Send size={20} />}
+                                                </button>
+                                            </form>
+                                        );
+                                    })()
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Right Sidebar - Details */}
+                        {isDetailsOpen && (
+                            <aside className="w-80 border-l border-gray-200 bg-white hidden xl:flex flex-col h-full overflow-y-auto animate-in slide-in-from-right duration-200 shrink-0">
                                 {roomsResponse && (() => {
                                     const room = roomsResponse.find(r => r._id === selectedRoomId);
                                     if (!room) return null;
                                     const other = getOtherParticipant(room) as any;
+                                    const otherId = other?._id || other?.id;
+                                    const displayName = getDisplayName(room, other);
+
+                                    // Filter images from messages
+                                    const images = messagesData?.messages?.filter(m =>
+                                        m.type === 'IMAGE' || (m.content.startsWith('http') && (m.content.includes('/uploads/') || m.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)))
+                                    ) || [];
+
                                     return (
-                                        <>
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border border-gray-100">
-                                                {other?.avatar ? (
-                                                    <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
-                                                ) : (
-                                                    other?.name?.charAt(0).toUpperCase()
-                                                )}
+                                        <div className="flex flex-col h-full">
+                                            <div className="p-6 flex flex-col items-center border-b border-gray-100">
+                                                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-3xl overflow-hidden border-2 border-white shadow-md mb-3">
+                                                    {other?.avatar ? (
+                                                        <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        other?.name?.charAt(0).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <h2 className="font-bold text-gray-900 text-lg text-center" style={{ wordBreak: 'break-word', maxWidth: '100%', lineHeight: '1.4' }}>{displayName}</h2>
+                                                <p className="text-gray-500 text-sm mb-4">Thành viên</p>
+
+                                                <div className="flex gap-2 w-full">
+                                                    <button
+                                                        onClick={() => navigate(`/user/${otherId}`)}
+                                                        className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <User size={16} />
+                                                        Xem Trang
+                                                    </button>
+                                                    <button
+                                                        onClick={openNicknameModal}
+                                                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                                                        title="Đổi biệt danh"
+                                                    >
+                                                        <Pencil size={18} />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div>
+
+                                            <div className="p-4 flex-1 overflow-y-auto">
+                                                {/* Media Section */}
+                                                <div className="mb-6">
+                                                    <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                                                        <Image size={16} className="text-blue-500" />
+                                                        Ảnh & Video ({images.length})
+                                                    </h3>
+                                                    {images.length > 0 ? (
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            {images.slice(0, 9).map((msg, idx) => (
+                                                                <div
+                                                                    key={msg._id || idx}
+                                                                    className="aspect-square rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => setViewingImage(msg.content)}
+                                                                >
+                                                                    <img src={msg.content} alt="media" className="w-full h-full object-cover" />
+                                                                </div>
+                                                            ))}
+                                                            {images.length > 9 && (
+                                                                <div className="aspect-square rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold cursor-pointer hover:bg-gray-200">
+                                                                    +{images.length - 9}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center py-4 bg-gray-50 rounded-lg text-gray-400 text-xs">
+                                                            Chưa có hình ảnh nào
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Actions Section */}
                                                 <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h2 className="font-bold text-gray-900">{getDisplayName(room, other)}</h2>
+                                                    <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                                                        <Shield size={16} className="text-green-500" />
+                                                        Quyền riêng tư & Hỗ trợ
+                                                    </h3>
+                                                    <div className="space-y-1">
                                                         <button
-                                                            onClick={openNicknameModal}
-                                                            className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-                                                            title="Đổi biệt danh"
+                                                            onClick={handleReportUser}
+                                                            className="w-full flex items-center gap-3 p-3 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl transition-colors text-sm font-medium"
                                                         >
-                                                            <Pencil size={14} />
+                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-100 group-hover:text-red-500">
+                                                                <Shield size={16} />
+                                                            </div>
+                                                            Báo xấu người dùng
                                                         </button>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                        <p className="text-xs text-green-600 font-medium">Đang hoạt động</p>
+                                                        <button
+                                                            onClick={handleBlockUser}
+                                                            className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
+                                                        >
+                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                                                <Ban size={16} />
+                                                            </div>
+                                                            Chặn người dùng
+                                                        </button>
+                                                        <button
+                                                            onClick={handleDeleteChat}
+                                                            className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
+                                                        >
+                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                                                <Trash2 size={16} />
+                                                            </div>
+                                                            Xóa cuộc trò chuyện
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </>
+                                        </div>
                                     );
                                 })()}
-                            </div>
-                            <div className="flex items-center gap-3 text-gray-400">
+                            </aside>
+                        )}
 
-                                <button
-                                    className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
-                                    onClick={handleDeleteChat}
-                                    title="Xóa cuộc trò chuyện"
-                                >
-                                    <Trash2 size={20} />
-                                </button>
-                            </div>
-                        </div>
+                        {/* Report Modal */}
+                        {selectedRoomId && isReportModalOpen && (() => {
+                            const room = roomsResponse?.find(r => r._id === selectedRoomId);
+                            // Get the user to report (the other participant)
+                            if (!room) return null;
+                            const other = getOtherParticipant(room) as any;
+                            const otherId = other?._id || other?.id;
 
-                        {/* Post Context Bar */}
-                        {roomsResponse && (() => {
-                            const room = roomsResponse.find(r => r._id === selectedRoomId);
-                            const post = room?.postId as any;
+                            if (!otherId) return null;
 
-                            if (!post || typeof post === 'string') return null;
-
-                            return (<div className="bg-blue-50/50 border-b border-blue-100 p-3 flex items-center gap-4 px-6">
-                                <div className="w-16 h-16 rounded-lg bg-gray-200 overflow-hidden shrink-0 border border-gray-200">
-                                    <img
-                                        src={post.images?.[0] || 'https://placehold.co/100'}
-                                        alt={post.title}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Image';
-                                        }}
-                                    />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-blue-600 font-bold mb-0.5 uppercase tracking-wide">Đang trao đổi về</p>
-                                    <h3 className="font-bold text-gray-900 truncate text-sm mb-0.5">{post.title}</h3>
-                                    <p className="text-red-600 font-bold text-sm">
-                                        {post.price >= 1000000000
-                                            ? `${(post.price / 1000000000).toLocaleString('vi-VN')} Tỷ`
-                                            : `${(post.price / 1000000).toLocaleString('vi-VN')} Triệu`}
-                                    </p>
-                                </div>
-                                <a
-                                    href={`/post/${post._id}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
-                                >
-                                    Xem tin
-                                </a>
-                            </div>
+                            return (
+                                <ReportModal
+                                    isOpen={isReportModalOpen}
+                                    onClose={() => setIsReportModalOpen(false)}
+                                    // Report the user, not the post
+                                    targetUserId={otherId}
+                                    chatRoomId={room._id} // Pass the chat room ID
+                                />
                             );
                         })()}
-
-                        {/* Messages List */}
-                        <div
-                            ref={scrollContainerRef}
-                            onScroll={handleScroll}
-                            className="flex-1 overflow-y-auto p-6 space-y-4 relative"
-                        >
-                            {loadingMessages ? (
-                                <div className="flex items-center justify-center h-full">
-                                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                                </div>
-                            ) : messagesData && messagesData.messages && messagesData.messages.length > 0 ? (
-                                (() => {
-                                    const messages = messagesData.messages;
-                                    const currentUserId = user?.id || user?._id;
-                                    let lastMyMessageIdx = -1;
-
-                                    for (let i = messages.length - 1; i >= 0; i--) {
-                                        const msg = messages[i];
-                                        const senderId = typeof msg.senderId === 'object'
-                                            ? (('id' in msg.senderId ? msg.senderId.id : undefined) || ('_id' in msg.senderId ? msg.senderId._id : undefined))
-                                            : msg.senderId;
-
-                                        if (String(senderId) === String(currentUserId)) {
-                                            lastMyMessageIdx = i;
-                                            break;
-                                        }
-                                    }
-
-                                    return (
-                                        <>
-                                            {messages.map((msg, idx) => {
-                                                const senderId = typeof msg.senderId === 'object'
-                                                    ? (('id' in msg.senderId ? msg.senderId.id : undefined) || ('_id' in msg.senderId ? msg.senderId._id : undefined))
-                                                    : msg.senderId;
-
-                                                const isMe = String(senderId) === String(currentUserId);
-                                                const isLastMyMsg = isMe && idx === lastMyMessageIdx;
-                                                const isHighlighted = highlightedMessageId === msg._id;
-
-                                                const isImage = msg.type === 'IMAGE' || (msg.content.startsWith('http') && (msg.content.includes('/uploads/') || msg.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)));
-
-                                                return (
-                                                    <div
-                                                        key={idx}
-                                                        ref={(el) => {
-                                                            if (msg._id) messageRefs.current[msg._id] = el;
-                                                        }}
-                                                        className={`flex flex-col mb-1 ${isMe ? 'items-end' : 'items-start'} ${isHighlighted ? 'bg-yellow-50/50 p-2 rounded -mx-2 transition-all duration-1000' : ''}`}
-                                                    >
-                                                        <div className={`max-w-[70%] rounded-2xl shadow-sm relative ${isHighlighted ? 'ring-2 ring-yellow-400 ring-offset-2' : ''} ${isImage
-                                                            ? `p-0 overflow-hidden ${isMe ? 'rounded-br-none' : 'rounded-bl-none'}`
-                                                            : `px-5 py-3 ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'}`
-                                                            }`}>
-                                                            {isImage ? (
-                                                                <img
-                                                                    src={msg.content}
-                                                                    alt="Sent image"
-                                                                    className="max-w-full rounded-none max-h-60 object-cover cursor-pointer hover:opacity-95 transition-opacity block"
-                                                                    onClick={() => setViewingImage(msg.content)}
-                                                                />
-                                                            ) : (
-                                                                <p className="text-sm leading-relaxed">
-                                                                    {/* Highlight content search match only if this is the highlighted message for better UX */}
-                                                                    {isHighlighted && searchTerm ? highlightText(msg.content, searchTerm) : msg.content}
-                                                                </p>
-                                                            )}
-
-                                                            <div className={`flex items-center gap-1 ${isImage
-                                                                ? 'absolute bottom-2 right-2 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm text-white'
-                                                                : `justify-end mt-1 ${isMe ? 'text-blue-100' : 'text-gray-400'}`
-                                                                }`}>
-                                                                <p className="text-[10px]">
-                                                                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                </p>
-                                                                {isMe && (
-                                                                    msg.isRead ? (
-                                                                        <CheckCheck size={12} className={isImage ? "text-white" : "text-blue-100"} />
-                                                                    ) : (
-                                                                        <Check size={12} className={isImage ? "text-white/70" : "text-blue-100"} />
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        {isLastMyMsg && !isImage && (
-                                                            <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                {msg.isRead ? 'Đã xem' : 'Đã gửi'}
-                                                            </span>
-                                                        )}
-                                                        {isLastMyMsg && isImage && (
-                                                            <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                {msg.isRead ? 'Đã xem' : 'Đã gửi'}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                            <div ref={messagesEndRef} />
-                                        </>
-                                    );
-                                })()
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                                    <MessageCircle size={48} className="mb-4 opacity-20" />
-                                    <p>Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</p>
-                                </div>
-                            )}
-
-                            {/* Float New Message Badge */}
-                            {showNewMessageBadge && (
-                                <button
-                                    onClick={() => scrollToBottom(true)}
-                                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-blue-700 transition-all z-10 text-sm font-medium animate-bounce"
-                                >
-                                    📩 Tin nhắn mới <ArrowDown size={16} />
-                                </button>
-                            )}
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="p-4 bg-white border-t border-gray-200">
-                            {/* Image Preview */}
-                            {previewImage && (
-                                <div className="mb-4 relative inline-block">
-                                    <img src={previewImage.url} alt="Preview" className="h-24 rounded-lg border border-gray-200" />
-                                    <button
-                                        onClick={() => setPreviewImage(null)}
-                                        className="absolute -top-2 -right-2 bg-gray-900/50 text-white rounded-full p-1 hover:bg-gray-900 transition-colors"
-                                    >
-                                        <X size={12} />
-                                    </button>
-                                </div>
-                            )}
-
-                            <form
-                                onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-                                className="flex gap-3 max-w-4xl mx-auto items-center"
-                            >
-                                <label className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer transition-colors">
-                                    <ImageIcon size={20} />
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="hidden"
-                                        onChange={handleImageSelect}
-                                    />
-                                </label>
-
-                                <input
-                                    type="text"
-                                    placeholder="Nhập tin nhắn..."
-                                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all disabled:opacity-50"
-                                    value={newMessage}
-                                    onChange={(e) => setNewMessage(e.target.value)}
-                                    disabled={!!previewImage}
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={(!newMessage.trim() && !previewImage) || sendMessageMutation.isPending || isUploading}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg shadow-blue-600/20"
-                                >
-                                    {(sendMessageMutation.isPending || isUploading) ? <Loader2 className="animate-spin" /> : <Send size={20} />}
-                                </button>
-                            </form>
-                        </div>
                     </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">

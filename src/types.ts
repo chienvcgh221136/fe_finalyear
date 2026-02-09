@@ -24,6 +24,7 @@ export interface User {
         balance: number;
     };
     isAuthenticated?: boolean;
+    blockedUsers?: string[]; // IDs of users blocked by this user
 }
 
 export interface Review {
@@ -79,6 +80,7 @@ export interface ChatRoom {
     lastMessageAt: string;
     unreadCount?: number;
     nicknames?: Record<string, string>;
+    blockedByOther?: boolean;
 }
 
 export interface MessageItem {

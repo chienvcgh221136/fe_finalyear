@@ -18,8 +18,11 @@ import AdminReports from './pages/admin/AdminReports';
 import AdminVipPackages from './pages/admin/AdminVipPackages';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminNotifications from './pages/admin/AdminNotifications';
+import AdminPoints from './pages/admin/AdminPoints';
 import Chat from './pages/Chat'; // Added
 import VipManagement from './pages/VipManagement'; // Added
+import LoyaltyPage from './pages/LoyaltyPage'; // Added
+import RedeemPage from './pages/RedeemPage'; // Added
 
 const MainLayout = () => {
   const location = useLocation();
@@ -95,6 +98,23 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/loyalty"
+            element={
+              <ProtectedRoute>
+                <LoyaltyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loyalty/redeem"
+            element={
+              <ProtectedRoute>
+                <RedeemPage />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         {/* Admin Layout */}
@@ -113,6 +133,7 @@ function App() {
           <Route path="reports" element={<AdminReports />} />
           <Route path="withdrawals" element={<AdminWithdrawals />} />
           <Route path="notifications" element={<AdminNotifications />} />
+          <Route path="points" element={<AdminPoints />} />
         </Route>
       </Routes>
     </Router>

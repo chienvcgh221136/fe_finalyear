@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, postsAPI, filesAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
+import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2, Award } from 'lucide-react';
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
 import UserStatsPage from './UserStatsPage';
@@ -466,11 +466,18 @@ const Profile = () => {
                                 { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
                                 { id: 'vip', label: 'Gói VIP', icon: Crown },
                                 { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
+                                { id: 'loyalty', label: 'Điểm thưởng', icon: Award },
                                 { id: 'stats', label: 'Thống kê', icon: BarChart2 },
                             ].map(item => (
                                 <button
                                     key={item.id}
-                                    onClick={() => handleTabChange(item.id)}
+                                    onClick={() => {
+                                        if (item.id === 'loyalty') {
+                                            navigate('/loyalty');
+                                        } else {
+                                            handleTabChange(item.id);
+                                        }
+                                    }}
                                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
                                         ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
                                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'

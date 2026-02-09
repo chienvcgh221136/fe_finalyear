@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vipAPI, postsAPI } from '../services/api';
-import { Crown, Clock } from 'lucide-react';
+
+import { Crown, Clock, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const VipManagement = () => {
@@ -15,6 +16,8 @@ const VipManagement = () => {
         queryKey: ['posts', 'me'],
         queryFn: postsAPI.getMyPosts
     });
+
+
 
     const queryClient = useQueryClient();
     const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
@@ -34,17 +37,29 @@ const VipManagement = () => {
     const dailyUsed = myVip.dailyUsedSlots || 0;
 
     const limitMap: Record<string, number> = { 'BASIC': 5, 'PRO': 10, 'PREMIUM': 20 };
-    const limit = packageInfo?.postLimit || limitMap[myVip.vipType?.replace('VIP ', '').toUpperCase()] || 5;
+    // Calculate Total Limits (Base + Bonus) -> Fix: Add back used bonus so limit appears static
+    const baseLimit = isVipActive ? (packageInfo?.postLimit || limitMap[myVip.vipType?.replace('VIP ', '').toUpperCase()] || 0) : 0;
+    const limit = baseLimit + (myVip.bonusPushCredits || 0) + Math.max(0, dailyUsed - baseLimit);
 
     // For leads:
     const dailyViewedPhones = myVip.todayViewedPhones || 0;
-    const limitViewPhone = myVip.limitViewPhone || 0;
+    const baseViewLimit = isVipActive ? (myVip.limitViewPhone || 0) : 0;
+    const limitViewPhone = baseViewLimit + (myVip.bonusLeadCredits || 0) + Math.max(0, dailyViewedPhones - baseViewLimit);
 
-    // Remaining days
-    const daysRemaining = useMemo(() => {
-        if (!myVip.expiredAt) return 0;
+    // Remaining time text
+    const timeRemainingText = useMemo(() => {
+        if (!myVip.expiredAt) return 'Đã hết hạn';
         const diff = new Date(myVip.expiredAt).getTime() - new Date().getTime();
-        return Math.max(0, Math.ceil(diff / (1000 * 3600 * 24)));
+
+        if (diff <= 0) return 'Đã hết hạn';
+
+        const hours = Math.ceil(diff / (1000 * 60 * 60));
+        if (hours < 24) {
+            return `Còn ${hours} giờ`;
+        }
+
+        const days = Math.ceil(diff / (1000 * 3600 * 24));
+        return `Còn ${days} ngày`;
     }, [myVip.expiredAt]);
 
 
@@ -85,8 +100,10 @@ const VipManagement = () => {
 
     const handleAttach = () => {
         if (selectedPosts.length === 0) return;
-        if (!isVipActive) {
-            alert("Bạn chưa đăng ký gói VIP hoặc gói đã hết hạn.");
+        // Check VIP or Bonus
+        const hasBonus = (myVip.bonusPushCredits || 0) > 0;
+        if (!isVipActive && !hasBonus) {
+            alert("Bạn chưa đăng ký gói VIP hoặc hết lượt đẩy tin.");
             return;
         }
         if (dailyUsed + selectedPosts.length > limit) {
@@ -109,21 +126,10 @@ const VipManagement = () => {
         });
     };
 
+
     if (loadingVip || loadingPosts) return <div className="p-8 text-center">Đang tải dữ liệu...</div>;
 
-    if (!myVip.isActive) {
-        return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-                <Crown size={48} className="text-gray-300 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Bạn chưa có gói VIP</h2>
-                <p className="text-gray-500 mb-6">Nâng cấp ngay để đẩy tin lên đầu và tăng lượt tiếp cận khách hàng.</p>
-                <Link to="/profile?tab=vip" className="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">
-                    Đăng ký ngay
-                </Link>
-            </div>
-        );
-    }
-
+    // Show full UI for all users, even without VIP
     return (
         <div className="bg-gray-50 min-h-screen pb-12">
             <div className="w-full px-4 md:px-8 py-8">
@@ -146,7 +152,7 @@ const VipManagement = () => {
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">{myVip.vipType}</h2>
                             <div className="flex items-center gap-2 text-green-600 bg-green-50 w-fit px-3 py-1 rounded-full text-sm font-bold">
                                 <Clock size={16} />
-                                <span>Còn {daysRemaining} ngày</span>
+                                <span>{timeRemainingText}</span>
                             </div>
                         </div>
                         <div className="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-blue-50 to-transparent"></div>
@@ -200,6 +206,8 @@ const VipManagement = () => {
                         </div>
                         <p className="text-xs text-gray-400">Dùng để xem số điện thoại người đăng tin.</p>
                     </div>
+
+
                 </div>
 
                 {/* List Table */}
@@ -271,9 +279,14 @@ const VipManagement = () => {
                                             </td>
                                             <td className="p-4">
                                                 {isVip ? (
-                                                    <div className="flex items-center gap-2 text-blue-600 font-bold text-sm">
-                                                        <Crown size={16} className="fill-blue-600" />
-                                                        VIP ACTIVE
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex items-center gap-2 text-blue-600 font-bold text-sm">
+                                                            <Crown size={16} className="fill-blue-600" />
+                                                            VIP ACTIVE
+                                                        </div>
+                                                        <span className="text-xs text-gray-500">
+                                                            {post.vip?.vipType || myVip.vipType}
+                                                        </span>
                                                     </div>
                                                 ) : (
                                                     <span className="text-gray-400 text-sm italic">None</span>

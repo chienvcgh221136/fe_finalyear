@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-    LayoutDashboard, FileText, Users, LogOut, Search, Bell,
-    Settings, ChevronRight, Menu, X, Flag, BarChart3, Home, Crown, Wallet
+    FileText, Users, LogOut, Menu, X, Flag, BarChart3, Home, Crown, Wallet, Coins, Bell
 } from 'lucide-react';
 
 const navItems = [
@@ -13,6 +12,8 @@ const navItems = [
     { label: 'Người dùng', href: '/admin/users', icon: Users },
     { label: 'Gói VIP', href: '/admin/vip', icon: Crown },
     { label: 'Rút tiền', href: '/admin/withdrawals', icon: Wallet },
+    { label: 'Điểm thưởng', href: '/admin/points', icon: Coins },
+    { label: 'Thông báo', href: '/admin/notifications', icon: Bell },
     { label: 'Báo cáo', href: '/admin/reports', icon: Flag },
 ];
 

@@ -7,7 +7,9 @@ import { reportsAPI } from '../../services/api';
 interface ReportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    postId: string;
+    postId?: string; // Optional if reporting user
+    targetUserId?: string; // Optional if reporting post
+    chatRoomId?: string; // Optional if reporting from chat
 }
 
 const REASONS = [
@@ -18,13 +20,21 @@ const REASONS = [
     { value: 'OTHER', label: 'Khác', sub: 'Lý do khác không có trong danh sách' },
 ];
 
-const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
+const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: ReportModalProps) => {
     const { success: toastSuccess, error: toastError } = useToast();
     const [reason, setReason] = useState<string>('');
     const [description, setDescription] = useState('');
 
     const mutation = useMutation({
-        mutationFn: (data: { reason: string; description: string }) => reportsAPI.create(postId, data),
+        mutationFn: (data: { reason: string; description: string }) => {
+            if (targetUserId) {
+                return reportsAPI.createUserReport({ ...data, targetUserId, chatRoomId });
+            }
+            if (postId) {
+                return reportsAPI.create(postId, data);
+            }
+            throw new Error("Missing report target");
+        },
         onSuccess: () => {
             toastSuccess('Báo cáo thành công! Cảm ơn đóng góp của bạn.');
             setReason('');
@@ -47,7 +57,9 @@ const ReportModal = ({ isOpen, onClose, postId }: ReportModalProps) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
-                    <h3 className="font-bold text-gray-900 text-lg">Báo cáo tin đăng</h3>
+                    <h3 className="font-bold text-gray-900 text-lg">
+                        {targetUserId ? 'Báo cáo người dùng' : 'Báo cáo tin đăng'}
+                    </h3>
                     <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <X size={20} className="text-gray-500" />
                     </button>

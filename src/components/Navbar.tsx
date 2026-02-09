@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2 } from 'lucide-react';
+import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { chatAPI } from '../services/api';
@@ -139,6 +139,14 @@ const Navbar = () => {
                                                 >
                                                     <CreditCard size={18} />
                                                     Ví của tôi
+                                                </Link>
+                                                <Link
+                                                    to="/loyalty"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <Award size={18} />
+                                                    Điểm thưởng
                                                 </Link>
                                                 <Link
                                                     to={`/user/${user?._id}`}
