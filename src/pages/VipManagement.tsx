@@ -163,48 +163,40 @@ const VipManagement = () => {
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Hạn mức hôm nay</p>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Lượt VIP còn lại</p>
                                 <h2 className="text-3xl font-bold text-gray-900">
-                                    {dailyUsed}<span className="text-gray-400 text-2xl">/{limit}</span>
+                                    {Math.max(0, limit - dailyUsed)}
                                 </h2>
                             </div>
-                            <div className="text-right">
-                                <span className="text-blue-600 font-bold text-lg">{Math.max(0, limit - dailyUsed)}</span>
-                                <p className="text-xs text-gray-400 font-medium">chưa sử dụng</p>
-                            </div>
                         </div>
-                        {/* Progress Bar */}
+                        {/* Progress Bar - Shows Remaining % */}
                         <div className="w-full bg-gray-100 rounded-full h-3 mb-2 overflow-hidden">
                             <div
                                 className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, (dailyUsed / limit) * 100)}%` }}
+                                style={{ width: `${limit > 0 ? Math.min(100, ((limit - dailyUsed) / limit) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Hạn mức sẽ được làm mới lúc 00:00 hằng ngày.</p>
+                        <p className="text-xs text-gray-400">Làm mới lúc 00:00 hằng ngày.</p>
                     </div>
 
                     {/* Leads Card */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 md:col-span-2 lg:col-span-1">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Xem SĐT hôm nay</p>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Lượt xem SĐT còn lại</p>
                                 <h2 className="text-3xl font-bold text-gray-900">
-                                    {dailyViewedPhones}<span className="text-gray-400 text-2xl">/{limitViewPhone}</span>
+                                    {Math.max(0, limitViewPhone - dailyViewedPhones)}
                                 </h2>
                             </div>
-                            <div className="text-right">
-                                <span className="text-purple-600 font-bold text-lg">{Math.max(0, limitViewPhone - dailyViewedPhones)}</span>
-                                <p className="text-xs text-gray-400 font-medium">lượt còn lại</p>
-                            </div>
                         </div>
-                        {/* Progress Bar */}
+                        {/* Progress Bar - Shows Remaining % */}
                         <div className="w-full bg-gray-100 rounded-full h-3 mb-2 overflow-hidden">
                             <div
                                 className="bg-purple-600 h-full rounded-full transition-all duration-500"
-                                style={{ width: `${limitViewPhone > 0 ? Math.min(100, (dailyViewedPhones / limitViewPhone) * 100) : 0}%` }}
+                                style={{ width: `${limitViewPhone > 0 ? Math.min(100, ((limitViewPhone - dailyViewedPhones) / limitViewPhone) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Dùng để xem số điện thoại người đăng tin.</p>
+                        <p className="text-xs text-gray-400">Làm mới lúc 00:00 hằng ngày.</p>
                     </div>
 
 
