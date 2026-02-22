@@ -13,10 +13,10 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose}></div>
             <div className="bg-white rounded-3xl w-full max-w-2xl relative z-10 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
-                <div className="bg-gradient-to-r from-red-600 to-rose-600 p-8 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white relative overflow-hidden">
                     <div className="relative z-10">
                         <h2 className="text-3xl font-bold mb-2">Trung tâm Nhiệm vụ</h2>
-                        <p className="text-red-100">Hoàn thành các nhiệm vụ bên dưới để nhận điểm thưởng hấp dẫn.</p>
+                        <p className="text-blue-100">Hoàn thành các nhiệm vụ bên dưới để nhận điểm thưởng hấp dẫn.</p>
                     </div>
                     {/* Decorative */}
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
@@ -30,7 +30,7 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
                         {/* Currently Active Methods */}
                         <div>
                             <h3 className="text-gray-900 font-bold text-lg mb-4 flex items-center gap-2">
-                                <span className="w-2 h-8 bg-green-500 rounded-full"></span>
+                                <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
                                 Nhiệm vụ khả dụng
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -39,8 +39,8 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
                                     title="Nạp tiền lần đầu"
                                     points="+200"
                                     desc="Tặng ngay 200 điểm thưởng + điểm theo số tiền nạp cho giao dịch đầu tiên"
-                                    color="text-red-600"
-                                    bgColor="bg-pink-100"
+                                    color="text-indigo-600"
+                                    bgColor="bg-indigo-100"
                                     fullWidth
                                 />
                                 <EarnCard
@@ -48,24 +48,24 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
                                     title="Điểm danh hàng ngày"
                                     points="+10"
                                     desc="Đăng nhập vào hệ thống mỗi ngày"
-                                    color="text-yellow-500"
-                                    bgColor="bg-yellow-50"
+                                    color="text-blue-500"
+                                    bgColor="bg-blue-50"
                                 />
                                 <EarnCard
                                     icon={TrendingUp}
                                     title="Đăng tin mới"
                                     points="+50"
                                     desc="Đăng tin bất động sản thành công"
-                                    color="text-blue-500"
-                                    bgColor="bg-blue-50"
+                                    color="text-indigo-500"
+                                    bgColor="bg-indigo-50"
                                 />
                                 <EarnCard
                                     icon={TrendingUp}
                                     title="Nạp tiền / Mua VIP"
                                     points="1:1000"
                                     desc="Nhận 1 điểm cho mỗi 1.000đ thanh toán"
-                                    color="text-emerald-500"
-                                    bgColor="bg-emerald-50"
+                                    color="text-blue-500"
+                                    bgColor="bg-blue-50"
                                 />
                             </div>
                         </div>
@@ -99,7 +99,7 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
 
                     <button
                         onClick={onClose}
-                        className="w-full mt-8 bg-gray-100 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-200 transition"
+                        className="w-full mt-8 bg-blue-50 text-blue-700 font-bold py-4 rounded-xl hover:bg-blue-100 transition"
                     >
                         Đã hiểu
                     </button>

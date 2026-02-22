@@ -92,7 +92,7 @@ const VipPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative items-start">
-                {packages?.map((pkg, idx) => {
+                {packages?.map((pkg) => {
                     const isPopular = pkg.isPopular || false;
                     // Check purely by ID if possible, otherwise by name
                     const isActive = user?.vip?.isActive && (user.vip.packageId === pkg._id || user.vip.vipType === pkg.name);
@@ -137,6 +137,12 @@ const VipPage = () => {
                                         <Zap size={16} />
                                     </div>
                                     <span className="font-medium text-sm">Điểm ưu tiên: <strong className={isPopular ? 'text-yellow-400' : 'text-blue-600'}>+{pkg.priorityScore}</strong></span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
+                                        <Crown size={16} />
+                                    </div>
+                                    <span className="font-medium text-sm">Đẩy tin: <strong>{pkg.postLimit}</strong> lượt/ngày</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>

@@ -23,7 +23,7 @@ export interface User {
     wallet?: {
         balance: number;
     };
-    isAuthenticated?: boolean;
+    points?: number;
     blockedUsers?: string[]; // IDs of users blocked by this user
 }
 
@@ -126,6 +126,7 @@ export interface VipPackage {
     priorityScore: number;
     description: string;
     isActive: boolean;
+    postLimit: number;
     limitViewPhone?: number;
     perks?: string[];
     isPopular?: boolean;

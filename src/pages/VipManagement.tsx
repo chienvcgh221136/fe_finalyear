@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vipAPI, postsAPI } from '../services/api';
 
-import { Crown, Clock, Phone } from 'lucide-react';
+import { Crown, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const VipManagement = () => {
@@ -25,7 +25,7 @@ const VipManagement = () => {
 
     // Derived State
     const myVip = myVipRes?.data?.data || myVipRes?.data || {};
-    const posts = myPostsRes?.data?.data || myPostsRes?.data || [];
+    const posts = useMemo(() => myPostsRes?.data?.data || myPostsRes?.data || [], [myPostsRes]);
 
     const activePosts = useMemo(() => {
         return posts.filter((p: any) => p.status === 'ACTIVE');
@@ -167,6 +167,12 @@ const VipManagement = () => {
                                 <h2 className="text-3xl font-bold text-gray-900">
                                     {Math.max(0, limit - dailyUsed)}
                                 </h2>
+                                <div className="flex gap-3 mt-1">
+                                    <span className="text-xs text-blue-600 font-medium">Theo gói: {Math.max(0, baseLimit - dailyUsed)}</span>
+                                    {myVip.bonusPushCredits > 0 && (
+                                        <span className="text-xs text-orange-600 font-bold">Thưởng: {myVip.bonusPushCredits}</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         {/* Progress Bar - Shows Remaining % */}
@@ -176,7 +182,7 @@ const VipManagement = () => {
                                 style={{ width: `${limit > 0 ? Math.min(100, ((limit - dailyUsed) / limit) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Làm mới lúc 00:00 hằng ngày.</p>
+                        <p className="text-xs text-gray-400">Gồm {baseLimit} lượt gói + {myVip.bonusPushCredits || 0} lượt thưởng.</p>
                     </div>
 
                     {/* Leads Card */}

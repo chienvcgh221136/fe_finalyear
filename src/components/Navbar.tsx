@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, BarChart2, Award } from 'lucide-react';
+import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { chatAPI } from '../services/api';
@@ -63,6 +63,17 @@ const Navbar = () => {
                             </Link>
 
                             <NotificationDropdown />
+
+                            <Link
+                                to="/loyalty"
+                                className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-200 hover:bg-amber-100 transition-all group"
+                                title="Điểm thưởng"
+                            >
+                                <div className="p-1 bg-amber-500 rounded-full text-white group-hover:scale-110 transition-transform">
+                                    <Award size={12} fill="currentColor" />
+                                </div>
+                                <span className="text-xs font-black text-amber-700">{user?.points || 0}</span>
+                            </Link>
 
                             <Link to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
                                 <MessageCircle size={24} />
@@ -129,40 +140,40 @@ const Navbar = () => {
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
-                                                    <User size={18} />
-                                                    Tài khoản
+                                                    <User size={18} className="text-gray-400" />
+                                                    Thông tin cá nhân
                                                 </Link>
                                                 <Link
-                                                    to="/profile?tab=wallet"
+                                                    to="/profile?tab=posts"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
-                                                    <CreditCard size={18} />
-                                                    Ví của tôi
+                                                    <PlusCircle size={18} className="text-gray-400" />
+                                                    Tin của tôi
                                                 </Link>
                                                 <Link
                                                     to="/loyalty"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
-                                                    <Award size={18} />
+                                                    <Award size={18} className="text-gray-400" />
                                                     Điểm thưởng
+                                                </Link>
+                                                <Link
+                                                    to="/profile?tab=wallet"
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                                                    onClick={() => setIsDropdownOpen(false)}
+                                                >
+                                                    <CreditCard size={18} className="text-gray-400" />
+                                                    Ví của tôi
                                                 </Link>
                                                 <Link
                                                     to={`/user/${user?._id}`}
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
-                                                    <User size={18} />
-                                                    Trang của tôi (Public)
-                                                </Link>
-                                                <Link
-                                                    to="/profile?tab=stats"
-                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                                                    onClick={() => setIsDropdownOpen(false)}
-                                                >
-                                                    <BarChart2 size={18} />
-                                                    Thống kê
+                                                    <Home size={18} className="text-gray-400" />
+                                                    Trang cá nhân (Public)
                                                 </Link>
                                                 {user?.role === 'ADMIN' && (
                                                     <Link
@@ -170,17 +181,17 @@ const Navbar = () => {
                                                         className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                         onClick={() => setIsDropdownOpen(false)}
                                                     >
-                                                        <Shield size={18} />
+                                                        <Shield size={18} className="text-gray-400" />
                                                         Quản trị viên
                                                     </Link>
                                                 )}
                                             </div>
 
                                             {/* Footer */}
-                                            <div className="border-t border-gray-100 mt-1 pt-1">
+                                            <div className="border-t border-gray-100 mt-1">
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                                                 >
                                                     <LogOut size={18} />
                                                     Đăng xuất

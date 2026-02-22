@@ -4,11 +4,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, postsAPI, filesAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
-import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2, Award } from 'lucide-react';
+import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
 import UserStatsPage from './UserStatsPage';
 import VipManagement from './VipManagement';
+
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -457,38 +458,62 @@ const Profile = () => {
                             <h3 className="font-bold text-gray-900 text-lg mb-1">{user?.name}</h3>
                             <p className="text-sm text-gray-500">{user?.email}</p>
                         </div>
-                        <nav className="p-4 space-y-1">
+                        <nav className="p-4 space-y-6">
                             {[
-                                { id: 'profile', label: 'Thông tin cá nhân', icon: UserIcon },
-                                { id: 'posts', label: 'Tin của tôi', icon: FileText },
-                                { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
-                                { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
-                                { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
-                                { id: 'vip', label: 'Gói VIP', icon: Crown },
-                                { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
-                                { id: 'loyalty', label: 'Điểm thưởng', icon: Award },
-                                { id: 'stats', label: 'Thống kê', icon: BarChart2 },
-                            ].map(item => (
-                                <button
-                                    key={item.id}
-                                    onClick={() => {
-                                        if (item.id === 'loyalty') {
-                                            navigate('/loyalty');
-                                        } else {
-                                            handleTabChange(item.id);
-                                        }
-                                    }}
-                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === item.id
-                                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                                        }`}
-                                >
-                                    <item.icon size={18} />
-                                    {item.label}
-                                </button>
+                                {
+                                    group: 'TÀI KHOẢN',
+                                    items: [
+                                        { id: 'profile', label: 'Thông tin cá nhân', icon: UserIcon },
+                                    ]
+                                },
+                                {
+                                    group: 'HOẠT ĐỘNG',
+                                    items: [
+                                        { id: 'posts', label: 'Tin của tôi', icon: FileText },
+                                        { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
+                                        { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
+                                    ]
+                                },
+                                {
+                                    group: 'TÀI CHÍNH & VIP',
+                                    items: [
+                                        { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
+                                        { id: 'vip', label: 'Gói VIP', icon: Crown },
+                                        { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
+                                    ]
+                                },
+                                {
+                                    group: 'PHÂN TÍCH',
+                                    items: [
+                                        { id: 'stats', label: 'Thống kê', icon: BarChart2 },
+                                    ]
+                                }
+                            ].map((section, idx) => (
+                                <div key={idx} className="space-y-2">
+                                    <div className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <div className="h-px bg-gray-100 flex-1"></div>
+                                        {section.group}
+                                        <div className="h-px bg-gray-100 flex-1"></div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        {section.items.map(item => (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => handleTabChange(item.id)}
+                                                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === item.id
+                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                    : 'text-gray-500 hover:bg-gray-50 hover:text-blue-600'
+                                                    }`}
+                                            >
+                                                <item.icon size={18} className={activeTab === item.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-600'} />
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             ))}
                         </nav>
-                        <div className="p-4 border-t border-gray-100 mt-2">
+                        <div className="p-4 bg-gray-50/50">
                             <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                                 <LogOut size={18} />
                                 Đăng xuất
@@ -764,6 +789,8 @@ const Profile = () => {
                                 <VipManagement />
                             </div>
                         )}
+
+
 
                     </div>
                 </div>

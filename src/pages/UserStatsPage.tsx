@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { statsAPI } from '../services/api';
 import type { UserStats } from '../types';
 import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Bar, Area, CartesianGrid, XAxis, YAxis, Legend } from 'recharts';
-import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package, ArrowUpCircle } from 'lucide-react';
+import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package, ArrowUpCircle, TrendingUp, Users, Target, Activity } from 'lucide-react';
 import UpgradeWizard from '../components/vip/UpgradeWizard';
 
 const UserStatsPage = () => {
@@ -19,9 +19,9 @@ const UserStatsPage = () => {
         },
     });
 
-    if (isLoading) return <div className="p-12 text-center text-gray-500">Đang tải thống kê...</div>;
+    if (isLoading) return <div className="p-12 text-center text-gray-500 animate-pulse">Đang tải dữ liệu phân tích...</div>;
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
     const postStatusData = [
         { name: 'Đang hiển thị', value: stats?.activePosts || 0 },
@@ -33,202 +33,222 @@ const UserStatsPage = () => {
     const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
 
     return (
-        <div className="w-full px-4 md:px-8 py-8 relative">
-            <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
-                <LayoutDashboard className="text-blue-600" size={32} />
-                Thống kê hoạt động
-            </h1>
+        <div className="w-full px-4 md:px-0 py-4 relative">
+            {/* Header section */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                <div>
+                    <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                        <Activity className="text-blue-600" size={32} />
+                        Bảng điều khiển phân tích
+                    </h1>
+                    <p className="text-gray-500 mt-1">Theo dõi hiệu quả đăng tin và tương tác khách hàng của bạn.</p>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full w-fit">
+                    <TrendingUp size={14} />
+                    Cập nhật thời gian thực
+                </div>
+            </div>
 
-            {/* VIP Status Card */}
+            {/* VIP Status Card - Enhanced Premium Look */}
             {user?.vip?.isActive && (
-                <div className="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl p-6 mb-8 text-white shadow-lg relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Package size={100} />
-                    </div>
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div>
-                            <p className="text-amber-100 font-medium text-sm mb-1">Gói thành viên hiện tại</p>
-                            <h2 className="text-3xl font-bold mb-2 flex items-center gap-2">
-                                <span className="bg-white/20 p-1.5 rounded-lg backdrop-blur-sm">👑</span>
-                                {user.vip.vipType}
-                            </h2>
-                            <p className="text-sm opacity-90">
-                                {(() => {
-                                    const end = new Date(user.vip.expiredAt || '');
-                                    const diff = end.getTime() - new Date().getTime();
-                                    const hours = Math.ceil(diff / (1000 * 60 * 60));
+                <div className="relative group mb-10">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="relative bg-white rounded-2xl p-8 shadow-sm border border-amber-100 overflow-hidden">
+                        {/* Background subtle pattern */}
+                        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-amber-50 rounded-full blur-3xl opacity-50"></div>
 
-                                    if (diff > 0 && hours < 24) {
-                                        return <span className="font-bold text-white bg-red-500/20 px-2 py-0.5 rounded">Hết hạn trong {hours} giờ nữa</span>;
-                                    }
-                                    return (
-                                        <>
-                                            Hết hạn: <span className="font-bold">{end.toLocaleDateString('vi-VN')}</span>
-                                        </>
-                                    );
-                                })()}
-                                <span className="mx-2">•</span>
-                                Chỉ số ưu tiên: <span className="font-bold">{user.vip.priorityScore}</span>
-                            </p>
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="flex items-center gap-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-amber-200 rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                                    <Target size={40} />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-amber-600 font-bold text-sm tracking-wider uppercase">Premium Status</span>
+                                        <span className="h-1 w-1 bg-amber-300 rounded-full"></span>
+                                        <span className="text-gray-400 text-xs">{user.vip.vipType.toUpperCase()} Member</span>
+                                    </div>
+                                    <h2 className="text-3xl font-black text-gray-900 mb-2">
+                                        {user.vip.vipType}
+                                    </h2>
+                                    <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
+                                        <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">
+                                            <span className="text-xs uppercase font-bold tracking-tight">Hết hạn:</span>
+                                            {(() => {
+                                                const end = new Date(user.vip.expiredAt || '');
+                                                return end.toLocaleDateString('vi-VN');
+                                            })()}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
+                                            <span className="text-xs uppercase font-bold tracking-tight">Priority Level:</span>
+                                            {user.vip.priorityScore}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {user.vip.vipType !== 'PREMIUM' && (
+                                <button
+                                    onClick={() => setShowUpgrade(true)}
+                                    className="w-full md:w-auto px-8 py-4 bg-gray-900 text-white font-black rounded-2xl shadow-xl hover:bg-black transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
+                                >
+                                    <ArrowUpCircle size={22} className="text-amber-400" />
+                                    Nâng cấp ngay
+                                </button>
+                            )}
                         </div>
-                        {user.vip.vipType !== 'PREMIUM' && (
-                            <button
-                                onClick={() => setShowUpgrade(true)}
-                                className="px-6 py-3 bg-white text-orange-600 font-bold rounded-xl shadow-lg hover:bg-orange-50 transition transform hover:-translate-y-1 flex items-center gap-2"
-                            >
-                                <ArrowUpCircle size={20} />
-                                Nâng cấp gói
-                            </button>
-                        )}
                     </div>
                 </div>
             )}
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                            <Package size={24} />
-                        </div>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tin đăng</span>
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalPosts}</div>
-                    <p className="text-sm text-gray-500">Tổng số tin đã đăng</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                            <Eye size={24} />
-                        </div>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Lượt xem</span>
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalViews}</div>
-                    <p className="text-sm text-gray-500">Tổng lượt tiếp cận</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                            <MessageSquare size={24} />
-                        </div>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Leads</span>
-                    </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{stats?.totalLeads}</div>
-                    <p className="text-sm text-gray-500">Khách hàng quan tâm</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-red-50 text-red-600 rounded-lg">
-                            <DollarSign size={24} />
-                        </div>
-                        <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Chi tiêu</span>
-                    </div>
-                    <div className="text-2xl font-bold text-gray-900 mb-1">{formatCurrency(stats?.totalSpent || 0)}</div>
-                    <p className="text-sm text-gray-500">Tổng tiền mua VIP / Đẩy tin</p>
-                </div>
-            </div>
-
-            {/* Charts Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Status Chart */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
-                    <h3 className="text-lg font-bold text-gray-800 mb-6">Trạng thái tin đăng</h3>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={postStatusData}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                fill="#8884d8"
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {postStatusData.map((_, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <Tooltip formatter={(value?: number) => [value || 0, 'Tin']} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex justify-center gap-4 mt-4 flex-wrap">
-                        {postStatusData.map((entry, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                <span className="text-sm text-gray-600">{entry.name}</span>
+            {/* KPI Cards section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {[
+                    { label: 'Tin đăng', value: stats?.totalPosts, icon: Package, color: 'blue', desc: 'Tổng số tin đã đăng' },
+                    { label: 'Lượt xem', value: stats?.totalViews, icon: Eye, color: 'green', desc: 'Tổng lượt tiếp cận' },
+                    { label: 'Tiếp cận', value: stats?.totalLeads, icon: Users, color: 'purple', desc: 'Khách hàng quan tâm' },
+                    { label: 'Chi tiêu', value: formatCurrency(stats?.totalSpent || 0), icon: DollarSign, color: 'red', desc: 'Tổng chi phí dịch vụ' },
+                ].map((kpi, i) => (
+                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className={`p-3 bg-${kpi.color}-50 text-${kpi.color}-600 rounded-2xl group-hover:scale-110 transition-transform`}>
+                                <kpi.icon size={24} />
                             </div>
-                        ))}
+                            <TrendingUp size={16} className="text-gray-300" />
+                        </div>
+                        <div className="text-3xl font-black text-gray-900 mb-1">{kpi.value}</div>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{kpi.label}</p>
+                        <div className="mt-4 pt-4 border-t border-gray-50">
+                            <p className="text-xs text-gray-500 italic">{kpi.desc}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Charts section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Activity Progress */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
+                    <div className="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Xu hướng tương tác</h3>
+                            <p className="text-sm text-gray-500 font-medium">Hoạt động trong 7 ngày gần nhất</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500" title="Tin đăng"></div>
+                            <div className="w-3 h-3 rounded-full bg-emerald-500" title="Lượt xem"></div>
+                        </div>
+                    </div>
+                    <div className="flex-1 min-h-0">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart data={stats?.chartData || []}>
+                                <defs>
+                                    <linearGradient id="colorViewsNew" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 600 }}
+                                    dy={15}
+                                />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#9ca3af', fontSize: 11, fontWeight: 600 }}
+                                />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                                    cursor={{ stroke: '#f3f4f6', strokeWidth: 2 }}
+                                />
+                                <Bar
+                                    name="Tin đăng"
+                                    dataKey="posts"
+                                    fill="#3b82f6"
+                                    radius={[6, 6, 6, 6]}
+                                    barSize={12}
+                                />
+                                <Area
+                                    type="monotone"
+                                    name="Lượt xem"
+                                    dataKey="views"
+                                    fill="url(#colorViewsNew)"
+                                    stroke="#10b981"
+                                    strokeWidth={3}
+                                />
+                                <Area
+                                    type="monotone"
+                                    name="Leads"
+                                    dataKey="leads"
+                                    stroke="#8b5cf6"
+                                    strokeWidth={3}
+                                    fill="none"
+                                    strokeDasharray="5 5"
+                                />
+                            </ComposedChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Activity Chart */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-96">
-                    <h3 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <LayoutDashboard size={20} className="text-blue-500" />
-                        Hoạt động 7 ngày qua
-                    </h3>
-                    <ResponsiveContainer width="100%" height="85%">
-                        <ComposedChart data={stats?.chartData || []}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                            <XAxis
-                                dataKey="name"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#666', fontSize: 12 }}
-                                dy={10}
-                            />
-                            <YAxis
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fill: '#666', fontSize: 12 }}
-                            />
-                            <Tooltip
-                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-                            />
-                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
-
-                            <Bar
-                                name="Tin đăng"
-                                dataKey="posts"
-                                fill="#3b82f6"
-                                radius={[4, 4, 0, 0]}
-                                barSize={20}
-                            />
-                            <Area
-                                type="monotone"
-                                name="Lượt xem"
-                                dataKey="views"
-                                fill="url(#colorViews)"
-                                stroke="#10b981"
-                                strokeWidth={2}
-                            />
-                            <Area
-                                type="monotone"
-                                name="Leads"
-                                dataKey="leads"
-                                fill="none"
-                                stroke="#8b5cf6"
-                                strokeWidth={2}
-                            />
-                            <defs>
-                                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.2} />
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                        </ComposedChart>
-                    </ResponsiveContainer>
+                {/* Distribution Chart */}
+                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
+                    <div className="mb-8">
+                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Phân bổ tin đăng</h3>
+                        <p className="text-sm text-gray-500 font-medium">Tỷ lệ theo trạng thái hiển thị</p>
+                    </div>
+                    <div className="flex-1 flex flex-col md:flex-row items-center gap-8 min-h-0">
+                        <div className="flex-1 w-full h-full relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={postStatusData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={70}
+                                        outerRadius={100}
+                                        paddingAngle={8}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {postStatusData.map((_, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={8} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span className="text-3xl font-black text-gray-900">{stats?.totalPosts || 0}</span>
+                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Tông cộng</span>
+                            </div>
+                        </div>
+                        <div className="w-full md:w-32 space-y-4">
+                            {postStatusData.map((entry, index) => (
+                                <div key={index} className="flex flex-col">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{entry.name}</span>
+                                    </div>
+                                    <span className="text-xl font-black text-gray-900 pl-4">{entry.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            {/* Footer space */}
+            <div className="h-12"></div>
 
             {/* Upgrade Modal */}
             {showUpgrade && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
                     <UpgradeWizard
                         onClose={() => setShowUpgrade(false)}
                         onSuccess={() => setShowUpgrade(false)}
