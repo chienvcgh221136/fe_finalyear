@@ -25,6 +25,8 @@ export interface User {
     };
     points?: number;
     blockedUsers?: string[]; // IDs of users blocked by this user
+    isVerified?: boolean;
+    coverImage?: string;
 }
 
 export interface Review {

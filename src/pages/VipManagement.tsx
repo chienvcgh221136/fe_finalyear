@@ -193,6 +193,12 @@ const VipManagement = () => {
                                 <h2 className="text-3xl font-bold text-gray-900">
                                     {Math.max(0, limitViewPhone - dailyViewedPhones)}
                                 </h2>
+                                <div className="flex gap-3 mt-1">
+                                    <span className="text-xs text-purple-600 font-medium">Theo gói: {Math.max(0, baseViewLimit - dailyViewedPhones)}</span>
+                                    {myVip.bonusLeadCredits > 0 && (
+                                        <span className="text-xs text-orange-600 font-bold">Thưởng: {myVip.bonusLeadCredits}</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                         {/* Progress Bar - Shows Remaining % */}
@@ -202,7 +208,7 @@ const VipManagement = () => {
                                 style={{ width: `${limitViewPhone > 0 ? Math.min(100, ((limitViewPhone - dailyViewedPhones) / limitViewPhone) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Làm mới lúc 00:00 hằng ngày.</p>
+                        <p className="text-xs text-gray-400">Gồm {baseViewLimit} lượt gói + {myVip.bonusLeadCredits || 0} lượt thưởng. Làm mới lúc 00:00 hằng ngày.</p>
                     </div>
 
 

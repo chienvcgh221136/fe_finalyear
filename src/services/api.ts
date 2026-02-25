@@ -60,6 +60,7 @@ export const filesAPI = {
 
 export const postService = {
     getAll: (params?: any) => api.get('/posts', { params }),
+    getSuggestions: (q: string) => api.get('/posts/suggestions', { params: { q } }),
     getById: (id: string) => api.get(`/posts/${id}`),
     getMyPosts: () => api.get('/posts/me/list'), // Corrected endpoint
     getByUser: (userId: string) => api.get(`/posts/user/${userId}/list`),

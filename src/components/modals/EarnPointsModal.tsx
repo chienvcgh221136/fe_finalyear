@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, TrendingUp, Users, Award, Moon, CheckCircle } from 'lucide-react';
+import { Gift, TrendingUp, Users, Award, Moon, X } from 'lucide-react';
 
 interface EarnPointsModalProps {
     isOpen: boolean;
@@ -20,8 +20,8 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
                     </div>
                     {/* Decorative */}
                     <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                    <button onClick={onClose} className="absolute top-6 right-6 text-white/80 hover:text-white transition bg-white/10 p-2 rounded-full backdrop-blur-md">
-                        <CheckCircle size={20} className="rotate-45" />
+                    <button onClick={onClose} className="absolute top-6 right-6 text-white/80 hover:text-white transition bg-white/10 p-2 rounded-full backdrop-blur-md z-20">
+                        <X size={20} />
                     </button>
                 </div>
 
@@ -99,9 +99,9 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
 
                     <button
                         onClick={onClose}
-                        className="w-full mt-8 bg-blue-50 text-blue-700 font-bold py-4 rounded-xl hover:bg-blue-100 transition"
+                        className="w-full mt-8 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-200 hover:shadow-blue-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
                     >
-                        Đã hiểu
+                        Tôi đã hiểu
                     </button>
                 </div>
             </div>

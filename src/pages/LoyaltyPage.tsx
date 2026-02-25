@@ -2,9 +2,10 @@ import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pointService } from '../services/pointService';
 import { useAuth } from '../context/AuthContext';
-import { Gift, TrendingUp, Users, Clock, ChevronRight, Award } from 'lucide-react';
+import { Gift, TrendingUp, Users, Clock, ChevronRight, Award, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EarnPointsModal from '../components/modals/EarnPointsModal';
+import PointTermsModal from '../components/modals/PointTermsModal';
 import UseItemModal from '../components/modals/UseItemModal';
 import { useToast } from '../context/ToastContext';
 
@@ -15,6 +16,7 @@ const LoyaltyPage = () => {
     const queryClient = useQueryClient();
 
     const [showTasks, setShowTasks] = React.useState(false);
+    const [showTerms, setShowTerms] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState<any>(null);
 
     const { data: pointData, isLoading } = useQuery({
@@ -60,8 +62,8 @@ const LoyaltyPage = () => {
 
     if (isLoading) return <div className="p-8 text-center">Loading...</div>;
 
-    const { balance, history, inventory = {} } = pointData || { balance: 0, history: [], inventory: {} };
-    const filteredHistory = (history || []).filter((log: any) => log.points > 0);
+    const { balance, history, inventory = {}, expiringSoon = { total: 0, batches: [] } } = pointData || { balance: 0, history: [], inventory: {}, expiringSoon: { total: 0, batches: [] } };
+    const filteredHistory = (history || []).filter((log: any) => log.points > 0 || log.action === 'EXPIRED');
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -92,13 +94,13 @@ const LoyaltyPage = () => {
                                 <div className="relative w-40 h-40 rounded-full border-4 border-white/10 flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md shadow-xl">
                                     <Award size={24} className="mb-1 text-yellow-300 drop-shadow-lg" />
                                     <span className="text-4xl font-black text-white tracking-tight drop-shadow-md">{balance}</span>
-                                    <span className="text-[10px] font-bold text-blue-100 mt-1 uppercase tracking-widest opacity-80">điểm thương</span>
+                                    <span className="text-[10px] font-bold text-blue-100 mt-1 uppercase tracking-widest opacity-80">Điểm tiêu dùng</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Tighter Quick Stats Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mt-8 w-full max-w-lg mx-auto text-white">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8 w-full max-w-2xl mx-auto text-white">
                             <div onClick={() => navigate('/loyalty/redeem')} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
                                 <div className="w-8 h-8 mx-auto mb-2 bg-blue-500/30 rounded-full flex items-center justify-center">
                                     <Gift size={16} className="text-white" />
@@ -119,12 +121,37 @@ const LoyaltyPage = () => {
                                 </div>
                                 <span className="text-xs font-bold block">Lịch sử</span>
                             </div>
+
+                            <div onClick={() => setShowTerms(true)} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
+                                <div className="w-8 h-8 mx-auto mb-2 bg-amber-500/30 rounded-full flex items-center justify-center">
+                                    <ShieldCheck size={16} className="text-white" />
+                                </div>
+                                <span className="text-xs font-bold block">Điều khoản</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div className="container max-w-5xl mx-auto px-4 -mt-20 relative z-20 space-y-10">
+                {/* Expiring Points Warning */}
+                {expiringSoon.total > 0 && (
+                    <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-3xl shadow-md">
+                        <div className="flex items-start gap-4">
+                            <div className="bg-orange-100 p-2 rounded-full">
+                                <Clock size={20} className="text-orange-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="text-orange-900 font-bold mb-1">
+                                    {expiringSoon.total.toLocaleString()} điểm sắp hết hạn
+                                </h4>
+                                <p className="text-orange-700 text-sm leading-relaxed">
+                                    Bạn đang có {expiringSoon.total.toLocaleString()} điểm sẽ hết hạn vào {expiringSoon.expiryDay}/{expiringSoon.expiryMonth}{expiringSoon.year ? `/${expiringSoon.year}` : ''} tới đây. Hãy tranh thủ đổi lấy những phần quà hấp dẫn trước khi quá hạn nhé.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Inventory Section (New) */}
                 <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
@@ -224,8 +251,10 @@ const LoyaltyPage = () => {
                                         <td className="px-8 py-5 text-gray-500">
                                             {new Date(log.createdAt).toLocaleDateString('vi-VN')} <span className="text-gray-300 mx-2">|</span> {new Date(log.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                                         </td>
-                                        <td className={`px-8 py-5 text-right font-bold text-base ${log.type === 'EARN' ? 'text-green-600' : 'text-orange-500'}`}>
-                                            {log.type === 'EARN' ? '+' : '-'}{log.points}
+                                        <td className="px-8 py-5 text-right font-bold text-base flex flex-col items-end">
+                                            <div className={`${log.type === 'EARN' ? 'text-green-600' : 'text-orange-500'}`}>
+                                                {log.type === 'EARN' ? '+' : '-'}{log.points}
+                                            </div>
                                         </td>
                                     </tr>
                                 )) : (
@@ -245,7 +274,7 @@ const LoyaltyPage = () => {
             </div>
 
             <EarnPointsModal isOpen={showTasks} onClose={() => setShowTasks(false)} />
-
+            <PointTermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
             <UseItemModal
                 isOpen={!!selectedItem}
                 onClose={() => setSelectedItem(null)}
@@ -284,6 +313,8 @@ const formatAction = (action: string) => {
         case 'REDEEM_ITEM_VIP_BRONZE_1DAY': return 'Đổi VIP Bronze 1 Ngày';
         case 'REDEEM_ITEM_VIP_SILVER_3DAY': return 'Đổi VIP Silver 3 Ngày';
         case 'REDEEM_ITEM_VIP_GOLD_7DAY': return 'Đổi VIP Gold 7 Ngày';
+        case 'EXPIRED': return 'Điểm hết hạn';
+        case 'ADMIN_ADJUSTMENT': return 'Admin điều chỉnh';
         default: return action;
     }
 };

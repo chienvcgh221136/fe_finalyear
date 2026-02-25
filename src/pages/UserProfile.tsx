@@ -100,8 +100,8 @@ const UserProfile = () => {
                     {/* Cover Image */}
                     <div className="h-48 md:h-64 relative flex items-center justify-center overflow-hidden bg-gray-200 group">
                         {/* Display Cover Image if exists, else Blue Gradient */}
-                        {(user as any).coverImage ? (
-                            <img src={(user as any).coverImage} alt="Cover" className="w-full h-full object-cover" />
+                        {user.coverImage ? (
+                            <img src={user.coverImage} alt="Cover" className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full bg-gradient-to-r from-blue-600 to-blue-400 relative">
                                 <div className="absolute inset-0 opacity-20 bg-[url('https://static.chotot.com/storage/chotot-icons/next/pro-cover.png')] bg-repeat-x bg-contain"></div>
@@ -173,7 +173,7 @@ const UserProfile = () => {
                             <div className="flex-1 mb-2 md:mb-0 pt-2">
                                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                     {user.name}
-                                    {user.isAuthenticated && <ShieldCheck className="text-green-500 w-5 h-5" />}
+                                    {user.isVerified && <ShieldCheck className="text-green-500 w-5 h-5" />}
                                 </h1>
                                 <div className="text-sm text-gray-500 space-y-1 mt-1">
                                     <p>Người theo dõi: <span className="font-bold text-gray-900">0</span></p> {/* Placeholder for now */}

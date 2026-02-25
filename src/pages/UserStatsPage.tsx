@@ -108,21 +108,31 @@ const UserStatsPage = () => {
                     { label: 'Lượt xem', value: stats?.totalViews, icon: Eye, color: 'green', desc: 'Tổng lượt tiếp cận' },
                     { label: 'Tiếp cận', value: stats?.totalLeads, icon: Users, color: 'purple', desc: 'Khách hàng quan tâm' },
                     { label: 'Chi tiêu', value: formatCurrency(stats?.totalSpent || 0), icon: DollarSign, color: 'red', desc: 'Tổng chi phí dịch vụ' },
-                ].map((kpi, i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className={`p-3 bg-${kpi.color}-50 text-${kpi.color}-600 rounded-2xl group-hover:scale-110 transition-transform`}>
-                                <kpi.icon size={24} />
+                ].map((kpi, i) => {
+                    const colorClasses: Record<string, string> = {
+                        blue: 'bg-blue-50 text-blue-600',
+                        green: 'bg-green-50 text-green-600',
+                        purple: 'bg-purple-50 text-purple-600',
+                        red: 'bg-red-50 text-red-600'
+                    };
+                    const currentColorClass = colorClasses[kpi.color] || 'bg-gray-50 text-gray-600';
+
+                    return (
+                        <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className={`p-3 ${currentColorClass} rounded-2xl group-hover:scale-110 transition-transform`}>
+                                    <kpi.icon size={24} />
+                                </div>
+                                <TrendingUp size={16} className="text-gray-300" />
                             </div>
-                            <TrendingUp size={16} className="text-gray-300" />
+                            <div className="text-3xl font-black text-gray-900 mb-1">{kpi.value}</div>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{kpi.label}</p>
+                            <div className="mt-4 pt-4 border-t border-gray-50">
+                                <p className="text-xs text-gray-500 italic">{kpi.desc}</p>
+                            </div>
                         </div>
-                        <div className="text-3xl font-black text-gray-900 mb-1">{kpi.value}</div>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{kpi.label}</p>
-                        <div className="mt-4 pt-4 border-t border-gray-50">
-                            <p className="text-xs text-gray-500 italic">{kpi.desc}</p>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Charts section */}
@@ -213,9 +223,10 @@ const UserStatsPage = () => {
                                         paddingAngle={8}
                                         dataKey="value"
                                         stroke="none"
+                                        cornerRadius={8}
                                     >
                                         {postStatusData.map((_, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} cornerRadius={8} />
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
                                     <Tooltip
