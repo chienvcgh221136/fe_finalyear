@@ -30,7 +30,13 @@ export const authService = {
     register: (data: any) => api.post('/auth/register', data),
     logout: () => api.post('/auth/logout'),
     googleLogin: (token: string) => api.post('/auth/google', { token }),
-    getProfile: () => api.get('/users/me'), // Assuming /users/me is the endpoint
+    getProfile: () => api.get('/users/me'),
+    forgotPassword: {
+        checkEmail: (email: string) => api.post('/auth/forgot-password/check-email', { email }),
+        sendOTP: (email: string, phone: string) => api.post('/auth/forgot-password/send-otp', { email, phone }),
+        verifyOTP: (email: string, otp: string) => api.post('/auth/forgot-password/verify-otp', { email, otp }),
+        reset: (data: any) => api.post('/auth/forgot-password/reset', data),
+    }
 };
 
 export const usersAPI = {

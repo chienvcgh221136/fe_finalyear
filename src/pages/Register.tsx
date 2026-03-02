@@ -5,14 +5,24 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
+import PasswordStrength, { calculatePasswordStrength } from '../components/ui/PasswordStrength';
+
 const Register = () => {
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
     const { success, error } = useToast();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
+    const password = watch('password', '');
+
     const onSubmit = async (data: any) => {
         try {
+            const score = calculatePasswordStrength(data.password);
+            if (score < 70) {
+                error('Mật khẩu của bạn quá yếu. Vui lòng đạt ít nhất 70% mức độ an toàn.');
+                return;
+            }
+
             if (data.password !== data.confirmPassword) {
                 error('Mật khẩu không khớp');
                 return;
@@ -108,6 +118,7 @@ const Register = () => {
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
                             </div>
+                            <PasswordStrength password={password} />
                             {errors.password && <span className="text-sm" style={{ color: 'var(--error)' }}>{errors.password.message as string}</span>}
                         </div>
 

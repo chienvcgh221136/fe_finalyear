@@ -5,10 +5,12 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
 import { useToast } from '../context/ToastContext';
+import ForgotPasswordModal from '../components/modals/ForgotPasswordModal';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
+    const [showForgotModal, setShowForgotModal] = useState(false);
     const navigate = useNavigate();
     const { login, googleLogin } = useAuth();
     const { success, error } = useToast();
@@ -70,7 +72,13 @@ const Login = () => {
                     <div className="space-y-1">
                         <div className="flex justify-between items-center">
                             <label className="block text-sm font-bold text-gray-700">Mật khẩu</label>
-                            <Link to="#" className="text-sm text-blue-600 font-semibold hover:text-blue-700">Quên mật khẩu?</Link>
+                            <button
+                                type="button"
+                                onClick={() => setShowForgotModal(true)}
+                                className="text-sm text-blue-600 font-semibold hover:text-blue-700 bg-transparent"
+                            >
+                                Quên mật khẩu?
+                            </button>
                         </div>
                         <div className="relative">
                             <input
@@ -125,6 +133,11 @@ const Login = () => {
                     </p>
                 </div>
             </div>
+
+            <ForgotPasswordModal
+                isOpen={showForgotModal}
+                onClose={() => setShowForgotModal(false)}
+            />
         </div>
     );
 };
