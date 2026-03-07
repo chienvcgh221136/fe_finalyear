@@ -198,4 +198,8 @@ export const pointsAPI = {
     adjustUserPoints: (data: any) => api.post('/points/admin/adjust-points', data),
 };
 
+export const chatbotAPI = {
+    query: (message: string) => api.post('/chatbot/query', { message }),
+};
+
 export default api;

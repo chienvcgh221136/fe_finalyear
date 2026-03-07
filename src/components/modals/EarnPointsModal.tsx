@@ -1,5 +1,5 @@
 import React from 'react';
-import { Gift, TrendingUp, Users, Award, Moon, X } from 'lucide-react';
+import { Gift, TrendingUp, Users, Award, X } from 'lucide-react';
 
 interface EarnPointsModalProps {
     isOpen: boolean;
@@ -67,31 +67,13 @@ const EarnPointsModal: React.FC<EarnPointsModalProps> = ({ isOpen, onClose }) =>
                                     color="text-blue-500"
                                     bgColor="bg-blue-50"
                                 />
-                            </div>
-                        </div>
-
-                        {/* Coming Soon Methods */}
-                        <div>
-                            <h3 className="text-gray-400 font-bold text-lg mb-4 flex items-center gap-2">
-                                <span className="w-2 h-8 bg-gray-300 rounded-full"></span>
-                                Sắp ra mắt
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-70">
                                 <EarnCard
                                     icon={Users}
-                                    title="Giới thiệu bạn bè"
-                                    points="+200"
-                                    desc="Mời bạn bè đăng ký tài khoản mới"
-                                    color="text-purple-500"
+                                    title="Cập nhật Profile"
+                                    points="+500"
+                                    desc="Ghi đầy đủ thông tin cá nhân và update ảnh để được cộng điểm (sẽ xử lý sớm trong thời gian nhất định)"
+                                    color="text-purple-600"
                                     bgColor="bg-purple-50"
-                                />
-                                <EarnCard
-                                    icon={Moon}
-                                    title="Chia sẻ tin đăng"
-                                    points="+5"
-                                    desc="Chia sẻ tin lên mạng xã hội"
-                                    color="text-pink-500"
-                                    bgColor="bg-pink-50"
                                 />
                             </div>
                         </div>

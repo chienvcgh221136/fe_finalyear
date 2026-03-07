@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { pointService } from '../../../services/pointService';
 import { Search, ArrowUpDown } from 'lucide-react';
@@ -38,12 +38,13 @@ const UserBalancesTable = () => {
         setIsAdjustModalOpen(true);
     };
 
-    const handleConfirmAdjust = (amount: number, description: string) => {
+    const handleConfirmAdjust = (amount: number, description: string, penaltyLevel?: number) => {
         if (!selectedUser) return;
         adjustMutation.mutate({
             userId: selectedUser._id,
             amount,
-            description
+            description,
+            penaltyLevel
         });
     };
 
@@ -191,6 +192,7 @@ const UserBalancesTable = () => {
             )}
 
             <AdjustPointsModal
+                key={isAdjustModalOpen ? (selectedUser?._id || 'open') : 'closed'}
                 isOpen={isAdjustModalOpen}
                 onClose={() => setIsAdjustModalOpen(false)}
                 onConfirm={handleConfirmAdjust}

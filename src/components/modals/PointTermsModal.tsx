@@ -63,6 +63,7 @@ const PointTermsModal: React.FC<PointTermsModalProps> = ({ isOpen, onClose }) =>
                                 <TermItem title="Nạp tiền / Mua gói VIP" content="Mỗi 1.000đ thanh toán nhận ngay 1 điểm thưởng." />
                                 <TermItem title="Nạp tiền lần đầu" content="Ưu đãi tặng thêm 200 điểm cho giao dịch đầu tiên." />
                                 <TermItem title="Hoạt động hàng ngày" content="Đăng nhập nhận 10đ, Đăng tin thành công nhận 50đ." />
+                                <TermItem title="Cập nhật Profile" content="Ghi đầy đủ thông tin cá nhân và update ảnh để được cộng điểm thưởng 500đ (sẽ xử lý sớm trong thời gian nhất định)." />
                                 <TermItem title="Sự kiện đặc biệt" content="Nhận điểm từ các chương trình khuyến mãi hoặc quà tặng từ Admin." />
                             </div>
                         </section>

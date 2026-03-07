@@ -27,7 +27,7 @@ const getUsersWithPoints = async (params?: any) => {
     return response.data;
 };
 
-const adjustUserPoints = async (data: { userId: string, amount: number, description?: string }) => {
+const adjustUserPoints = async (data: { userId: string, amount: number, description?: string, penaltyLevel?: number }) => {
     const response = await axios.post(`${API_URL}/admin/adjust-points`, data, { withCredentials: true });
     return response.data;
 };

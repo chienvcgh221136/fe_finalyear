@@ -1,0 +1,241 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MessageSquare, Send, X, Bot, Loader2, Sparkles } from 'lucide-react';
+import { chatbotAPI } from '../../services/api';
+import ListingCard from '../ListingCard';
+import type { Post } from '../../types';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+interface Message {
+    id: string;
+    text: string;
+    sender: 'user' | 'bot';
+    posts?: Post[];
+}
+
+const Chatbot = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [input, setInput] = useState('');
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: '1',
+            text: 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?',
+            sender: 'bot'
+        }
+    ]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [anonymousCount, setAnonymousCount] = useState(0);
+    const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, isLoading]);
+
+    const handleSend = async () => {
+        if (!input.trim() || isLoading) return;
+
+        // Check access control
+        if (!isAuthenticated && anonymousCount >= 1) {
+            const warningMsg: Message = {
+                id: Date.now().toString(),
+                text: 'Bạn đã dùng hết lượt hỏi miễn phí. Vui lòng đăng nhập để tiếp tục trò chuyện và nhận tư vấn chi tiết hơn!',
+                sender: 'bot'
+            };
+            setMessages(prev => [...prev, warningMsg]);
+            return;
+        }
+
+        const userMsg: Message = {
+            id: Date.now().toString(),
+            text: input,
+            sender: 'user'
+        };
+
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        setIsLoading(true);
+
+        if (!isAuthenticated) {
+            setAnonymousCount(prev => prev + 1);
+        }
+
+        try {
+            const response = await chatbotAPI.query(input);
+            const botMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                text: response.data.data.message,
+                sender: 'bot',
+                posts: response.data.data.posts
+            };
+            setMessages(prev => [...prev, botMsg]);
+        } catch (error) {
+            console.error('Chatbot error:', error);
+            const errorMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                text: 'Xin lỗi, tôi gặp sự cố khi kết nối. Vui lòng thử lại sau.',
+                sender: 'bot'
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const renderMessageContent = (msg: Message) => {
+        const parts = msg.text.split(/(\[PROPERTY:[0-9a-fA-F]+\])/g);
+
+        return (
+            <div className="space-y-4">
+                <div className="whitespace-pre-wrap">
+                    {parts.map((part, i) => {
+                        const match = part.match(/\[PROPERTY:([0-9a-fA-F]+)\]/);
+                        if (match && msg.posts) {
+                            const postId = match[1];
+                            const post = msg.posts.find(p => p._id === postId);
+                            if (post) {
+                                return (
+                                    <div key={i} className="my-4 max-w-[280px]">
+                                        <ListingCard post={post} />
+                                    </div>
+                                );
+                            }
+                        }
+                        return <span key={i}>{part}</span>;
+                    })}
+                </div>
+                {msg.text.includes('Vui lòng đăng nhập để tiếp tục') && (
+                    <button
+                        onClick={() => navigate('/login')}
+                        className="w-full py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                    >
+                        Đăng nhập ngay
+                    </button>
+                )}
+            </div>
+        );
+    };
+
+    return (
+        <div className="fixed bottom-6 right-6 z-[9999] font-sans">
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        className="mb-4 w-[400px] h-[600px] bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+                    >
+                        {/* Header */}
+                        <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center shadow-lg">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                                    <Bot size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-lg leading-none mb-1">EstateBot</h3>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                        <span className="text-xs text-blue-100 font-medium">Đang hoạt động</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsOpen(false)}
+                                className="hover:bg-white/20 p-2 rounded-full transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Messages */}
+                        <div
+                            ref={scrollRef}
+                            className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/50"
+                        >
+                            {messages.map((msg) => (
+                                <div
+                                    key={msg.id}
+                                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}
+                                >
+                                    {msg.sender === 'bot' && (
+                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-1 shadow-sm font-bold border border-blue-200">
+                                            AI
+                                        </div>
+                                    )}
+                                    <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${msg.sender === 'user'
+                                        ? 'bg-blue-600 text-white rounded-tr-none font-medium'
+                                        : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none leading-relaxed'
+                                        }`}>
+                                        {renderMessageContent(msg)}
+                                    </div>
+                                    {msg.sender === 'user' && (
+                                        <div className="w-8 h-8 rounded-lg bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 mt-1 shadow-sm font-bold border border-gray-300">
+                                            {/* Could use user initial here */}
+                                            U
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                            {isLoading && (
+                                <div className="flex justify-start items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-200">
+                                        <Loader2 size={16} className="animate-spin" />
+                                    </div>
+                                    <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm text-gray-500 text-sm flex items-center gap-2 italic">
+                                        <Sparkles size={14} className="text-blue-500" />
+                                        Đang tìm kiếm thông tin...
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Input */}
+                        <div className="p-6 bg-white border-t border-gray-100">
+                            <div className="relative flex items-center gap-3">
+                                <input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                                    placeholder="Hỏi tôi bất cứ điều gì..."
+                                    className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl pl-5 pr-12 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-sm font-medium"
+                                />
+                                <button
+                                    onClick={handleSend}
+                                    disabled={!input.trim() || isLoading}
+                                    className="absolute right-2 p-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-blue-600/20"
+                                >
+                                    <Send size={18} />
+                                </button>
+                            </div>
+                            <p className="mt-3 text-[10px] text-center text-gray-400 font-medium uppercase tracking-wider">
+                                Powered by EstateAI & Gemini
+                            </p>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {!isOpen && (
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsOpen(true)}
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700"
+                >
+                    <div className="relative">
+                        <MessageSquare size={24} />
+                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-blue-600" />
+                    </div>
+                </motion.button>
+            )}
+        </div>
+    );
+};
+
+export default Chatbot;

@@ -23,6 +23,7 @@ import Chat from './pages/Chat'; // Added
 import VipManagement from './pages/VipManagement'; // Added
 import LoyaltyPage from './pages/LoyaltyPage'; // Added
 import RedeemPage from './pages/RedeemPage'; // Added
+import Chatbot from './components/chatbot/Chatbot';
 
 const MainLayout = () => {
   const location = useLocation();
@@ -35,6 +36,7 @@ const MainLayout = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <Chatbot />
       {!isChatPage && !isProfilePage && <Footer />}
     </div>
   );
