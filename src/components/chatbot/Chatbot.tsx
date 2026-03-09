@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Send, X, Bot, Loader2, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Loader2, Sparkles, ExternalLink } from 'lucide-react';
 import { chatbotAPI } from '../../services/api';
 import ListingCard from '../ListingCard';
 import type { Post } from '../../types';
@@ -73,11 +73,12 @@ const Chatbot = () => {
                 posts: response.data.data.posts
             };
             setMessages(prev => [...prev, botMsg]);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Chatbot error:', error);
+            const errorMessage = error.response?.data?.message || 'Xin lỗi, tôi gặp sự cố khi kết nối. Vui lòng thử lại sau.';
             const errorMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: 'Xin lỗi, tôi gặp sự cố khi kết nối. Vui lòng thử lại sau.',
+                text: errorMessage,
                 sender: 'bot'
             };
             setMessages(prev => [...prev, errorMsg]);
@@ -93,14 +94,25 @@ const Chatbot = () => {
             <div className="space-y-4">
                 <div className="whitespace-pre-wrap">
                     {parts.map((part, i) => {
-                        const match = part.match(/\[PROPERTY:([0-9a-fA-F]+)\]/);
+                        const match = part.match(/\[PROPERTY:(.+?)\]/);
                         if (match && msg.posts) {
                             const postId = match[1];
-                            const post = msg.posts.find(p => p._id === postId);
+                            const post = msg.posts.find(p => (p._id === postId || p.id === postId));
                             if (post) {
                                 return (
-                                    <div key={i} className="my-4 max-w-[280px]">
-                                        <ListingCard post={post} />
+                                    <div key={i} className="my-4 max-w-full sm:max-w-[320px] group">
+                                        <div className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 transition-all duration-300 group-hover:shadow-xl group-hover:border-blue-200 group-hover:-translate-y-1">
+                                            <ListingCard post={post} />
+                                            <div className="p-3 bg-gray-50 border-t border-gray-100">
+                                                <button
+                                                    onClick={() => navigate(`/post/${post._id || post.id}`)}
+                                                    className="w-full py-2 bg-blue-600/10 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    Xem chi tiết bài đăng
+                                                    <ExternalLink size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 );
                             }
@@ -131,16 +143,23 @@ const Chatbot = () => {
                         className="mb-4 w-[400px] h-[600px] bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="p-6 bg-gradient-to-r from-blue-600 to-indigo-700 text-white flex justify-between items-center shadow-lg">
-                            <div className="flex items-center gap-3">
-                                <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                    <Bot size={24} />
+                        <div className="p-6 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 text-white flex justify-between items-center shadow-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+                                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-white rotate-12 blur-3xl rounded-full" />
+                            </div>
+
+                            <div className="flex items-center gap-3 relative z-10">
+                                <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+                                    <Bot size={24} className="text-white" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-lg leading-none mb-1">EstateBot</h3>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                                        <span className="text-xs text-blue-100 font-medium">Đang hoạt động</span>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-lg tracking-tight">EstateBot</h3>
+                                        <span className="bg-blue-400/30 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider backdrop-blur-sm border border-white/10">AI Agent</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
+                                        <span className="text-[11px] text-blue-100 font-medium">Sẵn sàng hỗ trợ</span>
                                     </div>
                                 </div>
                             </div>
@@ -163,19 +182,18 @@ const Chatbot = () => {
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} items-start gap-3`}
                                 >
                                     {msg.sender === 'bot' && (
-                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-1 shadow-sm font-bold border border-blue-200">
-                                            AI
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shrink-0 mt-1 shadow-lg shadow-blue-200 font-bold border border-white/20">
+                                            <Bot size={16} />
                                         </div>
                                     )}
-                                    <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${msg.sender === 'user'
-                                        ? 'bg-blue-600 text-white rounded-tr-none font-medium'
+                                    <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm transition-all ${msg.sender === 'user'
+                                        ? 'bg-blue-600 text-white rounded-tr-none font-medium shadow-md shadow-blue-600/10'
                                         : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none leading-relaxed'
                                         }`}>
                                         {renderMessageContent(msg)}
                                     </div>
                                     {msg.sender === 'user' && (
-                                        <div className="w-8 h-8 rounded-lg bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 mt-1 shadow-sm font-bold border border-gray-300">
-                                            {/* Could use user initial here */}
+                                        <div className="w-8 h-8 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center shrink-0 mt-1 shadow-sm font-bold border border-gray-200">
                                             U
                                         </div>
                                     )}
