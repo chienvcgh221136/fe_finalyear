@@ -3,14 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationAPI } from '../../services/api';
 import { Bell, Heart, Calendar, MessageSquare, AlertTriangle, Info } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { Link } from 'react-router-dom';
+import { vi, enUS } from 'date-fns/locale';
+import LocalizedLink from '../common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const NotificationDropdown = () => {
+    const { t, i18n } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'ACTIVITY' | 'NEWS'>('NEWS');
     const dropdownRef = useRef<HTMLDivElement>(null);
     const queryClient = useQueryClient();
+
+    const dateLocale = i18n.language === 'en' ? enUS : vi;
 
     const { data: notificationsData } = useQuery({
         queryKey: ['notifications'],
@@ -100,13 +104,13 @@ const NotificationDropdown = () => {
                 <div className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-in fade-in slide-in-from-top-2 duration-100 overflow-hidden">
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-900">Thông báo</h3>
+                        <h3 className="font-bold text-gray-900">{t('notifications.title')}</h3>
                         {unreadCount > 0 && (
                             <button
                                 onClick={() => markAllReadMutation.mutate()}
                                 className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                             >
-                                Đánh dấu đã đọc
+                                {t('notifications.mark_all_read')}
                             </button>
                         )}
                     </div>
@@ -117,13 +121,13 @@ const NotificationDropdown = () => {
                             className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'ACTIVITY' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                             onClick={() => setActiveTab('ACTIVITY')}
                         >
-                            Hoạt động
+                            {t('notifications.tab_activity')}
                         </button>
                         <button
                             className={`flex-1 py-2 text-sm font-medium transition-colors ${activeTab === 'NEWS' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                             onClick={() => setActiveTab('NEWS')}
                         >
-                            Tin tức
+                            {t('notifications.tab_news')}
                         </button>
                     </div>
 
@@ -132,12 +136,12 @@ const NotificationDropdown = () => {
                         {displayedNotifications.length === 0 ? (
                             <div className="p-8 text-center text-gray-400">
                                 <Bell className="mx-auto mb-2 opacity-20" size={32} />
-                                <p className="text-sm">Chưa có thông báo nào</p>
+                                <p className="text-sm">{t('notifications.no_notifications')}</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-gray-50">
                                 {displayedNotifications.map((n: any) => (
-                                    <Link
+                                    <LocalizedLink
                                         key={n._id}
                                         to={getLink(n)}
                                         onClick={() => handleNotificationClick(n)}
@@ -153,7 +157,7 @@ const NotificationDropdown = () => {
                                                 {n.message}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
-                                                {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: vi })}
+                                                {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: dateLocale })}
                                             </p>
                                         </div>
                                         {!n.isRead && (
@@ -161,7 +165,7 @@ const NotificationDropdown = () => {
                                                 <div className="w-2 h-2 rounded-full bg-blue-600"></div>
                                             </div>
                                         )}
-                                    </Link>
+                                    </LocalizedLink>
                                 ))}
                             </div>
                         )}

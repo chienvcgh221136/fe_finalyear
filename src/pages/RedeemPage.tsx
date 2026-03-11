@@ -1,21 +1,20 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pointService } from '../services/pointService';
-import { useAuth } from '../context/AuthContext';
-import { Gift, TrendingUp, Users, Award, ChevronLeft, CheckCircle, Moon } from 'lucide-react';
-import { useToast } from '../context/ToastContext';
-import { Link } from 'react-router-dom';
+import { Gift, Award, ArrowLeft, ShieldCheck, HelpCircle, Coins, Flame, ChevronRight, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useLocalizedPath } from '../utils/pathUtils';
+import { useTranslation } from 'react-i18next';
 import RedeemModal from '../components/modals/RedeemModal';
-import EarnPointsModal from '../components/modals/EarnPointsModal';
+import { useToast } from '../context/ToastContext';
 
 const RedeemPage = () => {
-    const { user } = useAuth();
-    const queryClient = useQueryClient();
+    const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
+    const localizePath = useLocalizedPath();
     const { success, error } = useToast();
-
-
-    const [selectedReward, setSelectedReward] = React.useState<any>(null);
-    const [showEarnInfo, setShowEarnInfo] = React.useState(false);
+    const queryClient = useQueryClient();
+    const [selectedItem, setSelectedItem] = React.useState<any>(null);
 
     const { data: pointData, isLoading } = useQuery({
         queryKey: ['myPoints'],
@@ -25,261 +24,247 @@ const RedeemPage = () => {
     const redeemMutation = useMutation({
         mutationFn: pointService.redeemReward,
         onSuccess: (data) => {
-            success(data.message);
+            success(t('redeem.success_redeem'));
             queryClient.invalidateQueries({ queryKey: ['myPoints'] });
-            setSelectedReward(null);
+            setSelectedItem(null);
         },
         onError: (err: any) => {
-            error(err.response?.data?.message || "Đổi quà thất bại");
-            setSelectedReward(null);
+            error(err.response?.data?.message || t('redeem.error_redeem'));
         }
     });
 
-    const handleRedeemClick = (item: any) => {
-        setSelectedReward(item);
+    const handleRedeem = (itemKey: string) => {
+        redeemMutation.mutate(itemKey);
     };
 
-    const handleConfirmRedeem = () => {
-        if (selectedReward && !redeemMutation.isPending) {
-            redeemMutation.mutate(selectedReward.key);
+    if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>;
+
+    const balance = pointData?.balance || 0;
+
+    const rewards = [
+        {
+            key: 'ITEM_POST_PUSH',
+            title: t('redeem.item_push_title'),
+            subtitle: t('redeem.item_push_subtitle'),
+            desc: t('redeem.item_push_desc'),
+            points: 10,
+            icon: Flame,
+            color: "from-orange-400 to-red-500",
+            bg: "bg-orange-50",
+            iconBg: "bg-orange-100 text-orange-600"
+        },
+        {
+            key: 'LEAD_CREDIT',
+            title: t('redeem.item_lead_title'),
+            subtitle: t('redeem.item_lead_subtitle'),
+            desc: t('redeem.item_lead_desc'),
+            points: 50,
+            icon: Zap,
+            color: "from-blue-400 to-indigo-600",
+            bg: "bg-blue-50",
+            iconBg: "bg-blue-100 text-blue-600"
+        },
+        {
+            key: 'ITEM_VIP_BRONZE_1DAY',
+            title: t('redeem.item_vip_bronze_title'),
+            subtitle: t('redeem.item_vip_bronze_subtitle'),
+            desc: t('redeem.item_vip_bronze_desc'),
+            points: 100,
+            icon: Award,
+            color: "from-amber-400 to-amber-700",
+            bg: "bg-amber-50",
+            iconBg: "bg-amber-100 text-amber-700"
+        },
+        {
+            key: 'ITEM_VIP_SILVER_3DAY',
+            title: t('redeem.item_vip_silver_title'),
+            subtitle: t('redeem.item_vip_silver_subtitle'),
+            desc: t('redeem.item_vip_silver_desc'),
+            points: 250,
+            icon: Award,
+            color: "from-gray-300 to-gray-500",
+            bg: "bg-gray-50",
+            iconBg: "bg-gray-100 text-gray-500"
+        },
+        {
+            key: 'ITEM_VIP_GOLD_7DAY',
+            title: t('redeem.item_vip_gold_title'),
+            subtitle: t('redeem.item_vip_gold_subtitle'),
+            desc: t('redeem.item_vip_gold_desc'),
+            points: 500,
+            icon: Award,
+            color: "from-yellow-400 to-yellow-600",
+            bg: "bg-yellow-50",
+            iconBg: "bg-yellow-100 text-yellow-600"
         }
-    };
-
-    if (isLoading) return <div className="p-8 text-center">Loading...</div>;
-
-    const { balance } = pointData || { balance: 0 };
+    ];
 
     return (
-        <div className="min-h-screen bg-pink-50/30 pb-20 font-sans">
-            {/* Header / Nav */}
-            <div className="container mx-auto px-4 py-6">
-                <Link to="/loyalty" className="inline-flex items-center text-gray-500 hover:text-red-600 transition mb-6">
-                    <ChevronLeft size={20} /> Trở về trang Loyalty
-                </Link>
-            </div>
+        <div className="min-h-screen bg-white">
+            {/* Header / Hero Section */}
+            <div className="bg-gray-50 py-12 px-4 border-b border-gray-100">
+                <div className="container max-w-6xl mx-auto">
+                    <button
+                        onClick={() => navigate(localizePath('/loyalty'))}
+                        className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition mb-8 group"
+                    >
+                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition" />
+                        {t('redeem.back_to_loyalty')}
+                    </button>
 
-            <div className="container max-w-6xl mx-auto px-4 flex flex-col lg:flex-row gap-8">
-                {/* Main Content (Left Side) */}
-                <div className="lg:w-2/3">
-                    {/* Hero Banner */}
-                    <div className="bg-pink-100 rounded-3xl p-8 mb-8 relative overflow-hidden flex items-center">
-                        <div className="relative z-10 max-w-md">
-                            <span className="bg-red-200 text-red-700 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Loyalty Rewards</span>
-                            <h1 className="text-4xl font-extrabold text-gray-900 mb-2 leading-tight">
-                                Đổi điểm lấy <br /> <span className="text-red-500">Dịch vụ cao cấp</span>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div className="max-w-2xl">
+                            <h2 className="text-blue-600 font-bold uppercase tracking-widest text-sm mb-3">Rewards & Store</h2>
+                            <h1 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight">
+                                {t('redeem.hero_title')} <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                                    {t('redeem.hero_subtitle')}
+                                </span>
                             </h1>
-                            <p className="text-gray-600 mb-6">
-                                Tăng cường hiệu quả đăng tin, tiếp cận khách hàng tiềm năng bằng cách đổi điểm tích lũy của bạn.
+                            <p className="text-gray-500 text-lg">
+                                {t('redeem.hero_desc')}
                             </p>
-                            <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                                <Award className="text-yellow-500" size={20} fill="currentColor" />
-                                <span className="font-bold text-gray-900">{balance.toLocaleString()} Points</span>
+                        </div>
+
+                        <div className="bg-white p-6 rounded-3xl shadow-xl shadow-blue-500/5 border border-blue-50 flex items-center gap-6">
+                            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                                <Coins size={28} />
                             </div>
-                        </div>
-                        {/* 3D Illustration Placeholder */}
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-teal-200 rounded-full blur-3xl opacity-50"></div>
-                        <div className="absolute right-10 top-10 w-48 h-48 bg-white/40 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg transform rotate-12">
-                            <img src="/placeholder-3d-character.png" alt="" className="w-32 h-32 object-contain opacity-0" /> {/* Replace with actual image asset if avail */}
-                            <Gift size={80} className="text-teal-600" />
-                        </div>
-                        <div className="absolute bottom-10 right-48 bg-white p-2 rounded-xl shadow-md rotate-[-10deg]">
-                            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
-                        </div>
-                    </div>
-
-                    {/* Main Content (Left Side) - Direct Rewards Grid (No Tabs) */}
-                    <div>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-gray-900">Các gói quy đổi phổ biến</h2>
-                            <p className="text-gray-400 text-xs">Điểm hết hạn vào cuối chu kỳ thanh toán.</p>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <RewardCardBig
-                                item={{
-                                    key: 'ITEM_POST_PUSH',
-                                    title: "Đẩy Tin (1 lần)",
-                                    subtitle: "Đẩy tin lên đầu trang",
-                                    desc: "Tin của bạn sẽ được đẩy lên đầu trang danh sách tìm kiếm.",
-                                    points: 50,
-                                    icon: TrendingUp,
-                                    color: "text-cyan-500",
-                                    tag: "HOT"
-                                }}
-                                onRedeem={handleRedeemClick}
-                                canRedeem={balance >= 50}
-                            />
-
-                            <RewardCardBig
-                                item={{
-                                    key: 'LEAD_CREDIT',
-                                    title: "Xem 1 Lead",
-                                    subtitle: "Mở khóa SĐT khách",
-                                    desc: "Mở khóa số điện thoại của khách hàng quan tâm đến tin đăng.",
-                                    points: 50,
-                                    icon: Users,
-                                    color: "text-green-500"
-                                }}
-                                onRedeem={handleRedeemClick}
-                                canRedeem={balance >= 50}
-                            />
-
-                            <RewardCardBig
-                                item={{
-                                    key: 'ITEM_VIP_BRONZE_1DAY',
-                                    title: "VIP Bronze (1 Ngày)",
-                                    subtitle: "Up VIP Bronze cho 1 tin",
-                                    desc: "Nâng cấp tin lên VIP Bronze trong 24h, hiển thị nổi bật hơn.",
-                                    points: 500,
-                                    icon: Award,
-                                    color: "text-amber-700"
-                                }}
-                                onRedeem={handleRedeemClick}
-                                canRedeem={balance >= 500}
-                            />
-
-                            <RewardCardBig
-                                item={{
-                                    key: 'ITEM_VIP_SILVER_3DAY',
-                                    title: "VIP Silver (3 Ngày)",
-                                    subtitle: "Up VIP Silver cho 1 tin",
-                                    desc: "Nâng cấp tin lên VIP Silver trong 3 ngày, tiếp cận nhiều khách hàng hơn.",
-                                    points: 1000,
-                                    icon: Award,
-                                    color: "text-gray-500",
-                                    tag: "PHỔ BIẾN"
-                                }}
-                                onRedeem={handleRedeemClick}
-                                canRedeem={balance >= 1000}
-                            />
-
-                            <RewardCardBig
-                                item={{
-                                    key: 'ITEM_VIP_GOLD_7DAY',
-                                    title: "VIP Gold (7 Ngày)",
-                                    subtitle: "Up VIP Gold cho 1 tin",
-                                    desc: "Nâng cấp tin lên VIP Gold trong 7 ngày, hiệu quả cao nhất.",
-                                    points: 2000,
-                                    icon: Award,
-                                    color: "text-yellow-500"
-                                }}
-                                onRedeem={handleRedeemClick}
-                                canRedeem={balance >= 2000}
-                            />
+                            <div>
+                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{t('redeem.sidebar_balance_label')}</p>
+                                <p className="text-3xl font-black text-gray-900">{t('redeem.balance_display', { count: balance.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') })}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Sidebar (Right Side) */}
-                <div className="lg:w-1/3 space-y-6">
-                    {/* Balance Card */}
-                    <div className="bg-slate-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-                        <div className="relative z-10">
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">SỐ DƯ CỦA BẠN</p>
-                            <h2 className="text-4xl font-extrabold mb-6">{balance.toLocaleString()} <span className="text-lg font-normal text-slate-400">Points</span></h2>
+            <div className="container max-w-6xl mx-auto px-4 py-16">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    {/* Main Content: Rewards Grid */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-2xl font-bold text-gray-900">{t('redeem.section_popular')}</h3>
+                            <div className="h-px flex-1 bg-gray-100 mx-6 hidden md:block"></div>
+                        </div>
 
+                        <div className="grid grid-cols-1 gap-6">
+                            {rewards.map(({ key, ...reward }) => (
+                                <RewardCardBig
+                                    key={key}
+                                    {...reward}
+                                    userPoints={balance}
+                                    onRedeem={() => setSelectedItem({ key, ...reward })}
+                                    t={t}
+                                    i18n={i18n}
+                                />
+                            ))}
+                        </div>
+                    </div>
 
-
+                    {/* Sidebar: Info & Help */}
+                    <div className="space-y-8">
+                        <div className="bg-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
+                            <div className="absolute -right-4 -bottom-4 opacity-10">
+                                <Flame size={120} />
+                            </div>
+                            <h4 className="font-bold text-xl mb-4 relative z-10">{t('redeem.btn_how_to_earn')}</h4>
+                            <p className="text-blue-100 text-sm mb-6 opacity-80 relative z-10">
+                                {t('loyalty.thanks')}
+                            </p>
                             <button
-                                onClick={() => setShowEarnInfo(true)}
-                                className="w-full bg-white text-slate-900 font-bold py-3 rounded-xl hover:bg-gray-100 transition"
+                                onClick={() => navigate(localizePath('/loyalty'))}
+                                className="w-full bg-white text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-50 transition relative z-10"
                             >
-                                Làm sao để kiếm thêm?
+                                {t('loyalty.btn_tasks')}
+                            </button>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100">
+                            <h4 className="font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                <ShieldCheck size={18} className="text-blue-600" />
+                                {t('redeem.terms_title')}
+                            </h4>
+                            <ul className="space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <li key={i} className="flex gap-3 text-sm text-gray-500 leading-relaxed">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-300 mt-1.5 shrink-0"></div>
+                                        {t(`redeem.term_${i}`)}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="bg-gray-900 rounded-3xl p-8 text-white">
+                            <HelpCircle size={32} className="text-blue-400 mb-4" />
+                            <h4 className="font-bold text-lg mb-2">{t('redeem.support_title')}</h4>
+                            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+                                {t('redeem.support_desc')}
+                            </p>
+                            <button className="flex items-center gap-2 text-blue-400 font-bold hover:text-blue-300 transition group">
+                                {t('redeem.btn_contact_support')} <ChevronRight size={16} className="group-hover:translate-x-1 transition" />
                             </button>
                         </div>
                     </div>
-
-
-
-                    {/* Terms Card */}
-                    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
-                        <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Điều khoản & Điều kiện
-                        </h3>
-                        <ul className="space-y-4">
-                            <li className="flex gap-3 text-sm text-gray-500">
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0"></div>
-                                Việc đổi điểm là cuối cùng và không thể hoàn lại sau khi xác nhận.
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-500">
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0"></div>
-                                Quyền lợi VIP được kích hoạt ngay lập tức sau khi đổi thành công.
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-500">
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 shrink-0"></div>
-                                Lượt đăng tin có thời hạn sử dụng 30 ngày kể từ ngày đổi.
-                            </li>
-                        </ul>
-
-                    </div>
-
-                    {/* Support Card */}
-                    <div className="bg-blue-50/50 rounded-3xl p-6 text-center border border-blue-100">
-                        <p className="font-bold text-blue-900 mb-1">Cần hỗ trợ về điểm?</p>
-                        <p className="text-blue-600/70 text-xs mb-4">Đội ngũ hỗ trợ của chúng tôi hoạt động 24/7</p>
-                        <button className="text-rose-500 font-bold text-sm hover:underline">Liên hệ hỗ trợ</button>
-                    </div>
                 </div>
             </div>
 
-            {/* Redeem Modal */}
             <RedeemModal
-                isOpen={!!selectedReward}
-                onClose={() => setSelectedReward(null)}
-                onConfirm={handleConfirmRedeem}
-                item={selectedReward}
+                isOpen={!!selectedItem}
+                onClose={() => setSelectedItem(null)}
+                item={selectedItem}
+                onConfirm={() => selectedItem && handleRedeem(selectedItem.key)}
                 isProcessing={redeemMutation.isPending}
-            />
-
-            {/* Earn Points Modal */}
-            <EarnPointsModal
-                isOpen={showEarnInfo}
-                onClose={() => setShowEarnInfo(false)}
             />
         </div>
     );
 };
 
-// ... RewardCardBig ...
+const RewardCardBig = ({ title, subtitle, desc, points, icon: Icon, color, bg, iconBg, userPoints, onRedeem, t, i18n }: any) => {
+    const canAfford = userPoints >= points;
 
-
-
-const RewardCardBig = ({ item, onRedeem, canRedeem }: any) => {
-    const Icon = item.icon;
     return (
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition cursor-pointer flex flex-col h-full relative group">
-            {item.tag && (
-                <span className="absolute top-4 right-4 bg-green-100 text-green-700 text-[10px] font-extrabold px-2 py-1 rounded-md tracking-wide">
-                    {item.tag}
-                </span>
-            )}
-
-            <div className="mb-4">
-                <div className={`w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center mb-4 ${item.color} bg-opacity-10`}>
-                    <Icon size={24} className={item.color} />
+        <div className={`p-1 rounded-3xl bg-white border border-gray-100 hover:border-blue-200 transition duration-300 group shadow-sm hover:shadow-md`}>
+            <div className="p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-8">
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-3xl flex items-center justify-center shrink-0 ${iconBg} shadow-inner`}>
+                    <Icon size={40} className="drop-shadow-sm" />
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">{item.title}</h3>
-                <p className="text-gray-400 text-sm mt-1">{item.subtitle}</p>
-            </div>
 
-            <div className="mt-auto pt-4 border-t border-dashed border-gray-100">
-                <p className="font-extrabold text-gray-900 mb-3">{item.points} <span className="font-normal text-xs text-gray-400">POINTS</span></p>
-                <button
-                    onClick={() => onRedeem(item)}
-                    disabled={!canRedeem}
-                    className={`w-full py-2.5 rounded-xl font-bold text-sm transition
-                        ${canRedeem
-                            ? 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-transparent'}`}
-                >
-                    {canRedeem ? 'Đổi ngay' : 'Không đủ điểm'}
-                </button>
+                <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                        <h4 className="text-xl font-bold text-gray-900">{title}</h4>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white bg-gradient-to-r ${color}`}>
+                            {subtitle}
+                        </span>
+                    </div>
+                    <p className="text-gray-500 text-sm md:text-base leading-relaxed mb-4">
+                        {desc}
+                    </p>
+                    <div className="flex items-center gap-2 text-blue-600 bg-blue-50 w-fit px-3 py-1.5 rounded-xl border border-blue-100">
+                        <Coins size={16} />
+                        <span className="font-black text-sm">{points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} {t('common.points', 'Points')}</span>
+                    </div>
+                </div>
+
+                <div className="w-full md:w-auto mt-4 md:mt-0">
+                    <button
+                        onClick={onRedeem}
+                        disabled={!canAfford}
+                        className={`w-full md:px-8 py-4 rounded-2xl font-bold transition flex items-center justify-center gap-2 shadow-lg
+                            ${canAfford
+                                ? 'bg-gray-900 text-white hover:bg-blue-600 shadow-gray-900/10 hover:shadow-blue-500/20'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'}
+                        `}
+                    >
+                        {canAfford ? t('redeem.btn_redeem_now') : t('redeem.btn_insufficient')}
+                    </button>
+                    <p className="text-[10px] text-gray-400 mt-3 text-center md:text-left font-medium uppercase tracking-tighter">
+                        {t('redeem.points_expiry_note')}
+                    </p>
+                </div>
             </div>
         </div>
     );
-}
-
+};
 
 export default RedeemPage;
-
-

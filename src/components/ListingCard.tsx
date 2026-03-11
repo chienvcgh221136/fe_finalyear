@@ -1,5 +1,7 @@
 import { MapPin, Bed, Bath, Square } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from './common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
+import { formatVND } from '../utils/currencyUtils';
 
 import type { Post } from '../types';
 
@@ -27,22 +29,24 @@ const HighlightText = ({ text, highlight }: { text: string; highlight?: string }
 };
 
 const ListingCard = ({ post, highlight }: ListingProps) => {
+    const { t } = useTranslation();
+
     // Format price
     const formatPrice = (price: number) => {
+        if (!price) return t('common.contact');
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Tỷ`;
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} Triệu`;
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} ${t('common.million')}`;
         }
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return formatVND(price);
     };
 
     const isVip = post.vip?.isActive;
-    const vipType = post.vip?.vipType;
 
     return (
-        <Link
+        <LocalizedLink
             to={`/post/${post._id || post.id}`}
             className={`group block bg-white rounded-xl overflow-hidden shadow-sm hover:-translate-y-1 transition-all duration-200 
                 ${isVip ? 'border-2 border-yellow-400 shadow-yellow-100 ring-2 ring-yellow-400/20' : 'border border-gray-100 hover:shadow-md'}
@@ -51,11 +55,11 @@ const ListingCard = ({ post, highlight }: ListingProps) => {
             <div className="relative h-48 overflow-hidden">
                 <div className="absolute top-3 left-3 z-10 flex gap-2">
                     <span className={`text-white px-2.5 py-1 rounded text-xs font-bold uppercase tracking-wider ${post.transactionType === 'RENT' ? 'bg-orange-500' : 'bg-blue-600'}`}>
-                        {post.transactionType === 'RENT' ? 'Cho thuê' : 'Cần bán'}
+                        {post.transactionType === 'RENT' ? t('common.rent') : t('common.sale')}
                     </span>
                     {isVip && (
                         <span className="bg-yellow-400 text-black px-2.5 py-1 rounded text-xs font-extrabold uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                            Tin nổi bật
+                            {t('common.featured')}
                         </span>
                     )}
                 </div>
@@ -79,7 +83,7 @@ const ListingCard = ({ post, highlight }: ListingProps) => {
                     <MapPin size={16} className="text-gray-400" />
                     <span className="truncate">
                         <HighlightText
-                            text={`${post.address?.district || post.district || 'Chưa rõ'}, ${post.address?.city || post.city || 'Chưa rõ'}`}
+                            text={`${post.address?.district || post.district || t('common.unknown')}, ${post.address?.city || post.city || t('common.unknown')}`}
                             highlight={highlight}
                         />
                     </span>
@@ -88,11 +92,11 @@ const ListingCard = ({ post, highlight }: ListingProps) => {
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
                         <Bed size={16} className="text-gray-400" />
-                        <span>{post.bedrooms || 2} ngủ</span>
+                        <span>{post.bedrooms || 2} {t('common.bedrooms')}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
                         <Bath size={16} className="text-gray-400" />
-                        <span>{post.bathrooms || 1} toilet</span>
+                        <span>{post.bathrooms || 1} {t('common.bathrooms')}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
                         <Square size={16} className="text-gray-400" />
@@ -100,7 +104,7 @@ const ListingCard = ({ post, highlight }: ListingProps) => {
                     </div>
                 </div>
             </div>
-        </Link>
+        </LocalizedLink>
     );
 };
 

@@ -5,9 +5,11 @@ import type { Post, User } from '../../types';
 import {
     CheckSquare, RefreshCw, Search, Filter, MapPin, AlertTriangle
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../../components/common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const AdminPosts = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -210,9 +212,9 @@ const AdminPosts = () => {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <Link to={`/post/${post._id}`} target="_blank" className="font-bold text-slate-900 text-sm hover:text-blue-600 line-clamp-1">
+                                                    <LocalizedLink to={`/post/${post._id}`} target="_blank" className="font-bold text-slate-900 text-sm hover:text-blue-600 line-clamp-1">
                                                         {post.title}
-                                                    </Link>
+                                                    </LocalizedLink>
                                                     <p className="text-xs text-blue-500 font-mono mt-0.5">ID: #PROP-{post._id.slice(-4).toUpperCase()}</p>
                                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide mt-1 ${post.transactionType === 'SALE' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
                                                         {post.transactionType === 'SALE' ? 'Cần Bán' : 'Cho Thuê'}

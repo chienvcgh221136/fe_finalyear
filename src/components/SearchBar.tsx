@@ -3,13 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { postsAPI } from '../services/api';
+import { useTranslation } from 'react-i18next';
+import { useLocalizedPath } from '../utils/pathUtils';
 import type { Post } from '../types';
 
 // Simple cache for search suggestions
 const searchCache: { [key: string]: Post[] } = {};
 
 export function SearchBar() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
+    const localizePath = useLocalizedPath();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [keyword, setKeyword] = useState('');
     const [type, setType] = useState('SALE'); // SALE or RENT
@@ -71,7 +75,7 @@ export function SearchBar() {
         const path = type === 'SALE' ? '/buy' : '/rent';
         params.append('transactionType', type);
 
-        navigate(`${path}?${params.toString()}`);
+        navigate(localizePath(`${path}?${params.toString()}`));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -87,7 +91,7 @@ export function SearchBar() {
             if (selectedIndex >= 0) {
                 e.preventDefault();
                 const selected = suggestions[selectedIndex];
-                navigate(`/post/${selected._id}`);
+                navigate(localizePath(`/post/${selected._id}`));
                 setShowSuggestions(false);
             } else {
                 handleSearch();
@@ -98,9 +102,9 @@ export function SearchBar() {
     };
 
     const formatPrice = (price: number) => {
-        if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)} tỷ`;
-        if (price >= 1000000) return `${(price / 1000000).toFixed(1)} triệu`;
-        return `${price.toLocaleString()}đ`;
+        if (price >= 1000000000) return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.billion')}`;
+        if (price >= 1000000) return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
+        return `${price.toLocaleString('vi-VN')} đ`;
     };
 
     return (
@@ -114,7 +118,7 @@ export function SearchBar() {
                         ? 'bg-white text-blue-600 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] relative z-10'
                         : 'bg-white/50 text-gray-600 hover:bg-white/80'}`}
                 >
-                    Nhà đất bán
+                    {t('search.tab_buy')}
                 </button>
                 <button
                     type="button"
@@ -123,7 +127,7 @@ export function SearchBar() {
                         ? 'bg-white text-blue-600 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] relative z-10'
                         : 'bg-white/50 text-gray-600 hover:bg-white/80'}`}
                 >
-                    Nhà đất cho thuê
+                    {t('search.tab_rent')}
                 </button>
             </div>
 
@@ -141,7 +145,7 @@ export function SearchBar() {
                             onChange={(e) => setCity(e.target.value)}
                             className="w-full h-full min-h-[56px] pl-12 pr-10 bg-gray-50 border border-gray-200 rounded-xl appearance-none cursor-pointer text-gray-700 font-medium hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         >
-                            <option value="">Toàn quốc</option>
+                            <option value="">{t('search.nationwide')}</option>
                             {[
                                 "Hồ Chí Minh", "Hà Nội", "Đà Nẵng", "Bình Dương", "Đồng Nai",
                                 "Cần Thơ", "Hải Phòng", "Long An", "Bà Rịa - Vũng Tàu",
@@ -167,7 +171,7 @@ export function SearchBar() {
                             onChange={(e) => setKeyword(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onFocus={() => keyword.length >= 2 && setShowSuggestions(true)}
-                            placeholder={type === 'SALE' ? "Tìm 'Vinhomes Central Park'..." : "Tìm 'Căn hộ Quận 1'..."}
+                            placeholder={type === 'SALE' ? t('search.placeholder_buy') : t('search.placeholder_rent')}
                             className="w-full h-full min-h-[56px] pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
                         />
 
@@ -179,7 +183,7 @@ export function SearchBar() {
                                         <div
                                             key={post._id}
                                             onClick={() => {
-                                                navigate(`/post/${post._id}`);
+                                                navigate(localizePath(`/post/${post._id}`));
                                                 setShowSuggestions(false);
                                             }}
                                             onMouseEnter={() => setSelectedIndex(index)}
@@ -214,7 +218,7 @@ export function SearchBar() {
                                 <div className="text-gray-400 mb-2">
                                     <Search size={32} className="mx-auto opacity-20" />
                                 </div>
-                                <p className="text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">Không tìm thấy kết quả nào cho "{keyword}"</p>
+                                <p className="text-gray-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{t('search.no_results_for')} "{keyword}"</p>
                             </div>
                         )}
                     </div>
@@ -225,14 +229,14 @@ export function SearchBar() {
                         size="lg"
                         className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 rounded-xl h-auto py-4 shadow-lg shadow-blue-600/30 transition-transform active:scale-95"
                     >
-                        <span className="mr-2 text-lg">Tìm Kiếm</span>
+                        <span className="mr-2 text-lg">{t('search.btn_search')}</span>
                         <ChevronRight size={20} />
                     </Button>
                 </div>
 
                 {/* Quick Filters / Suggestions */}
                 <div className="mt-6 flex flex-wrap items-center gap-3 text-sm">
-                    <span className="text-gray-400 font-medium mr-2">Gợi ý:</span>
+                    <span className="text-gray-400 font-medium mr-2">{t('search.suggestions')}:</span>
                     <button type="button" onClick={() => { setCity('Hồ Chí Minh'); setKeyword(''); }} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
                         Hồ Chí Minh
                     </button>
@@ -240,7 +244,7 @@ export function SearchBar() {
                         Hà Nội
                     </button>
                     <button type="button" onClick={() => { setType('RENT'); setKeyword('Căn hộ'); }} className="px-4 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:text-blue-600 hover:bg-blue-50 border border-gray-200 hover:border-blue-200 transition-colors font-medium">
-                        Căn hộ cho thuê
+                        {t('search.suggest_rent')}
                     </button>
                 </div>
             </form>

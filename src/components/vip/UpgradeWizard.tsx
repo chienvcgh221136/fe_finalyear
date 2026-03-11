@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { vipAPI } from '../../services/api';
 import type { UpgradeInfo, UpgradeOption } from '../../vipTypes';
-import { Check, Crown, ArrowRight, Loader, X, AlertCircle } from 'lucide-react';
+import { Check, Crown, Loader, X, AlertCircle } from 'lucide-react';
+import { formatVNDRaw } from '../../utils/currencyUtils';
 
 interface UpgradeWizardProps {
     onClose: () => void;
@@ -10,6 +12,7 @@ interface UpgradeWizardProps {
 }
 
 const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => {
+    const { t } = useTranslation();
     const [step, setStep] = useState<1 | 2 | 3>(1); // 1: Select, 2: Summary, 3: Success
     const [selectedPackage, setSelectedPackage] = useState<UpgradeOption | null>(null);
     const queryClient = useQueryClient();
@@ -25,7 +28,7 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
 
     const upgradeMutation = useMutation({
         mutationFn: (packageId: string) => vipAPI.upgrade(packageId),
-        onSuccess: (res) => {
+        onSuccess: () => {
             setStep(3);
             queryClient.invalidateQueries({ queryKey: ['vip', 'me'] });
             queryClient.invalidateQueries({ queryKey: ['userStats'] });
@@ -34,7 +37,7 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
             }, 3000); // Close after 3s or let user close
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || "Lỗi nâng cấp.");
+            alert(err.response?.data?.message || t('vip.purchase_error'));
         }
     });
 
@@ -45,7 +48,7 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
 
     const handleConfirm = () => {
         if (!selectedPackage) return;
-        if (!window.confirm("Xác nhận nâng cấp? Số tiền sẽ được trừ trực tiếp vào ví.")) return;
+        if (!window.confirm(t('vip.upgrade_confirm'))) return;
         upgradeMutation.mutate(selectedPackage.packageId);
     };
 
@@ -53,16 +56,16 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
     if (isLoading) return (
         <div className="p-8 flex flex-col items-center justify-center min-h-[300px]">
             <Loader className="animate-spin text-blue-600 mb-4" size={40} />
-            <p className="text-gray-500">Đang tính toán chi phí nâng cấp...</p>
+            <p className="text-gray-500">{t('common.processing')}</p>
         </div>
     );
 
     if (error || !upgradeInfoData) return (
         <div className="p-8 flex flex-col items-center justify-center min-h-[300px] text-center">
             <AlertCircle className="text-red-500 mb-4" size={48} />
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Không thể nâng cấp</h3>
-            <p className="text-gray-500 mb-6">{(error as any)?.response?.data?.message || "Đã có lỗi xảy ra hoặc bạn không đủ điều kiện nâng cấp."}</p>
-            <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition font-medium">Đóng</button>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('vip.upgrade_wizard.error_title')}</h3>
+            <p className="text-gray-500 mb-6">{(error as any)?.response?.data?.message || t('vip.upgrade_wizard.error_desc')}</p>
+            <button onClick={onClose} className="px-6 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition font-medium">{t('common.close')}</button>
         </div>
     );
 
@@ -74,9 +77,9 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white flex justify-between items-start">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2">
-                        <Crown className="text-yellow-400 fill-current" /> Nâng cấp VIP
+                        <Crown className="text-yellow-400 fill-current" /> {t('vip.upgrade_wizard.title')}
                     </h2>
-                    <p className="opacity-90 text-sm mt-1">Chỉ trả phần chênh lệch • Giữ nguyên hạn sử dụng • Hiệu lực tức thì</p>
+                    <p className="opacity-90 text-sm mt-1">{t('vip.upgrade_wizard.subtitle')}</p>
                 </div>
                 <button onClick={onClose} className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
                     <X size={20} />
@@ -90,19 +93,19 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
                         {/* Current Package */}
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex justify-between items-center opacity-70">
                             <div>
-                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Gói hiện tại</span>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{t('vip.upgrade_wizard.current_package')}</span>
                                 <h3 className="text-xl font-bold text-gray-900">{currentPackage.name}</h3>
-                                <p className="text-sm text-gray-500">Còn {Number(currentPackage.remainingDays).toFixed(1)} ngày</p>
+                                <p className="text-sm text-gray-500">{t('vip.upgrade_wizard.remaining_days_val', { days: Number(currentPackage.remainingDays).toFixed(1) })}</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-sm text-gray-500">Giá trị còn lại</span>
-                                <p className="font-bold text-gray-900">{currentPackage.residualValue.toLocaleString()} đ</p>
+                                <span className="text-sm text-gray-500">{t('vip.upgrade_wizard.residual_value')}</span>
+                                <p className="font-bold text-gray-900">{formatVNDRaw(currentPackage.residualValue)} {t('common.currency')}</p>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-4 py-2">
                             <div className="h-px bg-gray-200 flex-1"></div>
-                            <span className="text-sm text-gray-400 font-medium">Chọn gói nâng cấp</span>
+                            <span className="text-sm text-gray-400 font-medium">{t('vip.upgrade_wizard.step_1_title')}</span>
                             <div className="h-px bg-gray-200 flex-1"></div>
                         </div>
 
@@ -118,14 +121,14 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
                                                 <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full">New</span>
                                             </h3>
                                             <ul className="mt-2 space-y-1">
-                                                <li className="text-sm text-gray-600 flex items-center gap-2"><Check size={14} className="text-green-500" /> Priority Score: <strong>+{pkg.priorityScore}</strong></li>
-                                                <li className="text-sm text-gray-600 flex items-center gap-2"><Check size={14} className="text-green-500" /> Ưu đãi cao cấp hơn</li>
+                                                <li className="text-sm text-gray-600 flex items-center gap-2"><Check size={14} className="text-green-500" /> {t('vip.priority_score')}: <strong>+{pkg.priorityScore}</strong></li>
+                                                <li className="text-sm text-gray-600 flex items-center gap-2"><Check size={14} className="text-green-500" /> {t('vip.upgrade_wizard.premium_benefits')}</li>
                                             </ul>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-sm text-gray-400 line-through">{pkg.price.toLocaleString()} đ</div>
-                                            <div className="text-2xl font-bold text-blue-600">{pkg.upgradeCost.toLocaleString()} đ</div>
-                                            <p className="text-xs text-blue-500 font-medium mt-1 group-hover:underline">Bấm để chọn</p>
+                                            <div className="text-sm text-gray-400 line-through">{formatVNDRaw(pkg.price)} {t('common.currency')}</div>
+                                            <div className="text-2xl font-bold text-blue-600">{formatVNDRaw(pkg.upgradeCost)} {t('common.currency')}</div>
+                                            <p className="text-xs text-blue-500 font-medium mt-1 group-hover:underline">{t('vip.upgrade_wizard.click_to_select')}</p>
                                         </div>
                                     </div>
                                     <div className="absolute inset-0 bg-blue-50 opacity-0 group-hover:opacity-100 transition duration-300"></div>
@@ -134,7 +137,7 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
 
                             {upgradeOptions.length === 0 && (
                                 <div className="text-center py-8 text-gray-500 italic">
-                                    Hiện tại chưa có gói cao cấp hơn để nâng cấp.
+                                    {t('vip.upgrade_wizard.no_upgrade_options')}
                                 </div>
                             )}
                         </div>
@@ -143,21 +146,21 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
 
                 {step === 2 && selectedPackage && (
                     <div className="max-w-md mx-auto">
-                        <h3 className="text-xl font-bold text-center mb-6">Xác nhận thanh toán</h3>
+                        <h3 className="text-xl font-bold text-center mb-6">{t('vip.upgrade_wizard.step_2_title')}</h3>
 
                         <div className="bg-gray-50 rounded-2xl p-6 mb-6">
                             <div className="flex justify-between mb-2">
-                                <span className="text-gray-600">Gói mới ({selectedPackage.name})</span>
-                                <span className="font-bold">{selectedPackage.price.toLocaleString()} đ</span>
+                                <span className="text-gray-600">{t('vip.upgrade_wizard.new_package', { name: selectedPackage.name })}</span>
+                                <span className="font-bold">{formatVNDRaw(selectedPackage.price)} {t('common.currency')}</span>
                             </div>
                             <div className="flex justify-between mb-4 text-green-600">
-                                <span className="flex items-center gap-1"><AlertCircle size={14} /> Trừ giá trị còn lại (Basic)</span>
-                                <span className="font-bold">-{selectedPackage.residualValue.toLocaleString()} đ</span>
+                                <span className="flex items-center gap-1"><AlertCircle size={14} /> {t('vip.upgrade_wizard.deduct_residual', { name: currentPackage.name })}</span>
+                                <span className="font-bold">-{formatVNDRaw(selectedPackage.residualValue)} {t('common.currency')}</span>
                             </div>
                             <div className="border-t border-gray-200 my-4"></div>
                             <div className="flex justify-between items-end">
-                                <span className="text-lg font-bold text-gray-900">Tổng thanh toán</span>
-                                <span className="text-3xl font-bold text-blue-600">{selectedPackage.upgradeCost.toLocaleString()} đ</span>
+                                <span className="text-lg font-bold text-gray-900">{t('vip.upgrade_wizard.total_payment')}</span>
+                                <span className="text-3xl font-bold text-blue-600">{formatVNDRaw(selectedPackage.upgradeCost)} {t('common.currency')}</span>
                             </div>
                         </div>
 
@@ -167,14 +170,14 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
                                 disabled={upgradeMutation.isPending}
                                 className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
                             >
-                                {upgradeMutation.isPending ? <Loader className="animate-spin" /> : "Thanh toán & Nâng cấp ngay"}
+                                {upgradeMutation.isPending ? <Loader className="animate-spin" /> : t('vip.upgrade_wizard.btn_confirm_pay')}
                             </button>
                             <button
                                 onClick={() => setStep(1)}
                                 disabled={upgradeMutation.isPending}
                                 className="w-full py-3 text-gray-500 font-medium hover:bg-gray-100 rounded-xl transition"
                             >
-                                Quay lại
+                                {t('common.back')}
                             </button>
                         </div>
                     </div>
@@ -185,12 +188,12 @@ const UpgradeWizard: React.FC<UpgradeWizardProps> = ({ onClose, onSuccess }) => 
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mb-6">
                             <Crown size={40} className="fill-current" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Nâng cấp thành công!</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('vip.upgrade_wizard.step_3_title')}</h2>
                         <p className="text-gray-500 max-w-xs mx-auto mb-8">
-                            Tài khoản của bạn đã được nâng cấp lên <strong>{selectedPackage?.name}</strong>. Quyền lợi mới đã được áp dụng ngay lập tức!
+                            {t('vip.upgrade_wizard.success_desc', { name: selectedPackage?.name })}
                         </p>
                         <button onClick={onSuccess} className="px-8 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-black transition">
-                            Tuyệt vời!
+                            {t('loyalty.missions.btn_understood')}
                         </button>
                     </div>
                 )}

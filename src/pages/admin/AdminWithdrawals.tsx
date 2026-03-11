@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { withdrawAPI } from '../../services/api';
 import { CheckCircle, XCircle, Clock, AlertCircle, Search, Filter, DollarSign, Wallet, ArrowUpRight } from 'lucide-react';
+import { formatVND } from '../../utils/currencyUtils';
 
 const AdminWithdrawals = () => {
     const queryClient = useQueryClient();
@@ -56,7 +57,7 @@ const AdminWithdrawals = () => {
         });
     };
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    const formatCurrency = (val: number) => formatVND(val);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -70,7 +71,7 @@ const AdminWithdrawals = () => {
 
     // Calculate Stats
     const stats = useMemo(() => {
-        if (!requests) return { pendingAmount: 0, pendingCount: 0, avgTime: 0, requestsGrowth: 0 };
+        if (!requests) return { pendingAmount: 0, pendingCount: 0, avgTime: 0, requestsGrowth: 0, lastSevenDaysCount: 0 };
 
         const pendingReqs = requests.filter((r: any) => r.status === 'PENDING');
         const pendingAmount = pendingReqs.reduce((acc: number, r: any) => acc + r.amount, 0);
@@ -98,7 +99,7 @@ const AdminWithdrawals = () => {
 
         const requestsGrowth = lastWeekReqs.length === 0 ? (thisWeekReqs.length > 0 ? 100 : 0) : ((thisWeekReqs.length - lastWeekReqs.length) / lastWeekReqs.length) * 100;
 
-        return { pendingAmount, pendingCount, avgTime, requestsGrowth };
+        return { pendingAmount, pendingCount, avgTime, requestsGrowth, lastSevenDaysCount: thisWeekReqs.length };
     }, [requests]);
 
     return (
@@ -123,7 +124,7 @@ const AdminWithdrawals = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
                     <div>
                         <p className="text-gray-500 font-medium text-sm mb-1">Tổng tiền chờ duyệt</p>
-                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{formatCurrency(stats.pendingAmount).replace('₫', '')} <span className="text-sm font-semibold text-gray-500">VNĐ</span></h3>
+                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{formatCurrency(stats.pendingAmount)}</h3>
                         <div className="flex items-center gap-1">
                             <div className={`text-xs font-bold flex items-center gap-1 ${stats.pendingAmount > 0 ? 'text-orange-500' : 'text-gray-400'}`}>
                                 <AlertCircle size={12} /> {stats.pendingAmount > 0 ? 'Cần xử lý ngay' : 'Không có yêu cầu'}
@@ -138,7 +139,7 @@ const AdminWithdrawals = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
                     <div>
                         <p className="text-gray-500 font-medium text-sm mb-1">Yêu cầu rút tiền (7 ngày)</p>
-                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{requests?.filter((r: any) => new Date(r.requestedAt) > new Date(Date.now() - 7 * 86400000)).length || 0} <span className="text-sm font-semibold text-gray-500">Yêu cầu</span></h3>
+                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{stats.lastSevenDaysCount} <span className="text-sm font-semibold text-gray-500">Yêu cầu</span></h3>
                         <p className={`${stats.requestsGrowth >= 0 ? 'text-green-500' : 'text-red-500'} text-xs font-bold flex items-center gap-1`}>
                             {stats.requestsGrowth >= 0 ? <ArrowUpRight size={12} /> : <ArrowUpRight size={12} className="rotate-90" />}
                             {Math.abs(stats.requestsGrowth).toFixed(0)}% so với tuần trước
@@ -230,7 +231,7 @@ const AdminWithdrawals = () => {
                                         </td>
                                         <td className="px-6 py-4 align-top">
                                             <div className="text-base font-extrabold text-gray-900">
-                                                {formatCurrency(req.amount).replace('₫', '')}
+                                                {formatCurrency(req.amount)}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 align-top">

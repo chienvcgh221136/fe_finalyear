@@ -20,7 +20,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        // Optional: Handle token refresh logic here
+        // Handle 401 Unauthorized globally
+        if (error.response && error.response.status === 401) {
+            // Check if the original request was NOT for the initial profile check
+            const originalRequestUrl = error.config?.url;
+            if (originalRequestUrl && !originalRequestUrl.includes('/users/me')) {
+                // Prevent infinite redirect loops if we are already on login or register
+                if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+                    // Clear any stored data if needed (AuthContext usually handles this via checkAuth, but we can force redirect)
+                    // Using window.location for a hard redirect to ensure state is cleared
+                    window.location.href = '/login';
+                }
+            }
+        }
         return Promise.reject(error);
     }
 );

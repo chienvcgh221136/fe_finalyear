@@ -6,6 +6,8 @@ import ListingCard from '../ListingCard';
 import type { Post } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useLocalizedPath } from '../../utils/pathUtils';
+import { useTranslation } from 'react-i18next';
 
 interface Message {
     id: string;
@@ -15,12 +17,13 @@ interface Message {
 }
 
 const Chatbot = () => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            text: 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?',
+            text: t('chatbot.welcome', 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?'),
             sender: 'bot'
         }
     ]);
@@ -28,6 +31,7 @@ const Chatbot = () => {
     const [anonymousCount, setAnonymousCount] = useState(0);
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
+    const localizePath = useLocalizedPath();
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -43,7 +47,7 @@ const Chatbot = () => {
         if (!isAuthenticated && anonymousCount >= 1) {
             const warningMsg: Message = {
                 id: Date.now().toString(),
-                text: 'Bạn đã dùng hết lượt hỏi miễn phí. Vui lòng đăng nhập để tiếp tục trò chuyện và nhận tư vấn chi tiết hơn!',
+                text: t('chatbot.usage_limit', 'Bạn đã dùng hết lượt hỏi miễn phí. Vui lòng đăng nhập để tiếp tục trò chuyện và nhận tư vấn chi tiết hơn!'),
                 sender: 'bot'
             };
             setMessages(prev => [...prev, warningMsg]);
@@ -75,7 +79,7 @@ const Chatbot = () => {
             setMessages(prev => [...prev, botMsg]);
         } catch (error: any) {
             console.error('Chatbot error:', error);
-            const errorMessage = error.response?.data?.message || 'Xin lỗi, tôi gặp sự cố khi kết nối. Vui lòng thử lại sau.';
+            const errorMessage = error.response?.data?.message || t('chatbot.error_occurred', 'Xin lỗi, tôi gặp sự cố khi kết nối. Vui lòng thử lại sau.');
             const errorMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 text: errorMessage,
@@ -105,10 +109,10 @@ const Chatbot = () => {
                                             <ListingCard post={post} />
                                             <div className="p-3 bg-gray-50 border-t border-gray-100">
                                                 <button
-                                                    onClick={() => navigate(`/post/${post._id || post.id}`)}
+                                                    onClick={() => navigate(localizePath(`/post/${post._id || post.id}`))}
                                                     className="w-full py-2 bg-blue-600/10 text-blue-700 rounded-lg text-sm font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    Xem chi tiết bài đăng
+                                                    {t('chatbot.view_details', 'Xem chi tiết bài đăng')}
                                                     <ExternalLink size={14} />
                                                 </button>
                                             </div>
@@ -122,10 +126,10 @@ const Chatbot = () => {
                 </div>
                 {msg.text.includes('Vui lòng đăng nhập để tiếp tục') && (
                     <button
-                        onClick={() => navigate('/login')}
+                        onClick={() => navigate(localizePath('/login'))}
                         className="w-full py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
                     >
-                        Đăng nhập ngay
+                        {t('chatbot.login_now', 'Đăng nhập ngay')}
                     </button>
                 )}
             </div>
@@ -159,7 +163,7 @@ const Chatbot = () => {
                                     </div>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
-                                        <span className="text-[11px] text-blue-100 font-medium">Sẵn sàng hỗ trợ</span>
+                                        <span className="text-[11px] text-blue-100 font-medium">{t('chatbot.ready_to_help', 'Sẵn sàng hỗ trợ')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -206,7 +210,7 @@ const Chatbot = () => {
                                     </div>
                                     <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm text-gray-500 text-sm flex items-center gap-2 italic">
                                         <Sparkles size={14} className="text-blue-500" />
-                                        Đang tìm kiếm thông tin...
+                                        {t('chatbot.searching', 'Đang tìm kiếm thông tin...')}
                                     </div>
                                 </div>
                             )}
@@ -220,7 +224,7 @@ const Chatbot = () => {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                                    placeholder="Hỏi tôi bất cứ điều gì..."
+                                    placeholder={t('chatbot.placeholder', 'Hỏi tôi bất cứ điều gì...')}
                                     className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl pl-5 pr-12 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 transition-all text-sm font-medium"
                                 />
                                 <button

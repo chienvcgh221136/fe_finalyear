@@ -3,13 +3,19 @@ import { useLocation } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import { postService } from '../services/api';
 import { ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { formatVND } from '../utils/currencyUtils';
 
 // Helper to calculate percentage
 const getPercent = (value: number, min: number, max: number) => {
     return Math.round(((value - min) / (max - min)) * 100);
 };
 
+const MIN_PRICE = 0;
+const MAX_PRICE = 50 * 1000000000; // 50 Billion
+
 const Search = () => {
+    const { t } = useTranslation();
     const location = useLocation();
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -22,9 +28,7 @@ const Search = () => {
     const [areaError, setAreaError] = useState('');
 
     // Price Range Slider State
-    const MIN_PRICE = 0;
-    const MAX_PRICE = 50 * 1000000000; // 50 Billion
-    const [priceRange, setPriceRange] = useState([0, 50 * 1000000000]);
+    const [priceRange, setPriceRange] = useState([MIN_PRICE, MAX_PRICE]);
     const sliderRef = useRef<HTMLDivElement>(null);
     const draggingRef = useRef<'min' | 'max' | null>(null);
 
@@ -81,8 +85,8 @@ const Search = () => {
                 // Initial Filter based on URL
                 let initialFiltered = [...posts];
                 const searchParams = new URLSearchParams(location.search);
-                const isBuyPage = location.pathname === '/buy';
-                const isRentPage = location.pathname === '/rent';
+                const isBuyPage = location.pathname.endsWith('/buy');
+                const isRentPage = location.pathname.endsWith('/rent');
                 const typeParam = searchParams.get('propertyType');
                 const isVipParam = searchParams.get('isVip');
 
@@ -288,12 +292,12 @@ const Search = () => {
     // Helper to format price
     const formatPrice = (price: number) => {
         if (price >= 1000000000) {
-            return (price / 1000000000).toFixed(1) + ' tỷ';
+            return (price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' ' + t('common.billion');
         }
         if (price >= 1000000) {
-            return (price / 1000000).toFixed(0) + ' triệu';
+            return (price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + ' ' + t('common.million');
         }
-        return price;
+        return formatVND(price);
     };
 
     return (

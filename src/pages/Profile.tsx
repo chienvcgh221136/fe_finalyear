@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react';
-import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI, postsAPI, filesAPI } from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useTranslation } from 'react-i18next';
+import { formatVND } from '../utils/currencyUtils';
+import LocalizedLink from '../components/common/LocalizedLink';
 import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
@@ -12,6 +15,7 @@ import VipManagement from './VipManagement';
 
 
 const Profile = () => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const { user, logout, updateUser } = useAuth();
@@ -51,7 +55,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            toastSuccess('Đã xóa tin đăng thành công');
+            toastSuccess(t('profile.delete_post_success'));
         }
     });
 
@@ -59,7 +63,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.markSold(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            toastSuccess('Đã đánh dấu đã bán');
+            toastSuccess(t('profile.mark_sold_success'));
         }
     });
 
@@ -67,7 +71,7 @@ const Profile = () => {
         mutationFn: (id: string) => postsAPI.markRented(id),
         onSuccess: (res) => {
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
-            toastSuccess(res.data.message || 'Cập nhật trạng thái thành công');
+            toastSuccess(res.data.message || t('profile.update_status_success'));
         }
     });
 
@@ -76,31 +80,31 @@ const Profile = () => {
         onSuccess: (res) => {
             updateUser(res.data.data || res.data);
             setIsEditing(false);
-            toastSuccess('Cập nhật thông tin thành công!');
+            toastSuccess(t('profile.update_success'));
         },
     });
 
     // Handlers
     const handleDeletePost = (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa tin đăng này?')) {
+        if (window.confirm(t('profile.confirm_delete_post'))) {
             deletePostMutation.mutate(id);
         }
     };
 
     const handleMarkSold = (id: string) => {
-        if (window.confirm('Xác nhận đánh dấu tin này là ĐÃ BÁN?')) {
+        if (window.confirm(t('profile.confirm_mark_sold'))) {
             markSoldMutation.mutate(id);
         }
     };
 
     const handleMarkRented = (id: string) => {
-        if (window.confirm('Xác nhận đã cho thuê nhà này?')) {
+        if (window.confirm(t('profile.confirm_mark_rented'))) {
             markRentedMutation.mutate(id);
         }
     };
 
     const handleMarkAvailable = (id: string) => {
-        if (window.confirm('Xác nhận phòng này đã trống và hiển thị lại?')) {
+        if (window.confirm(t('profile.confirm_mark_available'))) {
             markRentedMutation.mutate(id);
         }
     };
@@ -111,7 +115,7 @@ const Profile = () => {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate(`/${activeTab.split('/')[0] || 'vi'}/login`); // This is tricky, maybe better to just use a fixed path or useLocalizedPath if available in a hook
     };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,11 +123,11 @@ const Profile = () => {
         if (!file) return;
 
         if (!file.type.startsWith('image/')) {
-            toastError('Vui lòng chọn file ảnh');
+            toastError(t('common.error_select_image'));
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
-            toastError('File ảnh quá lớn (tối đa 5MB)');
+            toastError(t('common.error_image_too_large'));
             return;
         }
 
@@ -139,10 +143,10 @@ const Profile = () => {
             // Auto-save to backend
             updateProfileMutation.mutate(newFormState);
 
-            toastSuccess('Tải ảnh đại diện thành công!');
+            toastSuccess(t('profile.avatar_upload_success'));
         } catch (error) {
             console.error('Upload error:', error);
-            toastError('Lỗi tải ảnh lên. Vui lòng thử lại.');
+            toastError(t('profile.avatar_upload_error'));
         } finally {
             setUploading(false);
         }
@@ -161,28 +165,28 @@ const Profile = () => {
             mutationFn: ({ id, status }: { id: string, status: string }) =>
                 import('../services/api').then(m => m.appointmentAPI.updateStatus(id, status)),
             onSuccess: () => {
-                toastSuccess("Cập nhật trạng thái thành công!");
+                toastSuccess(t('profile.appointment_update_success'));
                 refetch();
             },
             onError: (err: any) => {
-                toastError(err.response?.data?.message || "Có lỗi xảy ra");
+                toastError(err.response?.data?.message || t('common.error_occurred'));
             }
         });
 
         const deleteMutation = useMutation({
             mutationFn: (id: string) => import('../services/api').then(m => m.appointmentAPI.delete(id)),
             onSuccess: () => {
-                toastSuccess("Đã xóa lịch hẹn thành công");
+                toastSuccess(t('profile.appointment_delete_success'));
                 refetch();
             },
             onError: (err: any) => {
-                toastError(err.response?.data?.message || "Có lỗi xảy ra khi xóa");
+                toastError(err.response?.data?.message || t('common.error_occurred'));
             }
         });
 
         const { buy = [], sell = [] } = appointmentsRes?.data?.data || {};
 
-        if (isLoading) return <div className="py-12 text-center text-gray-500">Đang tải lịch hẹn...</div>;
+        if (isLoading) return <div className="py-12 text-center text-gray-500">{t('common.loading')}</div>;
 
         const AppointmentCard = ({ ap, isSeller }: { ap: any, isSeller: boolean }) => {
             const partner = isSeller ? ap.buyerId : ap.sellerId;
@@ -210,12 +214,12 @@ const Profile = () => {
                         <div className="flex justify-between items-start mb-2">
                             <div>
                                 <h5 className="font-bold text-gray-800 text-base mb-1">
-                                    {isSeller ? "Yêu cầu từ: " : "Gửi yêu cầu tới: "}
+                                    {isSeller ? t('profile.appointment_from') : t('profile.appointment_to')}
                                     <span className="text-blue-600">{partner?.name}</span>
                                 </h5>
                                 <p className="text-gray-500 flex items-center gap-1">
                                     <Calendar size={14} />
-                                    {new Date(ap.appointmentTime).toLocaleString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    {new Date(ap.appointmentTime).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             </div>
                             {isSeller && partner?.phone && ap.status === 'APPROVED' && (
@@ -226,7 +230,7 @@ const Profile = () => {
                         </div>
 
                         <div className="bg-gray-50 p-3 rounded-lg text-gray-600 mb-3 border border-gray-100">
-                            <strong>Ghi chú:</strong> {ap.note || "Không có ghi chú"}
+                            <strong>{t('profile.appointment_note')}:</strong> {ap.note || t('common.none')}
                         </div>
 
                         {/* Actions */}
@@ -265,11 +269,11 @@ const Profile = () => {
                                     disabled
                                     className="px-3 py-1.5 bg-green-50 text-green-700 font-bold rounded-lg border border-green-200"
                                 >
-                                    Đã chấp nhận
+                                    {t('profile.appointment_approved')}
                                 </button>
                             )}
                             {!isSeller && ap.status === 'PENDING' && (
-                                <button className="px-3 py-1.5 text-gray-400 font-medium text-xs cursor-not-allowed">Đang chờ duyệt</button>
+                                <button className="px-3 py-1.5 text-gray-400 font-medium text-xs cursor-not-allowed">{t('profile.appointment_pending')}</button>
                             )}
                         </div>
                     </div>
@@ -280,14 +284,14 @@ const Profile = () => {
         return (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Lịch hẹn</h2>
+                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_appointments')}</h2>
                     <div className="flex bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setSubTab('received')}
                             className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${subTab === 'received' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
-                            Yêu cầu nhận được
+                            {t('profile.appointment_received')}
                             {sell.length > 0 && <span className="ml-2 bg-gray-300 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full">{sell.length}</span>}
                         </button>
                         <button
@@ -295,7 +299,7 @@ const Profile = () => {
                             className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${subTab === 'sent' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
-                            Yêu cầu đã gửi
+                            {t('profile.appointment_sent')}
                             {buy.length > 0 && <span className="ml-2 bg-gray-300 text-gray-700 text-[10px] px-1.5 py-0.5 rounded-full">{buy.length}</span>}
                         </button>
                     </div>
@@ -307,7 +311,7 @@ const Profile = () => {
                             sell.map((ap: any) => <AppointmentCard key={ap._id} ap={ap} isSeller={true} />)
                         ) : (
                             <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                Bạn chưa nhận được yêu cầu xem nhà nào.
+                                {t('profile.appointment_no_received')}
                             </div>
                         )
                     ) : (
@@ -315,7 +319,7 @@ const Profile = () => {
                             buy.map((ap: any) => <AppointmentCard key={ap._id} ap={ap} isSeller={false} />)
                         ) : (
                             <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                Bạn chưa gửi yêu cầu xem nhà nào.
+                                {t('profile.appointment_no_sent')}
                             </div>
                         )
                     )}
@@ -332,11 +336,11 @@ const Profile = () => {
 
         const favorites = favoritesRes?.data?.data || [];
 
-        if (isLoading) return <div className="py-12 text-center text-gray-500">Đang tải tin đã lưu...</div>;
+        if (isLoading) return <div className="py-12 text-center text-gray-500">{t('common.loading')}</div>;
 
         return (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Tin đã lưu</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('profile.tab_saved_posts')}</h2>
                 {favorites.length > 0 ? (
                     <div className="space-y-4">
                         {favorites.map((fav: any) => {
@@ -347,7 +351,7 @@ const Profile = () => {
                                     <div className="w-full md:w-48 h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
                                         {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
                                         <div className="absolute top-2 left-2">
-                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">Saved</span>
+                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">{t('common.saved')}</span>
                                         </div>
                                     </div>
                                     <div className="flex-1 min-w-0 flex flex-col justify-between">
@@ -356,20 +360,20 @@ const Profile = () => {
                                             <p className="text-blue-600 font-bold">{formatPrice(post.price, post.transactionType)}</p>
                                         </div>
                                         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
-                                            <Link to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                                                Xem tin
-                                            </Link>
+                                            <LocalizedLink to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                                {t('common.view_post')}
+                                            </LocalizedLink>
                                             <button
                                                 onClick={async () => {
-                                                    if (window.confirm('Bỏ lưu tin này?')) {
+                                                    if (window.confirm(t('profile.unsave_confirm'))) {
                                                         await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
                                                         queryClient.invalidateQueries({ queryKey: ['favorites', 'me'] });
-                                                        toastSuccess('Đã bỏ lưu tin thành công');
+                                                        toastSuccess(t('profile.unsave_success'));
                                                     }
                                                 }}
                                                 className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
                                             >
-                                                Bỏ lưu
+                                                {t('common.unsave')}
                                             </button>
                                         </div>
                                     </div>
@@ -380,7 +384,7 @@ const Profile = () => {
                 ) : (
                     <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                         <Heart className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                        <p>Bạn chưa lưu tin nào</p>
+                        <p>{t('profile.no_saved_posts')}</p>
                     </div>
                 )}
             </div>
@@ -394,23 +398,23 @@ const Profile = () => {
         switch (status) {
             case 'ACTIVE':
                 color = "bg-green-100 text-green-700 border border-green-200";
-                label = "Đang hiển thị";
+                label = t('post_detail.status_active');
                 break;
             case 'PENDING':
                 color = "bg-yellow-100 text-yellow-700 border border-yellow-200";
-                label = "Chờ duyệt";
+                label = t('post_detail.status_pending_short');
                 break;
             case 'REJECTED':
                 color = "bg-red-100 text-red-700 border border-red-200";
-                label = "Bị từ chối";
+                label = t('post_detail.status_rejected_short');
                 break;
             case 'SOLD':
                 color = "bg-gray-100 text-gray-600 border border-gray-200";
-                label = "Đã bán";
+                label = t('post_detail.status_sold_short');
                 break;
             case 'RENTED':
                 color = "bg-orange-100 text-orange-700 border border-orange-200";
-                label = "Đã cho thuê";
+                label = t('post_detail.status_rented_short');
                 break;
             default:
                 label = status;
@@ -424,17 +428,17 @@ const Profile = () => {
     };
 
     const formatPrice = (price: number, transactionType?: string) => {
-        if (!price) return 'Liên hệ';
+        if (!price) return t('common.contact');
         if (transactionType === 'RENT') {
-            return `${price.toLocaleString('vi-VN')} đ/tháng`;
+            return `${price.toLocaleString('vi-VN')} ${t('common.currency')}/${t('common.month')}`;
         }
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`;
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Triệu`;
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
         }
-        return `${price.toLocaleString('vi-VN')} đ`;
+        return formatVND(price);
     };
 
     const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
@@ -461,31 +465,31 @@ const Profile = () => {
                         <nav className="p-4 space-y-6">
                             {[
                                 {
-                                    group: 'TÀI KHOẢN',
+                                    group: t('profile.group_account'),
                                     items: [
-                                        { id: 'profile', label: 'Thông tin cá nhân', icon: UserIcon },
+                                        { id: 'profile', label: t('profile.tab_personal_info'), icon: UserIcon },
                                     ]
                                 },
                                 {
-                                    group: 'HOẠT ĐỘNG',
+                                    group: t('profile.group_activity'),
                                     items: [
-                                        { id: 'posts', label: 'Tin của tôi', icon: FileText },
-                                        { id: 'favorites', label: 'Tin đã lưu', icon: Heart },
-                                        { id: 'appointments', label: 'Lịch hẹn', icon: Calendar },
+                                        { id: 'posts', label: t('profile.tab_my_posts'), icon: FileText },
+                                        { id: 'favorites', label: t('profile.tab_saved_posts'), icon: Heart },
+                                        { id: 'appointments', label: t('profile.tab_appointments'), icon: Calendar },
                                     ]
                                 },
                                 {
-                                    group: 'TÀI CHÍNH & VIP',
+                                    group: t('profile.group_finance_vip'),
                                     items: [
-                                        { id: 'wallet', label: 'Ví của tôi', icon: CreditCard },
-                                        { id: 'vip', label: 'Gói VIP', icon: Crown },
-                                        { id: 'vip-management', label: 'Quản lý Slot VIP', icon: Crown },
+                                        { id: 'wallet', label: t('profile.tab_my_wallet'), icon: CreditCard },
+                                        { id: 'vip', label: t('profile.tab_vip_packages'), icon: Crown },
+                                        { id: 'vip-management', label: t('profile.tab_vip_management'), icon: Crown },
                                     ]
                                 },
                                 {
-                                    group: 'PHÂN TÍCH',
+                                    group: t('profile.group_analysis'),
                                     items: [
-                                        { id: 'stats', label: 'Thống kê', icon: BarChart2 },
+                                        { id: 'stats', label: t('profile.tab_statistics'), icon: BarChart2 },
                                     ]
                                 }
                             ].map((section, idx) => (
@@ -516,7 +520,7 @@ const Profile = () => {
                         <div className="p-4 bg-gray-50/50">
                             <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
                                 <LogOut size={18} />
-                                Đăng xuất
+                                {t('navbar.logout')}
                             </button>
                         </div>
                     </div>
@@ -526,17 +530,17 @@ const Profile = () => {
                         {activeTab === 'profile' && (
                             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900">Thông tin cá nhân</h2>
+                                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_personal_info')}</h2>
                                     {!isEditing && (
                                         <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors">
                                             <Edit size={16} />
-                                            Chỉnh sửa
+                                            {t('common.edit')}
                                         </button>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Ảnh đại diện</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.avatar_label')}</label>
                                     <div className="flex items-center justify-center gap-4">
                                         <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
                                             <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -568,9 +572,9 @@ const Profile = () => {
                                                     disabled={uploading}
                                                     className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
                                                 >
-                                                    {uploading ? 'Đang tải lên...' : 'Chọn ảnh mới'}
+                                                    {uploading ? t('common.uploading') : t('profile.btn_choose_new_photo')}
                                                 </button>
-                                                <p className="text-xs text-gray-500 mt-1">Hỗ trợ: JPG, PNG, WEBP</p>
+                                                <p className="text-xs text-gray-500 mt-1">{t('profile.avatar_support_formats')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -580,12 +584,13 @@ const Profile = () => {
                                 <div className="space-y-4 max-w-lg">
                                     {/* Name Input */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.full_name')}</label>
                                         <input
                                             type="text"
                                             value={profileForm.name}
                                             onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
                                             disabled={!isEditing}
+                                            placeholder={t('profile.placeholder_name')}
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
@@ -599,17 +604,18 @@ const Profile = () => {
                                             disabled
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-500 cursor-not-allowed"
                                         />
-                                        <p className="text-xs text-gray-400 mt-1">Email không thể thay đổi</p>
+                                        <p className="text-xs text-gray-400 mt-1">{t('profile.email_no_change')}</p>
                                     </div>
 
                                     {/* Phone Input */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.phone_number')}</label>
                                         <input
                                             type="text"
                                             value={profileForm.phone}
                                             onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
                                             disabled={!isEditing}
+                                            placeholder={t('profile.placeholder_phone')}
                                             className="w-full px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
                                         />
                                     </div>
@@ -620,13 +626,13 @@ const Profile = () => {
                                                 onClick={() => updateProfileMutation.mutate(profileForm)}
                                                 className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                                             >
-                                                Lưu thay đổi
+                                                {t('common.save_changes')}
                                             </button>
                                             <button
                                                 onClick={() => setIsEditing(false)}
                                                 className="px-6 py-2 bg-white border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
                                             >
-                                                Hủy
+                                                {t('common.cancel')}
                                             </button>
                                         </div>
                                     )}
@@ -637,10 +643,10 @@ const Profile = () => {
                         {activeTab === 'posts' && (
                             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900">Tin đăng của tôi</h2>
-                                    <Link to="/post-ad" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                                        Đăng tin mới
-                                    </Link>
+                                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_my_posts')}</h2>
+                                    <LocalizedLink to="/post-ad" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                        {t('profile.btn_new_post')}
+                                    </LocalizedLink>
                                 </div>
 
                                 <div className="flex gap-2 mb-6 border-b border-gray-100 pb-1 overflow-x-auto">
@@ -653,11 +659,11 @@ const Profile = () => {
                                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                                                 }`}
                                         >
-                                            {status === 'ALL' && 'Tất cả'}
-                                            {status === 'ACTIVE' && 'Đang hiển thị'}
-                                            {status === 'PENDING' && 'Chờ duyệt'}
-                                            {status === 'SOLD' && 'Đã bán'}
-                                            {status === 'REJECTED' && 'Bị từ chối'}
+                                            {status === 'ALL' && t('common.all')}
+                                            {status === 'ACTIVE' && t('post_detail.status_active')}
+                                            {status === 'PENDING' && t('post_detail.status_pending_short')}
+                                            {status === 'SOLD' && t('post_detail.status_sold_short')}
+                                            {status === 'REJECTED' && t('post_detail.status_rejected_short')}
                                             <span className="ml-2 text-xs py-0.5 px-1.5 rounded-full bg-gray-200 text-gray-600">
                                                 {status === 'ALL' ? myPosts.length : myPosts.filter((p: any) => p.status === status).length}
                                             </span>
@@ -666,7 +672,7 @@ const Profile = () => {
                                 </div>
 
                                 {loadingPosts ? (
-                                    <div className="py-12 text-center text-gray-500">Đang tải...</div>
+                                    <div className="py-12 text-center text-gray-500">{t('common.loading')}</div>
                                 ) : filteredPosts.length > 0 ? (
                                     <div className="space-y-4">
                                         {filteredPosts.map((post: any) => (
@@ -686,28 +692,28 @@ const Profile = () => {
                                                             </div>
                                                         </div>
                                                         <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-4">
-                                                            <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(post.createdAt).toLocaleDateString('vi-VN')}</span>
+                                                            <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                                                             {post.area && <span>• {post.area} m²</span>}
                                                             {post.city && <span>• {post.city}</span>}
                                                         </div>
                                                         {post.rejectReason && post.status === 'REJECTED' && (
                                                             <div className="text-sm text-red-600 bg-red-50 p-2 rounded mb-2">
-                                                                Lý do từ chối: {post.rejectReason}
+                                                                {t('profile.reject_reason')}: {post.rejectReason}
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
-                                                        <Link to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                                                            Xem
-                                                        </Link>
+                                                        <LocalizedLink to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                                            {t('common.view')}
+                                                        </LocalizedLink>
 
                                                         {post.status !== 'SOLD' && (
                                                             <button
                                                                 onClick={() => navigate(`/post-ad?edit=${post._id}`)}
                                                                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                                                             >
-                                                                <Edit size={14} /> Sửa
+                                                                <Edit size={14} /> {t('common.edit')}
                                                             </button>
                                                         )}
 
@@ -716,7 +722,7 @@ const Profile = () => {
                                                                 onClick={() => handleMarkSold(post._id)}
                                                                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
                                                             >
-                                                                <CheckCircle size={14} /> Đã bán
+                                                                <CheckCircle size={14} /> {t('profile.btn_sold')}
                                                             </button>
                                                         )}
 
@@ -725,7 +731,7 @@ const Profile = () => {
                                                                 onClick={() => handleMarkRented(post._id)}
                                                                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors"
                                                             >
-                                                                <CheckCircle size={14} /> Đã cho thuê
+                                                                <CheckCircle size={14} /> {t('profile.btn_rented')}
                                                             </button>
                                                         )}
 
@@ -734,7 +740,7 @@ const Profile = () => {
                                                                 onClick={() => handleMarkAvailable(post._id)}
                                                                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
                                                             >
-                                                                <CheckCircle size={14} /> Còn trống
+                                                                <CheckCircle size={14} /> {t('profile.btn_available')}
                                                             </button>
                                                         )}
 
@@ -742,7 +748,7 @@ const Profile = () => {
                                                             onClick={() => handleDeletePost(post._id)}
                                                             className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors ml-auto md:ml-0"
                                                         >
-                                                            <Trash2 size={14} /> Xóa
+                                                            <Trash2 size={14} /> {t('common.delete')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -752,7 +758,7 @@ const Profile = () => {
                                 ) : (
                                     <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                                         <FileText className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                                        <p>Không tìm thấy tin đăng nào trong mục này</p>
+                                        <p>{t('profile.no_posts_found')}</p>
                                     </div>
                                 )}
                             </div>

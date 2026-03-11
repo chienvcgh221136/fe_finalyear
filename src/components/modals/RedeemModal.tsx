@@ -1,5 +1,6 @@
 import React from 'react';
-import { X, Award, CheckCircle } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 
 interface RedeemModalProps {
     isOpen: boolean;
@@ -17,6 +18,7 @@ interface RedeemModalProps {
 }
 
 const RedeemModal: React.FC<RedeemModalProps> = ({ isOpen, onClose, onConfirm, item, isProcessing }) => {
+    const { t } = useTranslation();
     if (!isOpen || !item) return null;
 
     const Icon = item.icon;
@@ -41,27 +43,33 @@ const RedeemModal: React.FC<RedeemModalProps> = ({ isOpen, onClose, onConfirm, i
 
                 {/* Header Image/Icon Area */}
                 <div className={`h-32 ${item.color.replace('text-', 'bg-').replace('50', '100')} flex items-center justify-center relative`}>
-                    <div className="absolute inset-0 bg-white/20" /> {/* Pattern overlay if needed */}
+                    <div className="absolute inset-0 bg-white/20" />
                     <div className={`w-20 h-20 rounded-full bg-white shadow-lg flex items-center justify-center ${item.color} relative z-10`}>
                         <Icon size={40} />
                     </div>
                 </div>
 
                 <div className="p-8 text-center">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Xác nhận đổi quà</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('redeem.modal_title')}</h3>
                     <p className="text-gray-500 mb-6">
-                        Bạn có chắc chắn muốn sử dụng <span className="font-bold text-gray-900">{item.points} điểm</span> để đổi gói <br />
-                        <span className="font-bold text-blue-600 text-lg">"{item.title}"</span> không?
+                        <Trans
+                            i18nKey="redeem.modal_desc"
+                            values={{ points: item.points, title: item.title }}
+                            components={{
+                                1: <span className="font-bold text-gray-900" />,
+                                2: <span className="font-bold text-blue-600 text-lg" />
+                            }}
+                        />
                     </p>
 
                     <div className="bg-gray-50 rounded-xl p-4 mb-8 text-left border border-gray-100">
                         <div className="flex items-start gap-3">
                             <CheckCircle className="text-green-500 mt-0.5 shrink-0" size={18} />
-                            <p className="text-sm text-gray-600">{item.desc || "Quyền lợi đặc biệt"}</p>
+                            <p className="text-sm text-gray-600">{t('redeem.modal_benefit', { desc: item.desc || t('common.none') })}</p>
                         </div>
                         <div className="flex items-start gap-3 mt-3">
                             <CheckCircle className="text-green-500 mt-0.5 shrink-0" size={18} />
-                            <p className="text-sm text-gray-600">Quà tặng sẽ được áp dụng ngay lập tức</p>
+                            <p className="text-sm text-gray-600">{t('redeem.modal_immediate')}</p>
                         </div>
                     </div>
 
@@ -70,8 +78,9 @@ const RedeemModal: React.FC<RedeemModalProps> = ({ isOpen, onClose, onConfirm, i
                             onClick={onClose}
                             className="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition"
                             disabled={isProcessing}
+                            type="button"
                         >
-                            Hủy bỏ
+                            {t('common.cancel')}
                         </button>
                         <button
                             onClick={onConfirm}
@@ -81,8 +90,9 @@ const RedeemModal: React.FC<RedeemModalProps> = ({ isOpen, onClose, onConfirm, i
                                     : 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600'}`
                             }
                             disabled={isProcessing}
+                            type="button"
                         >
-                            {isProcessing ? 'Đang xử lý...' : 'Xác nhận đổi'}
+                            {isProcessing ? t('common.processing') : t('redeem.btn_confirm_redeem')}
                         </button>
                     </div>
                 </div>

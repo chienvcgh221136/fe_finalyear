@@ -4,13 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reportsAPI, usersAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import ChatViewerModal from '../../components/modals/ChatViewerModal';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../../components/common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const AdminReports = () => {
+    const { t } = useTranslation();
     const { success, error } = useToast();
     const queryClient = useQueryClient();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [filterStatus, setFilterStatus] = useState<string>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'POST' | 'USER'>('POST');
 
@@ -198,9 +198,9 @@ const AdminReports = () => {
                                                         <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 font-bold">P</div>
                                                     </div>
                                                     <div>
-                                                        <Link to={`/post/${report.postId?._id}`} target="_blank" className="font-bold text-gray-900 line-clamp-1 hover:text-blue-600">
-                                                            {report.postId?.title || 'Bài đăng không tồn tại'}
-                                                        </Link>
+                                                        <LocalizedLink to={`/post/${report.postId?._id}`} target="_blank" className="font-bold text-gray-900 line-clamp-1 hover:text-blue-600">
+                                                            {report.postId?.title || t('admin.reports.post_not_exist', 'Bài đăng không tồn tại')}
+                                                        </LocalizedLink>
                                                         <p className="text-xs text-gray-400 font-mono mt-0.5">ID: #{report._id.slice(-6).toUpperCase()}</p>
                                                     </div>
                                                 </div>
@@ -212,9 +212,9 @@ const AdminReports = () => {
                                                         {report.targetUserId?.name?.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <Link to={`/user/${report.targetUserId?._id}`} target="_blank" className="font-bold text-gray-900 hover:text-blue-600">
-                                                            {report.targetUserId?.name || 'Người dùng không tồn tại'}
-                                                        </Link>
+                                                        <LocalizedLink to={`/user/${report.targetUserId?._id}`} target="_blank" className="font-bold text-gray-900 hover:text-blue-600">
+                                                            {report.targetUserId?.name || t('admin.reports.user_not_exist', 'Người dùng không tồn tại')}
+                                                        </LocalizedLink>
                                                         <p className="text-xs text-gray-500">{report.targetUserId?.email}</p>
                                                     </div>
                                                 </div>
@@ -292,14 +292,14 @@ const AdminReports = () => {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2 opacity-100">
                                                 {activeTab === 'POST' && (
-                                                    <Link
+                                                    <LocalizedLink
                                                         to={`/post/${report.postId?._id}`}
                                                         target="_blank"
-                                                        title="View Post"
+                                                        title={t('common.view_post', 'View Post')}
                                                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
                                                     >
                                                         <Eye size={16} />
-                                                    </Link>
+                                                    </LocalizedLink>
                                                 )}
                                                 {report.status === 'PENDING' && (
                                                     <>

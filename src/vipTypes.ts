@@ -12,6 +12,7 @@ export interface UpgradeOption {
 
 export interface UpgradeInfo {
     currentPackage: {
+        packageId: string;
         name: string;
         price: number;
         remainingDays: number;

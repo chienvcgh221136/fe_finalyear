@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vipAPI } from '../../services/api';
-import { Users, DollarSign, Star, Plus, Edit, Filter, Download, Box, XCircle } from 'lucide-react';
+import { Users, DollarSign, Star, Plus, Edit, Filter, Box, XCircle } from 'lucide-react';
+import { formatVNDRaw } from '../../utils/currencyUtils';
 
 const AdminVipPackages = () => {
+    const { t } = useTranslation();
     // Force Re-render
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'packages' | 'users'>('packages');
@@ -24,17 +27,17 @@ const AdminVipPackages = () => {
     });
 
     // Queries
-    const { data: packagesRes, isLoading: loadingPackages } = useQuery({
+    const { data: packagesRes } = useQuery({
         queryKey: ['admin', 'vip-packages'],
         queryFn: vipAPI.getPackages
     });
 
-    const { data: statsRes, isLoading: loadingStats } = useQuery({
+    const { data: statsRes } = useQuery({
         queryKey: ['admin', 'vip-stats'],
         queryFn: vipAPI.getAdminStats
     });
 
-    const { data: usersRes, isLoading: loadingUsers } = useQuery({
+    const { data: usersRes } = useQuery({
         queryKey: ['admin', 'vip-users'],
         queryFn: vipAPI.getVipUsers
     });
@@ -166,7 +169,7 @@ const AdminVipPackages = () => {
                         <div>
                             <p className="text-sm font-medium text-gray-500">Doanh thu tháng</p>
                             <h3 className="text-3xl font-bold text-gray-900 mt-1">
-                                {(stats.monthlyRevenue || 0).toLocaleString('vi-VN')} đ
+                                {formatVNDRaw(stats.monthlyRevenue || 0)} đ
                             </h3>
                         </div>
                         <div className="p-2 bg-green-50 text-green-600 rounded-lg">
@@ -226,13 +229,13 @@ const AdminVipPackages = () => {
                                     </button>
                                 </div>
                                 <div className="text-2xl font-bold text-blue-600 mb-6">
-                                    {pkg.price.toLocaleString('vi-VN')} <span className="text-base text-gray-500 font-normal">/ {pkg.durationDays} ngày</span>
+                                    {formatVNDRaw(pkg.price)} <span className="text-gray-400 ml-1 text-xs">/ {pkg.durationDays} {t('common.days')}</span>
                                 </div>
 
                                 <div className="space-y-3 mb-6">
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Thời hạn</span>
-                                        <span className="font-medium text-gray-900">{pkg.durationDays} Ngày</span>
+                                        <span className="font-medium text-gray-900">{pkg.durationDays} {t('common.days')}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
                                         <span className="text-gray-500">Điểm ưu tiên</span>

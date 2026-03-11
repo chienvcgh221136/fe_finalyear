@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import LocalizedLink from '../components/common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
     MapPin, Share2, Heart, AlertCircle, ChevronRight,
-    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, MessageCircle, Calendar
+    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, Calendar
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
 import AgentWidget from '../components/post/AgentWidget';
@@ -20,11 +22,12 @@ import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const PostDetail = () => {
+    const { t } = useTranslation();
     const { id } = useParams();
     const { user } = useAuth();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-    const { success, error, info, warning } = useToast();
+    const { success, error, warning } = useToast();
     const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
 
     const { data: post, isLoading: loading } = useQuery({
@@ -97,22 +100,22 @@ const PostDetail = () => {
 
     if (loading) return (
         <div className="min-h-screen bg-[#F4F4F4] pt-20 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#EE4D2D]"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
     );
 
-    if (!post) return <div className="min-h-screen pt-20 text-center">Property not found.</div>;
+    if (!post) return <div className="min-h-screen pt-20 text-center">{t('post_detail.not_found')}</div>;
 
     const images = post.images || [];
 
     // Helper to format currency
     const formatPrice = (price: number) => {
-        if (!price) return 'Liên hệ';
+        if (!price) return t('common.contact');
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`;
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Triệu`;
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
         }
         return `${price.toLocaleString('vi-VN')} đ`;
     };
@@ -130,7 +133,7 @@ const PostDetail = () => {
 
     const handleStartChat = async () => {
         if (!user) {
-            warning("Vui lòng đăng nhập để chat với người bán");
+            warning(t('post_detail.login_to_chat'));
             return;
         }
         try {
@@ -142,7 +145,7 @@ const PostDetail = () => {
             window.location.href = '/chat';
         } catch (err) {
             console.error("Chat error", err);
-            error("Không thể bắt đầu cuộc trò chuyện");
+            error(t('post_detail.chat_error'));
         }
     };
 
@@ -153,18 +156,18 @@ const PostDetail = () => {
                 <div className={`w-full py-3 px-4 text-center font-bold text-white ${post.status === 'REJECTED' ? 'bg-red-500' :
                     post.status === 'PENDING' ? 'bg-yellow-500' : 'bg-gray-500'
                     }`}>
-                    {post.status === 'REJECTED' && `⛔ Tin này đã bị TỪ CHỐI (Lý do: ${post.rejectReason}). Chỉ có bạn mới thấy tin này.`}
-                    {post.status === 'PENDING' && "⏳ Tin này đang CHỜ DUYỆT. Chưa hiển thị công khai."}
-                    {post.status === 'SOLD' && "✅ Tin này đã ĐÃ BÁN."}
+                    {post.status === 'REJECTED' && `${t('post_detail.status_rejected')} (${t('post_detail.reason')}: ${post.rejectReason}). ${t('post_detail.only_you_see')}.`}
+                    {post.status === 'PENDING' && t('post_detail.status_pending')}
+                    {post.status === 'SOLD' && t('post_detail.status_sold')}
                 </div>
             )}
 
             {/* Breadcrumb */}
             <div className="bg-white border-b border-gray-100 py-4 sticky top-[72px] z-10 shadow-sm/50">
                 <div className="container max-w-[1140px] mx-auto px-4 text-sm flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-                    <Link to="/" className="text-gray-500 hover:text-blue-600 transition-colors">Home</Link>
+                    <LocalizedLink to="/" className="text-gray-500 hover:text-blue-600 transition-colors">{t('common.home')}</LocalizedLink>
                     <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
-                    <Link to="/buy" className="text-gray-500 hover:text-blue-600 transition-colors">Bất động sản</Link>
+                    <LocalizedLink to="/buy" className="text-gray-500 hover:text-blue-600 transition-colors">{t('common.real_estate')}</LocalizedLink>
                     <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
                     <span className="text-gray-900 font-medium truncate">{post.title}</span>
                 </div>
@@ -190,22 +193,24 @@ const PostDetail = () => {
                                 <div>
                                     <div className="flex items-baseline gap-4 mb-2">
                                         <span className="text-blue-600 text-3xl font-extrabold tracking-tight">
-                                            {formatPrice(post.price)} {post.transactionType === 'RENT' ? '/tháng' : ''}
+                                            {formatPrice(post.price)} {post.transactionType === 'RENT' ? `/${t('common.month')}` : ''}
                                         </span>
                                         {post.transactionType === 'SALE' && post.area && (
                                             <span className="text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded text-sm">
-                                                ~ {(post.price / post.area / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} triệu/m²
+                                                ~ {(post.price / post.area / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} {t('common.million_square_meter')}
                                             </span>
                                         )}
                                     </div>
-                                    <MapPin size={18} className="text-gray-400" />
-                                    <span>{post.address?.district || post.district || 'Chưa rõ'}, {post.address?.city || post.city || 'Chưa rõ'}</span>
+                                    <div className="flex items-center gap-1.5 text-gray-600">
+                                        <MapPin size={18} className="text-gray-400" />
+                                        <span>{post.address?.district || post.district || t('common.unknown')}, {post.address?.city || post.city || t('common.unknown')}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-3">
                                 <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 hover:text-blue-600 transition-all">
                                     <Share2 size={18} />
-                                    <span className="text-sm">Chia sẻ</span>
+                                    <span className="text-sm">{t('post_detail.share')}</span>
                                 </button>
 
                                 {user?._id !== (typeof post.userId === 'object' ? (post.userId as any)._id : post.userId) && (
@@ -214,20 +219,20 @@ const PostDetail = () => {
                                         className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all"
                                     >
                                         <Calendar size={18} />
-                                        <span className="text-sm">Đặt lịch</span>
+                                        <span className="text-sm">{t('post_detail.schedule')}</span>
                                     </button>
                                 )}
 
                                 <button
                                     onClick={async () => {
                                         if (!user) {
-                                            warning("Vui lòng đăng nhập để lưu tin");
+                                            warning(t('post_detail.login_to_save'));
                                             return;
                                         }
                                         try {
                                             const res = await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
                                             if (res.data.success) {
-                                                success(res.data.message === 'Favorited' ? 'Đã lưu tin' : 'Đã bỏ lưu tin');
+                                                success(res.data.message === 'Favorited' ? t('post_detail.saved') : t('post_detail.unsaved'));
                                                 // Ideally, toggle a local state here to change icon style
                                             }
                                         } catch (error) {
@@ -237,22 +242,22 @@ const PostDetail = () => {
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-red-50 hover:text-red-500 transition-all"
                                 >
                                     <Heart size={18} />
-                                    <span className="text-sm">Lưu tin</span>
+                                    <span className="text-sm">{t('post_detail.save')}</span>
                                 </button>
                                 <button
                                     onClick={() => setIsReportModalOpen(true)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all"
                                 >
                                     <Flag size={18} />
-                                    <span className="text-sm">Báo cáo</span>
+                                    <span className="text-sm">{t('common.report')}</span>
                                 </button>
 
                                 {/* Owner Actions */}
                                 {user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId) && (
                                     <>
-                                        <Link to={`/post-ad?edit=${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
-                                            <span className="text-sm">Sửa tin</span>
-                                        </Link>
+                                        <LocalizedLink to={`/post-ad?edit=${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
+                                            <span className="text-sm">{t('post_detail.edit')}</span>
+                                        </LocalizedLink>
                                     </>
                                 )}
                             </div>
@@ -262,18 +267,18 @@ const PostDetail = () => {
 
                         {/* Specs Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                            <SpecItem icon={Maximize2} label="Diện tích" value={`${post.area} m²`} />
-                            <SpecItem icon={BedDouble} label="Phòng ngủ" value={`${post.bedrooms} phòng`} />
-                            <SpecItem icon={Bath} label="Toilet" value={`${post.bathrooms || 2} phòng`} />
-                            <SpecItem icon={Compass} label="Hướng" value={post.direction || 'Đông Nam'} />
-                            <SpecItem icon={FileText} label="Pháp lý" value="Sổ hồng" />
-                            <SpecItem icon={Home} label="Loại hình" value={post.propertyType || post.type || 'Chung cư'} />
-                            <SpecItem icon={FileText} label="Nội thất" value={post.furniture || 'Không'} />
+                            <SpecItem icon={Maximize2} label={t('post_detail.area')} value={`${post.area} m²`} />
+                            <SpecItem icon={BedDouble} label={t('common.bedrooms')} value={`${post.bedrooms} ${t('post_detail.rooms')}`} />
+                            <SpecItem icon={Bath} label={t('common.bathrooms')} value={`${post.bathrooms || 2} ${t('post_detail.rooms')}`} />
+                            <SpecItem icon={Compass} label={t('post_detail.direction')} value={post.direction || t('post_detail.southeast')} />
+                            <SpecItem icon={FileText} label={t('post_detail.legal')} value={t('post_detail.redbook')} />
+                            <SpecItem icon={Home} label={t('post_detail.property_type')} value={t(`post_detail.property_type_${post.propertyType || post.type || 'HOUSE'}`)} />
+                            <SpecItem icon={FileText} label={t('post_detail.furniture')} value={post.furniture || t('common.none')} />
                         </div>
 
                         {/* Description */}
                         <div className="mb-8">
-                            <h3 className="font-bold text-gray-900 text-xl mb-4">Thông tin mô tả</h3>
+                            <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.description')}</h3>
                             <div className="text-gray-600 leading-relaxed whitespace-pre-line text-base bg-gray-50/50 p-6 rounded-xl border border-gray-100/50">
                                 {post.description}
                             </div>
@@ -281,7 +286,7 @@ const PostDetail = () => {
 
                         {/* Map Section */}
                         <div className="mb-8">
-                            <h3 className="font-bold text-gray-900 text-xl mb-4">Vị trí</h3>
+                            <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.location')}</h3>
                             <div className="h-[400px] rounded-xl overflow-hidden border border-gray-200 relative bg-gray-100 shadow-sm">
                                 {coordinates ? (
                                     <Map
@@ -317,13 +322,13 @@ const PostDetail = () => {
                         {/* Legal / Redbook Images */}
                         {post.redbookImages && post.redbookImages.length > 0 && (
                             <div className="mb-8">
-                                <h3 className="font-bold text-gray-900 text-xl mb-4">Thông tin pháp lý</h3>
+                                <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.legal_info')}</h3>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {post.redbookImages.map((img: string, index: number) => (
                                         <div key={index} className="rounded-xl overflow-hidden border border-gray-200 aspect-[3/4] bg-gray-100">
                                             <img
                                                 src={img}
-                                                alt={`Sổ đỏ ${index + 1}`}
+                                                alt={`${t('post_detail.redbook')} ${index + 1}`}
                                                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
                                             />
                                         </div>
@@ -335,7 +340,7 @@ const PostDetail = () => {
                         {/* Amenities / Features List */}
                         {post.utilities && post.utilities.length > 0 && (
                             <div>
-                                <h3 className="font-bold text-gray-900 text-xl mb-4">Tiện ích</h3>
+                                <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.utilities')}</h3>
                                 <div className="flex flex-wrap gap-3">
                                     {post.utilities.map((util: string, idx: number) => (
                                         <span key={idx} className="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold border border-blue-100">
@@ -366,19 +371,18 @@ const PostDetail = () => {
                         <div className="bg-blue-50/50 rounded-2xl border border-blue-100 p-6">
                             <div className="flex items-start gap-3 mb-3">
                                 <AlertCircle className="text-blue-600 shrink-0 mt-0.5" size={20} />
-                                <h4 className="font-bold text-gray-900">Lưu ý an toàn</h4>
+                                <h4 className="font-bold text-gray-900">{t('post_detail.safety_tips')}</h4>
                             </div>
                             <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                                Không nên đặt cọc, chuyển khoản trước khi xem nhà.
-                                Hãy kiểm tra kỹ giấy tờ pháp lý và so sánh giá trong khu vực.
+                                {t('post_detail.safety_text')}
                             </p>
                             <div className="flex items-center justify-between mb-4">
-                                <Link to="#" className="text-blue-600 text-sm font-bold hover:underline">Xem thêm hướng dẫn</Link>
+                                <LocalizedLink to="#" className="text-blue-600 text-sm font-bold hover:underline">{t('post_detail.view_guide')}</LocalizedLink>
                                 <button
                                     onClick={() => setIsReportModalOpen(true)}
                                     className="text-gray-400 hover:text-gray-600 text-sm font-medium flex items-center gap-1"
                                 >
-                                    <Flag size={14} /> Báo cáo
+                                    <Flag size={14} /> {t('common.report')}
                                 </button>
                             </div>
 

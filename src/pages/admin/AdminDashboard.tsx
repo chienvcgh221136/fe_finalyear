@@ -1,11 +1,12 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { postsAPI, usersAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
 import { Users, Clock, CheckCircle, Eye, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LocalizedLink from '../../components/common/LocalizedLink';
 
 const AdminDashboard = () => {
+    const { t } = useTranslation();
     // Fetch pending posts
     const { data: pendingPosts } = useQuery({
         queryKey: ['admin', 'pending-posts'],
@@ -29,26 +30,26 @@ const AdminDashboard = () => {
 
     const stats = [
         {
-            label: 'Tin chờ duyệt',
+            label: t('admin.dashboard.pending_posts'),
             value: pendingPosts?.length || 0,
             icon: Clock,
             color: 'bg-orange-50 text-orange-600',
         },
         {
-            label: 'Tổng người dùng',
+            label: t('admin.dashboard.total_users'),
             value: overviewStats?.totalUsers || 0,
             icon: Users,
             color: 'bg-blue-50 text-blue-600',
         },
         // VIP stat removed as per user request
         {
-            label: 'Tổng bài đăng',
+            label: t('admin.dashboard.total_posts'),
             value: overviewStats?.totalPosts || 0,
             icon: CheckCircle,
             color: 'bg-green-50 text-green-600',
         },
         {
-            label: 'Lượt xem',
+            label: t('admin.dashboard.total_views'),
             value: overviewStats?.totalViews || 0,
             icon: Eye,
             color: 'bg-purple-50 text-purple-600',
@@ -82,10 +83,10 @@ const AdminDashboard = () => {
                 {/* Pending Posts List */}
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-gray-900">Tin chờ duyệt mới nhất</h2>
-                        <Link to="/admin/posts" className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                            Xem tất cả <ArrowRight size={14} />
-                        </Link>
+                        <h2 className="text-lg font-bold text-gray-900">{t('admin.dashboard.recent_pending')}</h2>
+                        <LocalizedLink to="/admin/posts" className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            {t('admin.dashboard.view_all')} <ArrowRight size={14} />
+                        </LocalizedLink>
                     </div>
                     {pendingPosts && pendingPosts.length > 0 ? (
                         <div className="space-y-4">
@@ -99,11 +100,11 @@ const AdminDashboard = () => {
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate text-sm font-bold text-gray-900">{post.title}</p>
                                         <p className="text-xs text-gray-500 mt-1">
-                                            Đăng bởi: <span className="font-medium text-gray-700">{(post.userId as User)?.name || 'Unknown'}</span>
+                                            {t('admin.dashboard.posted_by')}: <span className="font-medium text-gray-700">{(post.userId as User)?.name || 'Unknown'}</span>
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">Chờ duyệt</span>
-                                            <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong'}</span>
+                                            <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{t('admin.dashboard.pending_posts')}</span>
+                                            <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : t('admin.dashboard.just_now')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -112,7 +113,7 @@ const AdminDashboard = () => {
                     ) : (
                         <div className="flex h-40 flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl border-dashed border border-gray-200">
                             <Clock className="h-8 w-8 mb-2 opacity-50" />
-                            <p className="text-sm">Không có tin chờ duyệt</p>
+                            <p className="text-sm">{t('admin.dashboard.no_pending')}</p>
                         </div>
                     )}
                 </div>
@@ -120,10 +121,10 @@ const AdminDashboard = () => {
                 {/* New Users List */}
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                     <div className="mb-6 flex items-center justify-between">
-                        <h2 className="text-lg font-bold text-gray-900">Người dùng mới</h2>
-                        <Link to="/admin/users" className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
-                            Xem tất cả <ArrowRight size={14} />
-                        </Link>
+                        <h2 className="text-lg font-bold text-gray-900">{t('admin.dashboard.new_users')}</h2>
+                        <LocalizedLink to="/admin/users" className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+                            {t('admin.dashboard.view_all')} <ArrowRight size={14} />
+                        </LocalizedLink>
                     </div>
                     {users && users.length > 0 ? (
                         <div className="space-y-4">
@@ -137,7 +138,7 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500 truncate">{u.email}</p>
                                     </div>
                                     <div className="text-xs text-gray-400 font-medium">
-                                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : 'Vừa xong'}
+                                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : t('admin.dashboard.just_now')}
                                     </div>
                                 </div>
                             ))}
@@ -145,7 +146,7 @@ const AdminDashboard = () => {
                     ) : (
                         <div className="flex h-40 flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl border-dashed border border-gray-200">
                             <Users className="h-8 w-8 mb-2 opacity-50" />
-                            <p className="text-sm">Không có người dùng mới</p>
+                            <p className="text-sm">{t('admin.dashboard.no_users')}</p>
                         </div>
                     )}
                 </div>

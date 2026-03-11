@@ -4,10 +4,14 @@ import { vipAPI } from '../services/api';
 import type { VipPackage } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Check, Crown, Zap, Shield, Star, Clock } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LocalizedLink from '../components/common/LocalizedLink';
 import UpgradeWizard from '../components/vip/UpgradeWizard';
+import { formatVNDRaw } from '../utils/currencyUtils';
 
 const VipPage = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [showUpgradeWizard, setShowUpgradeWizard] = useState(false);
@@ -23,13 +27,13 @@ const VipPage = () => {
     const buyMutation = useMutation({
         mutationFn: (packageId: string) => vipAPI.purchase(packageId),
         onSuccess: async () => {
-            alert('Đăng ký VIP thành công!');
+            alert(t('vip.purchase_success'));
             if (user) {
-                navigate('/profile');
+                navigate(i18n.language === 'vi' ? '/vi/profile' : '/en/profile');
             }
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || 'Lỗi mua VIP. Vui lòng kiểm tra số dư.');
+            alert(err.response?.data?.message || t('vip.purchase_error'));
         },
     });
 
@@ -46,13 +50,13 @@ const VipPage = () => {
 
                 // Check for downgrade (Lower Price)
                 if (pkg.price < currentPkg.price) {
-                    alert(`Bạn đang sử dụng gói ${currentPkg.name} cao cấp hơn gói này. Vui lòng chờ hết hạn để đăng ký gói thấp hơn.`);
+                    alert(t('vip.downgrade_error', { name: currentPkg.name }));
                     return;
                 }
 
                 // Check for upgrade (Higher Price)
                 if (pkg.price > currentPkg.price) {
-                    if (window.confirm("Bạn muốn nâng cấp lên gói VIP cao hơn?")) {
+                    if (window.confirm(t('vip.upgrade_confirm'))) {
                         setShowUpgradeWizard(true);
                     }
                     return;
@@ -61,32 +65,32 @@ const VipPage = () => {
         }
 
         // 2. Normal Purchase Flow (No active VIP or expired)
-        if (!confirm(`Bạn có chắc muốn mua gói ${pkg.name} với giá ${pkg.price.toLocaleString()} VNĐ?`)) return;
+        if (!confirm(t('vip.confirm_purchase', { name: pkg.name, price: formatVNDRaw(pkg.price) }))) return;
         buyMutation.mutate(pkg._id);
     };
 
     const myVip = user?.vip;
 
-    if (loadingPackages) return <div className="p-12 text-center text-gray-500">Đang tải gói dịch vụ...</div>;
+    if (loadingPackages) return <div className="p-12 text-center text-gray-500">{t('common.loading')}</div>;
 
     return (
         <div className="w-full px-4 md:px-8 py-12 relative">
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 text-yellow-700 font-bold text-sm uppercase tracking-wider mb-4">
-                    <Crown size={18} /> Premium Membership
+                    <Crown size={18} /> {t('vip.premium_label')}
                 </div>
                 <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
-                    Nâng cấp tài khoản <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600">Pro</span>
+                    {t('vip.title_main')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-600">Pro</span>
                 </h1>
                 <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-6">
-                    Tiếp cận hàng triệu khách hàng tiềm năng, hiển thị tin đăng ở vị trí ưu tiên và chốt giao dịch nhanh chóng hơn.
+                    {t('vip.subtitle')}
                 </p>
                 {myVip?.isActive && (
                     <div className="flex justify-center gap-4">
-                        <Link to="/profile?tab=vip-management" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
+                        <LocalizedLink to="/profile?tab=vip-management" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 transition transform hover:-translate-y-1">
                             <Crown size={20} />
-                            Quản lý Slot & Gắn VIP
-                        </Link>
+                            {t('vip.manage_vip')}
+                        </LocalizedLink>
                     </div>
                 )}
             </div>
@@ -107,21 +111,21 @@ const VipPage = () => {
                         >
                             {isPopular && (
                                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg uppercase tracking-wide">
-                                    Phổ biến nhất
+                                    {t('vip.popular_tag')}
                                 </div>
                             )}
 
                             {isActive && (
                                 <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-                                    <Check size={12} /> Đang sử dụng
+                                    <Check size={12} /> {t('vip.active_status')}
                                 </div>
                             )}
 
                             <div className="mb-6">
                                 <h3 className={`text-xl font-bold mb-2 ${isPopular ? 'text-white' : 'text-gray-900'}`}>{pkg.name}</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-extrabold">{pkg.price.toLocaleString()}</span>
-                                    <span className={`text-sm font-medium ${isPopular ? 'text-gray-400' : 'text-gray-500'}`}>VNĐ / {pkg.durationDays} ngày</span>
+                                    <span className="text-4xl font-extrabold">{formatVNDRaw(pkg.price)}</span>
+                                    <span className={`text-sm font-medium ${isPopular ? 'text-gray-400' : 'text-gray-500'}`}>{t('common.currency')} / {pkg.durationDays} {t('common.days')}</span>
                                 </div>
                             </div>
 
@@ -136,26 +140,26 @@ const VipPage = () => {
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                         <Zap size={16} />
                                     </div>
-                                    <span className="font-medium text-sm">Điểm ưu tiên: <strong className={isPopular ? 'text-yellow-400' : 'text-blue-600'}>+{pkg.priorityScore}</strong></span>
+                                    <span className="font-medium text-sm">{t('vip.priority_score')}: <strong className={isPopular ? 'text-yellow-400' : 'text-blue-600'}>+{pkg.priorityScore}</strong></span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                         <Crown size={16} />
                                     </div>
-                                    <span className="font-medium text-sm">Đẩy tin: <strong>{pkg.postLimit}</strong> lượt/ngày</span>
+                                    <span className="font-medium text-sm">{t('vip.post_push')}: <strong>{pkg.postLimit}</strong> {t('common.per_day')}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                         <Clock size={16} />
                                     </div>
-                                    <span className="font-medium text-sm">Thời hạn: {pkg.durationDays} ngày</span>
+                                    <span className="font-medium text-sm">{t('vip.duration')}: {pkg.durationDays} {t('common.days')}</span>
                                 </div>
                                 {pkg.limitViewPhone && pkg.limitViewPhone > 0 && (
                                     <div className="flex items-center gap-3">
                                         <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                             <Shield size={16} />
                                         </div>
-                                        <span className="font-medium text-sm">Xem SĐT: <strong>{pkg.limitViewPhone}</strong> lượt/ngày</span>
+                                        <span className="font-medium text-sm">{t('vip.view_phone')}: <strong>{pkg.limitViewPhone}</strong> {t('common.per_day')}</span>
                                     </div>
                                 )}
 
@@ -174,7 +178,7 @@ const VipPage = () => {
                                             <div className={`p-1 rounded-full ${isPopular ? 'bg-gray-800 text-yellow-500' : 'bg-blue-50 text-blue-600'}`}>
                                                 <Star size={16} />
                                             </div>
-                                            <span className="font-medium text-sm">Huy hiệu VIP</span>
+                                            <span className="font-medium text-sm">{t('vip.vip_badge')}</span>
                                         </div>
                                     </>
                                 )}
@@ -190,7 +194,7 @@ const VipPage = () => {
                                         : 'bg-gray-900 text-white hover:bg-black'
                                     }`}
                             >
-                                {buyMutation.isPending ? 'Đang xử lý...' : isActive ? 'Đang kích hoạt' : 'Mua ngay'}
+                                {buyMutation.isPending ? t('common.processing') : isActive ? t('vip.btn_active') : t('vip.btn_purchase')}
                             </button>
                         </div>
                     );

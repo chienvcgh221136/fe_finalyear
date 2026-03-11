@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Mail, Phone, Lock, ShieldCheck, ArrowLeft, X, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { authService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import PasswordStrength, { calculatePasswordStrength } from '../ui/PasswordStrength';
@@ -12,6 +13,7 @@ interface ForgotPasswordModalProps {
 type Step = 'EMAIL' | 'PHONE' | 'OTP' | 'RESET';
 
 const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClose }) => {
+    const { t } = useTranslation();
     const [step, setStep] = useState<Step>('EMAIL');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -44,7 +46,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 setStep('PHONE');
             }
         } catch (err: any) {
-            error(err.response?.data?.message || 'Email không hợp lệ');
+            error(err.response?.data?.message || t('auth.email_invalid'));
         } finally {
             setIsLoading(false);
         }
@@ -56,12 +58,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
         try {
             const res = await authService.forgotPassword.sendOTP(email, phone);
             if (res.data.success) {
-                success('Mã OTP đã được gửi');
+                success(t('auth.otp_sent'));
                 setStep('OTP');
                 setTimer(60);
             }
         } catch (err: any) {
-            error(err.response?.data?.message || 'Số điện thoại không đúng');
+            error(err.response?.data?.message || t('auth.phone_required'));
         } finally {
             setIsLoading(false);
         }
@@ -83,7 +85,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
     const handleVerifyOTP = async (e: React.FormEvent) => {
         e.preventDefault();
         const otpCode = otp.join('');
-        if (otpCode.length < 6) return error('Vui lòng nhập đủ 6 số');
+        if (otpCode.length < 6) return error(t('auth.otp_required'));
 
         setIsLoading(true);
         try {
@@ -92,7 +94,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 setStep('RESET');
             }
         } catch (err: any) {
-            error(err.response?.data?.message || 'Mã OTP không đúng');
+            error(err.response?.data?.message || t('auth.invalid_otp'));
         } finally {
             setIsLoading(false);
         }
@@ -103,12 +105,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
 
         const score = calculatePasswordStrength(newPassword);
         if (score < 70) {
-            error('Mật khẩu của bạn quá yếu. Vui lòng đạt ít nhất 70% mức độ an toàn.');
+            error(t('auth.password_weak'));
             return;
         }
 
-        if (newPassword !== confirmPassword) return error('Mật khẩu không khớp');
-        if (newPassword.length < 8) return error('Mật khẩu phải có ít nhất 8 ký tự');
+        if (newPassword !== confirmPassword) return error(t('auth.password_mismatch'));
+        if (newPassword.length < 8) return error(t('auth.password_min_length'));
 
         setIsLoading(true);
         try {
@@ -118,12 +120,12 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                 newPassword
             });
             if (res.data.success) {
-                success('Đổi mật khẩu thành công! Vui lòng đăng nhập lại.');
+                success(t('auth.reset_success_login'));
                 onClose();
                 resetModal();
             }
         } catch (err: any) {
-            error(err.response?.data?.message || 'Có lỗi xảy ra');
+            error(err.response?.data?.message || t('auth.error_occurred'));
         } finally {
             setIsLoading(false);
         }
@@ -147,11 +149,11 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             <div className="bg-blue-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                                 <Mail className="text-blue-400" size={32} />
                             </div>
-                            <h2 className="text-2xl font-bold text-white">Quên mật khẩu?</h2>
-                            <p className="text-gray-400 mt-2">Nhập email của bạn để bắt đầu khôi phục mật khẩu.</p>
+                            <h2 className="text-2xl font-bold text-white">{t('auth.forgot_password_title')}</h2>
+                            <p className="text-gray-400 mt-2">{t('auth.forgot_password_desc')}</p>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">Email</label>
+                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">{t('auth.email')}</label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                                 <input
@@ -168,7 +170,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             disabled={isLoading}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                         >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Tiếp tục'}
+                            {isLoading ? <Loader2 className="animate-spin" /> : t('auth.continue')}
                         </button>
                     </form>
                 );
@@ -179,11 +181,11 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             <div className="bg-blue-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                                 <Phone className="text-blue-400" size={32} />
                             </div>
-                            <h2 className="text-2xl font-bold text-white">Xác minh số điện thoại</h2>
-                            <p className="text-gray-400 mt-2">Số điện thoại phải khớp với email <span className="text-blue-400">{email}</span></p>
+                            <h2 className="text-2xl font-bold text-white">{t('auth.verify_phone_title')}</h2>
+                            <p className="text-gray-400 mt-2">{t('auth.verify_phone_desc', { email })}</p>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">Số điện thoại</label>
+                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">{t('auth.phone')}</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold border-r border-gray-700 pr-3">VN</span>
                                 <input
@@ -202,13 +204,13 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                                 onClick={() => setStep('EMAIL')}
                                 className="flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-4 rounded-xl transition-all border border-gray-700/50"
                             >
-                                Quay lại
+                                {t('common.back')}
                             </button>
                             <button
                                 disabled={isLoading}
                                 className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                             >
-                                {isLoading ? <Loader2 className="animate-spin" /> : 'Gửi mã OTP'}
+                                {isLoading ? <Loader2 className="animate-spin" /> : t('auth.send_otp')}
                             </button>
                         </div>
                     </form>
@@ -220,8 +222,8 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             <div className="bg-blue-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                                 <ShieldCheck className="text-blue-400" size={32} />
                             </div>
-                            <h2 className="text-2xl font-bold text-white">Nhập mã OTP</h2>
-                            <p className="text-gray-400 mt-2">Mã 6 số đã được gửi đến email <span className="text-blue-400 font-bold">{email.replace(/(.{2})(.*)(@.*)/, "$1***$3")}</span></p>
+                            <h2 className="text-2xl font-bold text-white">{t('auth.enter_otp_title')}</h2>
+                            <p className="text-gray-400 mt-2">{t('auth.enter_otp_desc', { email: email.replace(/(.{2})(.*)(@.*)/, "$1***$3") })}</p>
                         </div>
                         <div className="flex justify-center gap-3">
                             {otp.map((digit, i) => (
@@ -238,10 +240,10 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                         </div>
                         <div className="text-center">
                             {timer > 0 ? (
-                                <p className="text-gray-500 text-sm">Gửi lại mã sau ({timer}s)</p>
+                                <p className="text-gray-500 text-sm">{t('auth.resend_otp_after', { timer })}</p>
                             ) : (
                                 <button type="button" onClick={handleSendOTP} className="text-blue-400 text-sm font-bold hover:underline">
-                                    Gửi lại mã ngay
+                                    {t('auth.resend_otp_now')}
                                 </button>
                             )}
                         </div>
@@ -249,14 +251,14 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             disabled={isLoading}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2"
                         >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Xác nhận'}
+                            {isLoading ? <Loader2 className="animate-spin" /> : t('common.confirm')}
                         </button>
                         <button
                             type="button"
                             onClick={() => setStep('PHONE')}
                             className="w-full text-gray-400 text-sm flex items-center justify-center gap-2 hover:text-white transition-colors"
                         >
-                            <ArrowLeft size={16} /> Thay đổi thông tin
+                            <ArrowLeft size={16} /> {t('auth.change_info')}
                         </button>
                     </form>
                 );
@@ -267,11 +269,11 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             <div className="bg-green-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-green-500/20">
                                 <Lock className="text-green-400" size={32} />
                             </div>
-                            <h2 className="text-2xl font-bold text-white">Đặt lại mật khẩu</h2>
-                            <p className="text-gray-400 mt-2">Vui lòng nhập mật khẩu mới của bạn.</p>
+                            <h2 className="text-2xl font-bold text-white">{t('auth.reset_password_title')}</h2>
+                            <p className="text-gray-400 mt-2">{t('auth.reset_password_desc')}</p>
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">Mật khẩu mới</label>
+                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">{t('auth.new_password')}</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                                 <input
@@ -293,7 +295,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             <PasswordStrength password={newPassword} />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">Xác nhận mật khẩu</label>
+                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wider ml-1">{t('auth.confirm_password')}</label>
                             <div className="relative">
                                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
                                 <input
@@ -310,7 +312,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
                             disabled={isLoading}
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 mt-4"
                         >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Hoàn tất'}
+                            {isLoading ? <Loader2 className="animate-spin" /> : t('auth.finish')}
                         </button>
                     </form>
                 );
@@ -352,7 +354,7 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
 
                 <div className="mt-8 pt-6 border-t border-gray-800/50 text-center">
                     <p className="text-gray-500 text-sm">
-                        Quay lại <button onClick={onClose} className="text-blue-500 font-bold hover:underline">Đăng nhập</button>
+                        {t('common.back')} <button onClick={onClose} className="text-blue-500 font-bold hover:underline">{t('auth.btn_login')}</button>
                     </p>
                 </div>
             </div>
@@ -361,3 +363,4 @@ const ForgotPasswordModal: React.FC<ForgotPasswordModalProps> = ({ isOpen, onClo
 };
 
 export default ForgotPasswordModal;
+

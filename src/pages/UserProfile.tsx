@@ -1,12 +1,15 @@
 import { useState, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import LocalizedLink from '../components/common/LocalizedLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersAPI, postsAPI, reviewsAPI, filesAPI } from '../services/api'; // Added filesAPI
 import type { Post, User, Review } from '../types';
-import { Edit, Calendar, Camera, MapPin, Clock, Star, Share2, Truck, ShieldCheck } from 'lucide-react'; // Added Camera
+import { Edit, Calendar, Camera, MapPin, Clock, Star, Share2, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
 import { useAuth } from '../context/AuthContext'; // Added useAuth
+import { useTranslation } from 'react-i18next';
 
 const UserProfile = () => {
+    const { t, i18n } = useTranslation();
     const { userId } = useParams<{ userId: string }>();
     const { user: currentUser } = useAuth(); // Get current user
     const queryClient = useQueryClient();
@@ -22,7 +25,7 @@ const UserProfile = () => {
     const { data: user, isLoading: isUserLoading } = useQuery({
         queryKey: ['user', userId],
         queryFn: () => usersAPI.getById(userId!),
-        enabled: !!userId,
+        enabled: !!userId && userId !== 'undefined',
         select: (res) => res.data.data as User,
     });
 
@@ -30,7 +33,7 @@ const UserProfile = () => {
     const { data: posts, isLoading: isPostsLoading } = useQuery({
         queryKey: ['user-posts', userId],
         queryFn: () => postsAPI.getByUser(userId!),
-        enabled: !!userId,
+        enabled: !!userId && userId !== 'undefined',
         select: (res) => res.data.data as Post[],
     });
 
@@ -38,7 +41,7 @@ const UserProfile = () => {
     const { data: reviews } = useQuery({
         queryKey: ['user-reviews', userId],
         queryFn: () => reviewsAPI.getBySeller(userId!),
-        enabled: !!userId,
+        enabled: !!userId && userId !== 'undefined',
         select: (res) => res.data.data as Review[],
     });
 
@@ -190,10 +193,15 @@ const UserProfile = () => {
                                 <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-full font-bold text-gray-700 hover:bg-gray-50 transition-colors text-sm">
                                     <Share2 size={16} /> Chia sẻ
                                 </button>
-                                {isOwner && (
-                                    <Link to="/profile" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
-                                        <Edit size={16} /> Chỉnh sửa hồ sơ
-                                    </Link>
+                                {isOwner ? (
+                                    <LocalizedLink to="/profile" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
+                                        <Edit size={16} /> {t('user_profile.btn_edit_profile', 'Chỉnh sửa hồ sơ')}
+                                    </LocalizedLink>
+                                ) : (
+                                    <LocalizedLink to="/chat" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
+                                        <MessageSquare size={16} />
+                                        {t('user_profile.btn_message', 'Nhắn tin')}
+                                    </LocalizedLink>
                                 )}
                             </div>
                         </div>
@@ -259,41 +267,57 @@ const UserProfile = () => {
                                             ))}
                                         </div>
                                     ) : filteredPosts.length > 0 ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                             {filteredPosts.map(post => (
-                                                <Link to={`/post/${post._id}`} key={post._id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                                                    <div className="relative aspect-[4/3] bg-gray-200">
-                                                        <img
-                                                            src={post.images?.[0] || 'https://via.placeholder.com/300'}
-                                                            alt={post.title}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        />
+                                                <LocalizedLink to={`/post/${post._id}`} key={post._id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                                                    <div className="relative h-40 overflow-hidden bg-gray-100">
+                                                        {post.images?.[0] ? (
+                                                            <img src={post.images[0]} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                <Home size={32} />
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded text-[10px] font-bold text-gray-900 border border-gray-100">
+                                                            {post.transactionType === 'RENT' ? t('common.rent', 'Cho thuê') : t('common.buy', 'Bán')}
+                                                        </div>
                                                         {post.status === 'SOLD' && (
-                                                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                                                <span className="text-white font-bold px-3 py-1 border-2 border-white rounded transform -rotate-12">ĐÃ BÁN</span>
+                                                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                                                                <span className="text-white font-black text-sm border-2 border-white px-2 py-1 rounded transform -rotate-12 uppercase tracking-widest leading-none">
+                                                                    {t('common.sold', 'Đã bán')}
+                                                                </span>
                                                             </div>
                                                         )}
                                                         {post.vip?.isActive && (
-                                                            <div className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded shadow-sm">
+                                                            <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded shadow-sm z-10">
                                                                 VIP
                                                             </div>
                                                         )}
                                                     </div>
                                                     <div className="p-3">
-                                                        <h3 className="font-medium text-gray-900 line-clamp-2 text-sm group-hover:text-blue-600 transition-colors">
+                                                        <h4 className="font-bold text-gray-900 text-sm line-clamp-1 group-hover:text-blue-600 transition-colors mb-2 uppercase">
                                                             {post.title}
-                                                        </h3>
-                                                        <div className="mt-2 flex items-center justify-between">
-                                                            <span className="text-red-600 font-bold text-sm">
-                                                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(post.price)}
-                                                            </span>
-                                                            <span className="text-xs text-gray-400 flex items-center gap-1">
-                                                                <Clock size={12} />
-                                                                {new Date(post.createdAt!).toLocaleDateString('vi-VN')}
-                                                            </span>
+                                                        </h4>
+                                                        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+                                                            <div className="text-blue-600 font-bold text-sm">
+                                                                {i18n.language === 'vi' ? (
+                                                                    post.price >= 1000000000
+                                                                        ? `${(post.price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Tỷ`
+                                                                        : post.price >= 1000000
+                                                                            ? `${(post.price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} Tr`
+                                                                            : `${post.price.toLocaleString('vi-VN')} đ`
+                                                                ) : (
+                                                                    post.price >= 1000000000
+                                                                        ? `${((post.price / 1000000000) * 40000).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 1 })}B`
+                                                                        : `${(post.price / 25000).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })}`
+                                                                )}
+                                                            </div>
+                                                            <div className="text-[10px] text-gray-400">
+                                                                {post.area} m²
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </Link>
+                                                </LocalizedLink>
                                             ))}
                                         </div>
                                     ) : (

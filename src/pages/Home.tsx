@@ -5,12 +5,15 @@ import ListingCard from '../components/ListingCard';
 import VipPostCard from '../components/post/VipPostCard';
 import { postsAPI } from '../services/api';
 import { ChevronRight, Crown, Clock, Building2, Home as HomeIcon, MapPin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/common/LocalizedLink';
 import { Button } from '../components/ui/Button';
+import { useTranslation, Trans } from 'react-i18next';
 
 import type { Post } from '../types';
 
 const Home = () => {
+    const { t } = useTranslation();
+
     const { data: vipPosts, isLoading: loadingVip } = useQuery({
         queryKey: ['posts', 'vip'],
         queryFn: () => postsAPI.getAll({ isVip: true, status: 'ACTIVE', limit: 8 }),
@@ -24,10 +27,10 @@ const Home = () => {
     });
 
     const categories = [
-        { label: 'Mua bán nhà', icon: HomeIcon, href: '/buy?transactionType=SALE&propertyType=HOUSE', color: 'bg-blue-100 text-blue-600' },
-        { label: 'Thuê căn hộ', icon: Building2, href: '/rent?transactionType=RENT&propertyType=APARTMENT', color: 'bg-orange-100 text-orange-600' },
-        { label: 'Đất nền', icon: MapPin, href: '/buy?propertyType=LAND', color: 'bg-green-100 text-green-600' },
-        { label: 'Văn phòng', icon: Building2, href: '/rent?propertyType=OFFICE', color: 'bg-purple-100 text-purple-600' },
+        { label: t('home.categories.buy_house'), icon: HomeIcon, href: '/buy?transactionType=SALE&propertyType=HOUSE', color: 'bg-blue-100 text-blue-600' },
+        { label: t('home.categories.rent_apartment'), icon: Building2, href: '/rent?transactionType=RENT&propertyType=APARTMENT', color: 'bg-orange-100 text-orange-600' },
+        { label: t('home.categories.land'), icon: MapPin, href: '/buy?propertyType=LAND', color: 'bg-green-100 text-green-600' },
+        { label: t('home.categories.office'), icon: Building2, href: '/rent?propertyType=OFFICE', color: 'bg-purple-100 text-purple-600' },
     ];
 
     return (
@@ -49,12 +52,16 @@ const Home = () => {
                         className="mx-auto max-w-4xl text-center mb-16"
                     >
                         <h1 className="text-5xl md:text-6xl lg:text-[72px] font-extrabold tracking-tight text-gray-900 mb-6 leading-[1.1]">
-                            Tìm kiếm <span className="text-blue-600">Bất động sản</span><br />
-                            dễ dàng hơn bao giờ hết
+                            <Trans i18nKey="home.hero.title">
+                                Tìm kiếm <span className="text-blue-600">Bất động sản</span><br />
+                                dễ dàng hơn bao giờ hết
+                            </Trans>
                         </h1>
                         <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
-                            Hàng nghìn tin đăng mua bán, cho thuê nhà đất mỗi ngày. <br className="hidden md:block" />
-                            Kết nối trực tiếp với chủ nhà.
+                            <Trans i18nKey="home.hero.subtitle">
+                                Hàng nghìn tin đăng mua bán, cho thuê nhà đất mỗi ngày. <br className="hidden md:block" />
+                                Kết nối trực tiếp với chủ nhà.
+                            </Trans>
                         </p>
                     </motion.div>
 
@@ -81,7 +88,7 @@ const Home = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.4, delay: i * 0.1 }}
                             >
-                                <Link
+                                <LocalizedLink
                                     to={cat.href}
                                     className="group flex flex-col items-center gap-4 rounded-2xl bg-gray-50 p-8 transition-all hover:bg-white hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 border border-transparent hover:border-gray-100"
                                 >
@@ -89,7 +96,7 @@ const Home = () => {
                                         <cat.icon className={`h-8 w-8`} />
                                     </div>
                                     <span className="font-bold text-gray-900 text-lg">{cat.label}</span>
-                                </Link>
+                                </LocalizedLink>
                             </motion.div>
                         ))}
                     </div>
@@ -103,15 +110,15 @@ const Home = () => {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Crown className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                                <span className="text-sm font-bold text-yellow-600 uppercase tracking-wider">Tin Nổi Bật</span>
+                                <span className="text-sm font-bold text-yellow-600 uppercase tracking-wider">{t('home.vip_posts.label')}</span>
                             </div>
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Tin VIP Nổi Bật</h2>
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('home.vip_posts.title')}</h2>
                         </div>
                         <Button variant="ghost" asChild className="hidden md:flex gap-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 font-semibold group">
-                            <Link to="/buy?isVip=true">
-                                Xem tất cả
+                            <LocalizedLink to="/buy?isVip=true">
+                                {t('home.vip_posts.view_all')}
                                 <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                            </LocalizedLink>
                         </Button>
                     </div>
 
@@ -130,13 +137,13 @@ const Home = () => {
                     ) : (
                         <div className="flex h-64 flex-col items-center justify-center rounded-2xl bg-gray-50 text-gray-400 border-2 border-dashed border-gray-100">
                             <Crown className="mb-4 h-12 w-12 opacity-20" />
-                            <p className="font-medium">Chưa có tin VIP nào</p>
+                            <p className="font-medium">{t('home.vip_posts.no_posts')}</p>
                         </div>
                     )}
 
                     <div className="mt-8 text-center md:hidden">
                         <Button variant="outline" asChild className="w-full">
-                            <Link to="/buy?isVip=true">Xem tất cả tin VIP</Link>
+                            <LocalizedLink to="/buy?isVip=true">{t('home.vip_posts.view_all')}</LocalizedLink>
                         </Button>
                     </div>
                 </div>
@@ -149,15 +156,15 @@ const Home = () => {
                         <div>
                             <div className="flex items-center gap-2 mb-2">
                                 <Clock className="h-5 w-5 text-blue-600" />
-                                <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">Tin Mới Nhất</span>
+                                <span className="text-sm font-bold text-blue-600 uppercase tracking-wider">{t('home.recent_posts.label')}</span>
                             </div>
-                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">Tin Mới Đăng</h2>
+                            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('home.recent_posts.title')}</h2>
                         </div>
                         <Button variant="ghost" asChild className="hidden md:flex gap-2 text-gray-600 hover:text-blue-600 hover:bg-white font-semibold group">
-                            <Link to="/buy">
-                                Xem tất cả
+                            <LocalizedLink to="/buy">
+                                {t('home.recent_posts.view_all')}
                                 <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                            </LocalizedLink>
                         </Button>
                     </div>
 
@@ -176,13 +183,13 @@ const Home = () => {
                     ) : (
                         <div className="flex h-64 flex-col items-center justify-center rounded-2xl bg-white text-gray-400 border-2 border-dashed border-gray-100">
                             <Clock className="mb-4 h-12 w-12 opacity-20" />
-                            <p className="font-medium">Chưa có tin đăng nào</p>
+                            <p className="font-medium">{t('home.recent_posts.no_posts')}</p>
                         </div>
                     )}
 
                     <div className="mt-8 text-center md:hidden">
                         <Button variant="outline" asChild className="w-full bg-white">
-                            <Link to="/buy">Xem tất cả tin mới</Link>
+                            <LocalizedLink to="/buy">{t('home.recent_posts.view_all')}</LocalizedLink>
                         </Button>
                     </div>
                 </div>
@@ -198,17 +205,19 @@ const Home = () => {
 
                         <div className="relative z-10 max-w-3xl mx-auto">
                             <h2 className="mb-6 text-3xl font-extrabold md:text-5xl leading-tight">
-                                Bạn có bất động sản cần bán <br />hoặc cho thuê?
+                                <Trans i18nKey="home.cta.title">
+                                    Bạn có bất động sản cần bán <br />hoặc cho thuê?
+                                </Trans>
                             </h2>
                             <p className="mb-10 text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
-                                Đăng tin miễn phí, tiếp cận hàng triệu người mua tiềm năng và chốt giao dịch nhanh chóng với nền tảng của chúng tôi.
+                                {t('home.cta.description')}
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Button size="lg" asChild className="bg-white text-black hover:bg-gray-100 font-bold px-8 py-6 h-auto text-lg rounded-xl">
-                                    <Link to="/post-ad">Đăng tin ngay</Link>
+                                    <LocalizedLink to="/post-ad">{t('home.cta.post_now')}</LocalizedLink>
                                 </Button>
                                 <Button variant="outline" size="lg" asChild className="border-gray-700 text-white hover:bg-white/10 hover:text-white font-semibold px-8 py-6 h-auto text-lg rounded-xl">
-                                    <Link to="/contact">Liên hệ hỗ trợ</Link>
+                                    <LocalizedLink to="/contact">{t('home.cta.contact')}</LocalizedLink>
                                 </Button>
                             </div>
                         </div>

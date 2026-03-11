@@ -1,5 +1,7 @@
 import { MapPin, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
+import { formatVND } from '../../utils/currencyUtils';
 
 import type { Post } from '../../types';
 
@@ -8,23 +10,26 @@ interface VipPostCardProps {
 }
 
 const VipPostCard = ({ post }: VipPostCardProps) => {
+    const { t } = useTranslation();
+
     // Format price
     const formatPrice = (price: number) => {
+        if (!price) return t('common.contact');
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Tỷ`;
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} Triệu`;
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} ${t('common.million')}`;
         }
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+        return formatVND(price);
     };
 
     const image = post.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-e32c1631f194?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-    const district = post.address?.district || post.district || 'Chưa rõ';
-    const city = post.address?.city || post.city || 'Chưa rõ';
+    const district = post.address?.district || post.district || t('common.unknown');
+    const city = post.address?.city || post.city || t('common.unknown');
 
     return (
-        <Link to={`/post/${post._id}`} className="group relative block h-[400px] w-full overflow-hidden rounded-2xl shadow-lg transition-all hover:shadow-2xl hover:-translate-y-1">
+        <LocalizedLink to={`/post/${post._id}`} className="group relative block h-[400px] w-full overflow-hidden rounded-2xl shadow-lg transition-all hover:shadow-2xl hover:-translate-y-1">
             {/* Background Image */}
             <div className="absolute inset-0">
                 <img
@@ -42,7 +47,7 @@ const VipPostCard = ({ post }: VipPostCardProps) => {
                     VIP PREMIUM
                 </span>
                 <span className="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium border border-white/10">
-                    {post.transactionType === 'RENT' ? 'Cho thuê' : 'Đang bán'}
+                    {post.transactionType === 'RENT' ? t('common.rent') : t('common.sale')}
                 </span>
             </div>
 
@@ -54,7 +59,7 @@ const VipPostCard = ({ post }: VipPostCardProps) => {
                     <span className="text-2xl font-extrabold text-white tracking-tight text-shadow-sm">
                         {formatPrice(post.price)}
                     </span>
-                    {post.transactionType === 'RENT' && <span className="text-sm text-gray-300 font-medium">/tháng</span>}
+                    {post.transactionType === 'RENT' && <span className="text-sm text-gray-300 font-medium">/{t('common.month')}</span>}
                 </div>
 
                 {/* Title */}
@@ -70,10 +75,10 @@ const VipPostCard = ({ post }: VipPostCardProps) => {
 
                 {/* Hover Action */}
                 <div className="flex items-center text-sm font-bold text-purple-300 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
-                    Xem chi tiết <ArrowRight size={16} className="ml-1" />
+                    {t('common.view_details')} <ArrowRight size={16} className="ml-1" />
                 </div>
             </div>
-        </Link>
+        </LocalizedLink>
     );
 };
 

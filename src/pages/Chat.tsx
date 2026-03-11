@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { filesAPI, chatAPI, usersAPI } from '../services/api';
 import type { ChatRoom, MessageData } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil, ChevronLeft, MoreVertical, Shield, Ban, User, Image } from 'lucide-react';
+import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, CheckCheck, Trash2, ArrowDown, Pencil, ChevronLeft, MoreVertical, Shield, Ban, User, Image, ExternalLink } from 'lucide-react';
 import ReportModal from '../components/modals/ReportModal';
+import LocalizedLink from '../components/common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const Chat = () => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -253,7 +256,7 @@ const Chat = () => {
                 markReadMutation.mutate(selectedRoomId);
             }
         }
-    }, [messagesData, selectedRoomId]);
+    }, [messagesData, selectedRoomId, markReadMutation, user]);
 
     // Send Message Mutation
     const sendMessageMutation = useMutation({
@@ -399,7 +402,7 @@ const Chat = () => {
             {/* Sidebar */}
             <aside className={`w-full md:w-80 border-r border-gray-200 bg-white flex flex-col h-full ${selectedRoomId ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-gray-200">
-                    <h1 className="text-xl font-bold text-gray-900 mb-4">Tin nhắn</h1>
+                    <h1 className="text-xl font-bold text-gray-900 mb-4">{t('chat.title', 'Tin nhắn')}</h1>
 
                     {/* Tabs */}
                     <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
@@ -407,19 +410,19 @@ const Chat = () => {
                             onClick={() => setActiveTab('all')}
                             className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                            Tất cả
+                            {t('chat.tab_all', 'Tất cả')}
                         </button>
                         <button
                             onClick={() => setActiveTab('buying')}
                             className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'buying' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                            Mua
+                            {t('chat.tab_buying', 'Mua')}
                         </button>
                         <button
                             onClick={() => setActiveTab('selling')}
                             className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'selling' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                         >
-                            Bán
+                            {t('chat.tab_selling', 'Bán')}
                         </button>
                     </div>
 
@@ -427,7 +430,7 @@ const Chat = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <input
                             type="text"
-                            placeholder="Tìm người dùng hoặc tin nhắn..."
+                            placeholder={t('chat.search_placeholder', 'Tìm người dùng hoặc tin nhắn...')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
@@ -503,7 +506,7 @@ const Chat = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-48 text-gray-400">
                             <MessageCircle size={48} className="mb-2 opacity-20" />
-                            <p className="text-sm">Không tìm thấy cuộc trò chuyện nào</p>
+                            <p className="text-sm">{t('chat.no_chats', 'Không tìm thấy cuộc trò chuyện nào')}</p>
                         </div>
                     )}
                 </div>
@@ -550,7 +553,7 @@ const Chat = () => {
                                                         </div>
                                                         <div className="flex items-center gap-1.5">
                                                             <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                            <p className="text-xs text-green-600 font-medium">Đang hoạt động</p>
+                                                            <p className="text-xs text-green-600 font-medium">{t('chat.active_now', 'Đang hoạt động')}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -603,14 +606,13 @@ const Chat = () => {
                                                 : `${(post.price / 1000000).toLocaleString('vi-VN')} Triệu`}
                                         </p>
                                     </div>
-                                    <a
-                                        href={`/post/${post._id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
+                                    <LocalizedLink
+                                        to={`/post/${post._id}`}
+                                        className="px-3 py-1.5 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm flex items-center justify-center gap-1"
                                     >
-                                        Xem tin
-                                    </a>
+                                        {t('chat.view_tin', 'Xem tin')}
+                                        <ExternalLink size={12} />
+                                    </LocalizedLink>
                                 </div>
                                 );
                             })()}
@@ -700,12 +702,12 @@ const Chat = () => {
                                                             </div>
                                                             {isLastMyMsg && !isImage && (
                                                                 <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                    {msg.isRead ? 'Đã xem' : 'Đã gửi'}
+                                                                    {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
                                                                 </span>
                                                             )}
                                                             {isLastMyMsg && isImage && (
                                                                 <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                    {msg.isRead ? 'Đã xem' : 'Đã gửi'}
+                                                                    {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
                                                                 </span>
                                                             )}
                                                         </div>
@@ -718,7 +720,7 @@ const Chat = () => {
                                 ) : (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                         <MessageCircle size={48} className="mb-4 opacity-20" />
-                                        <p>Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!</p>
+                                        <p>{t('chat.no_messages', 'Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!')}</p>
                                     </div>
                                 )}
 
@@ -728,7 +730,7 @@ const Chat = () => {
                                         onClick={() => scrollToBottom(true)}
                                         className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 hover:bg-blue-700 transition-all z-10 text-sm font-medium animate-bounce"
                                     >
-                                        📩 Tin nhắn mới <ArrowDown size={16} />
+                                        📩 {t('chat.new_messages_badge', 'Tin nhắn mới')} <ArrowDown size={16} />
                                     </button>
                                 )}
                             </div>
@@ -788,7 +790,7 @@ const Chat = () => {
 
                                                 <input
                                                     type="text"
-                                                    placeholder="Nhập tin nhắn..."
+                                                    placeholder={t('chat.input_placeholder', 'Nhập tin nhắn...')}
                                                     className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all disabled:opacity-50"
                                                     value={newMessage}
                                                     onChange={(e) => setNewMessage(e.target.value)}

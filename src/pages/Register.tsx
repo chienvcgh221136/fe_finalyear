@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LocalizedLink from '../components/common/LocalizedLink';
 import { authService } from '../services/api';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
@@ -8,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import PasswordStrength, { calculatePasswordStrength } from '../components/ui/PasswordStrength';
 
 const Register = () => {
+    const { t } = useTranslation();
     const { register, handleSubmit, watch, formState: { errors } } = useForm();
     const { success, error } = useToast();
     const [showPassword, setShowPassword] = useState(false);
@@ -19,12 +22,12 @@ const Register = () => {
         try {
             const score = calculatePasswordStrength(data.password);
             if (score < 70) {
-                error('Mật khẩu của bạn quá yếu. Vui lòng đạt ít nhất 70% mức độ an toàn.');
+                error(t('auth.password_weak'));
                 return;
             }
 
             if (data.password !== data.confirmPassword) {
-                error('Mật khẩu không khớp');
+                error(t('auth.password_mismatch'));
                 return;
             }
 
@@ -38,16 +41,16 @@ const Register = () => {
             const response = await authService.register(payload);
 
             if (response.data.success) {
-                success('Đăng ký thành công! Đang chuyển hướng đến đăng nhập...');
+                success(t('auth.register_success'));
                 setTimeout(() => {
                     navigate('/login');
                 }, 2000);
             } else {
-                error(response.data.message || 'Đăng ký thất bại');
+                error(response.data.message || t('auth.register_error'));
             }
         } catch (err: any) {
             console.error('Registration Error:', err);
-            error(err.response?.data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+            error(err.response?.data?.message || t('auth.register_generic_error'));
         }
     };
 
@@ -56,33 +59,33 @@ const Register = () => {
 
             <div className="auth-container" style={{ maxWidth: '500px' }}>
                 <div className="auth-header">
-                    <h2 className="auth-title">Tạo tài khoản mới</h2>
-                    <p className="auth-subtitle">Tham gia cùng hàng ngàn người mua và thuê nhà ngay hôm nay.</p>
+                    <h2 className="auth-title">{t('auth.register_title')}</h2>
+                    <p className="auth-subtitle">{t('auth.register_subtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="form-group">
-                        <label className="form-label">Họ và Tên</label>
+                        <label className="form-label">{t('auth.full_name')}</label>
                         <input
                             type="text"
-                            placeholder="Nguyễn Văn A"
+                            placeholder={t('auth.name_placeholder')}
                             className="form-input"
-                            {...register('name', { required: 'Vui lòng nhập họ tên' })}
+                            {...register('name', { required: t('auth.name_required') })}
                         />
                         {errors.name && <span className="text-sm" style={{ color: 'var(--error)' }}>{errors.name.message as string}</span>}
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Email</label>
+                        <label className="form-label">{t('auth.email')}</label>
                         <input
                             type="email"
-                            placeholder="email@example.com"
+                            placeholder={t('auth.email_placeholder')}
                             className="form-input"
                             {...register('email', {
-                                required: 'Vui lòng nhập Email',
+                                required: t('auth.email_required'),
                                 pattern: {
                                     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                                    message: "Email không hợp lệ"
+                                    message: t('auth.email_invalid')
                                 }
                             })}
                         />
@@ -90,25 +93,25 @@ const Register = () => {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Số điện thoại</label>
+                        <label className="form-label">{t('auth.phone')}</label>
                         <input
                             type="tel"
-                            placeholder="(09) 000-0000"
+                            placeholder={t('auth.phone_placeholder')}
                             className="form-input"
-                            {...register('phone', { required: 'Vui lòng nhập số điện thoại' })}
+                            {...register('phone', { required: t('auth.phone_required') })}
                         />
                         {errors.phone && <span className="text-sm" style={{ color: 'var(--error)' }}>{errors.phone.message as string}</span>}
                     </div>
 
                     <div className="flex gap-4">
                         <div className="form-group flex-grow">
-                            <label className="form-label">Mật khẩu</label>
+                            <label className="form-label">{t('auth.password')}</label>
                             <div className="password-input-wrapper">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="........"
                                     className="form-input"
-                                    {...register('password', { required: 'Vui lòng nhập mật khẩu', minLength: { value: 6, message: 'Tối thiểu 6 ký tự' } })}
+                                    {...register('password', { required: t('auth.password_required'), minLength: { value: 6, message: t('auth.password_min_length') } })}
                                 />
                                 <button
                                     type="button"
@@ -123,17 +126,17 @@ const Register = () => {
                         </div>
 
                         <div className="form-group flex-grow">
-                            <label className="form-label">Xác nhận mật khẩu</label>
+                            <label className="form-label">{t('auth.confirm_password')}</label>
                             <div className="password-input-wrapper">
                                 <input
                                     type="password"
                                     placeholder="........"
                                     className="form-input"
                                     {...register('confirmPassword', {
-                                        required: 'Vui lòng xác nhận mật khẩu',
+                                        required: t('auth.confirm_password_required'),
                                         validate: (val: string) => {
                                             if (watch('password') != val) {
-                                                return "Mật khẩu không khớp";
+                                                return t('auth.password_mismatch');
                                             }
                                         }
                                     })}
@@ -148,17 +151,18 @@ const Register = () => {
                         className="btn btn-primary w-full"
                         style={{ marginTop: '1rem' }}
                     >
-                        Đăng ký tài khoản
+                        {t('auth.btn_register')}
                     </button>
                 </form>
 
                 <div className="auth-footer">
                     <p>
-                        Bằng việc đăng ký, bạn đồng ý với <Link to="#" className="text-primary font-bold">Điều khoản</Link> và <Link to="#" className="text-primary font-bold">Chính sách bảo mật</Link> của chúng tôi.
+                        {t('auth.agree_terms')} <LocalizedLink to="#" className="text-primary font-bold">{t('auth.terms')}</LocalizedLink> {t('auth.and')} <LocalizedLink to="#" className="text-primary font-bold">{t('auth.privacy_policy')}</LocalizedLink> {t('auth.of_us')}
                     </p>
-                    <p style={{ marginTop: '1rem' }}>
-                        Đã có tài khoản? <Link to="/login" className="text-primary font-bold">Đăng nhập</Link>
-                    </p>
+
+                    <div className="text-center text-sm text-gray-600 mt-6">
+                        {t('auth.already_have_account')} <LocalizedLink to="/login" className="text-primary font-bold">{t('auth.btn_login_now')}</LocalizedLink>
+                    </div>
                 </div>
             </div>
         </div>

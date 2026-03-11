@@ -1,10 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { walletAPI, withdrawAPI } from '../services/api';
 import type { Wallet, Transaction } from '../types';
 import { CreditCard, History, Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, Plus, X, Copy, CheckCircle, Clock } from 'lucide-react';
+import { formatVND } from '../utils/currencyUtils';
 
 // CONSTANTS - REPLACE WITH YOUR ACTUAL INFO
 const BANK_INFO = {
@@ -19,6 +21,7 @@ const COMMON_BANKS = [
 ];
 
 const WalletPage = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const [amount, setAmount] = useState('');
@@ -88,7 +91,7 @@ const WalletPage = () => {
                 setLatestTxId("empty"); // Mark as initialized but empty
             }
         }
-    }, [transactions, isTopupModalOpen, latestTxId]);
+    }, [transactions, isTopupModalOpen, latestTxId, queryClient]);
 
     const handleTopup = (e: React.FormEvent) => {
         e.preventDefault();
@@ -116,7 +119,7 @@ const WalletPage = () => {
             await withdrawAPI.request(Number(withdrawAmount));
             setWithdrawStep('OTP');
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+            alert(error.response?.data?.message || t('common.error_occurred'));
         } finally {
             setIsSubmitting(false);
         }
@@ -131,28 +134,28 @@ const WalletPage = () => {
             setWithdrawAmount('');
             setOtp('');
             setBankDetails({ bankName: '', accountNumber: '', accountHolder: '' });
-            alert('Yêu cầu rút tiền thành công! Vui lòng chờ admin duyệt.');
+            alert(t('wallet.withdraw_success_msg'));
             queryClient.invalidateQueries({ queryKey: ['wallet'] });
             queryClient.invalidateQueries({ queryKey: ['transactions'] });
         } catch (error: any) {
-            alert(error.response?.data?.message || 'Xác thực thất bại');
+            alert(error.response?.data?.message || t('wallet.withdraw_verify_failed'));
         }
     };
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    const formatCurrency = (val: number) => formatVND(val);
 
-    const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString('vi-VN');
+    const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US');
 
     const transferContent = `NAPTIEN ${user?._id} `;
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.BANK_ID}-${BANK_INFO.ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_INFO.ACCOUNT_NAME)}`;
 
-    if (loadingWallet) return <div className="p-8 text-center">Đang tải ví...</div>;
+    if (loadingWallet) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
     return (
         <div className="w-full px-4 md:px-8 py-8">
             <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
                 <WalletIcon className="text-blue-600" size={32} />
-                Ví của tôi
+                {t('wallet.title')}
             </h1>
 
             {/* Wallet Balance Card */}
@@ -160,7 +163,7 @@ const WalletPage = () => {
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
 
                 <div className="relative z-10 w-full md:w-auto">
-                    <p className="text-blue-100 text-sm font-medium mb-1 uppercase tracking-wider">Số dư khả dụng</p>
+                    <p className="text-blue-100 text-sm font-medium mb-1 uppercase tracking-wider">{t('wallet.balance_label')}</p>
                     <div className="text-4xl md:text-5xl font-extrabold mb-2 text-white drop-shadow-sm">
                         {formatCurrency(wallet?.balance || 0)}
                     </div>
@@ -172,14 +175,14 @@ const WalletPage = () => {
                         className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-all flex items-center gap-2 shadow-lg active:scale-95"
                     >
                         <Plus size={20} />
-                        Nạp tiền
+                        {t('wallet.topup_btn')}
                     </button>
                     <button
                         onClick={() => setIsWithdrawModalOpen(true)}
                         className="bg-blue-500/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2 backdrop-blur-sm border border-white/20"
                     >
                         <ArrowUpRight size={20} />
-                        Rút tiền
+                        {t('wallet.withdraw_btn')}
                     </button>
                 </div>
             </div>
@@ -191,7 +194,7 @@ const WalletPage = () => {
                         <ArrowDownLeft size={24} />
                     </div>
                     <div>
-                        <p className="text-gray-500 text-sm font-medium">Tổng tiền nạp</p>
+                        <p className="text-gray-500 text-sm font-medium">{t('wallet.total_topup')}</p>
                         <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalTopup || 0)}</div>
                     </div>
                 </div>
@@ -200,7 +203,7 @@ const WalletPage = () => {
                         <CreditCard size={24} />
                     </div>
                     <div>
-                        <p className="text-gray-500 text-sm font-medium">Tổng tiền đã chi</p>
+                        <p className="text-gray-500 text-sm font-medium">{t('wallet.total_spent')}</p>
                         <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalSpent || 0)}</div>
                     </div>
                 </div>
@@ -209,7 +212,7 @@ const WalletPage = () => {
                         <ArrowUpRight size={24} />
                     </div>
                     <div>
-                        <p className="text-gray-500 text-sm font-medium">Tổng tiền đã rút</p>
+                        <p className="text-gray-500 text-sm font-medium">{t('wallet.total_withdrawn')}</p>
                         <div className="text-xl font-bold text-gray-900">{formatCurrency(wallet?.totalWithdrawn || 0)}</div>
                     </div>
                 </div>
@@ -220,23 +223,23 @@ const WalletPage = () => {
                 <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <History size={20} className="text-gray-500" />
-                        Lịch sử giao dịch
+                        {t('wallet.history_title')}
                     </h2>
                 </div>
 
                 {loadingTransactions ? (
-                    <div className="p-8 text-center text-gray-500">Đang tải lịch sử...</div>
+                    <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
                 ) : transactions?.length === 0 ? (
-                    <div className="p-12 text-center text-gray-400">Chưa có giao dịch nào</div>
+                    <div className="p-12 text-center text-gray-400">{t('wallet.no_transactions')}</div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
                                 <tr>
-                                    <th className="px-6 py-4 font-semibold">Loại giao dịch</th>
-                                    <th className="px-6 py-4 font-semibold">Số tiền</th>
-                                    <th className="px-6 py-4 font-semibold">Mô tả</th>
-                                    <th className="px-6 py-4 font-semibold">Thời gian</th>
+                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_type')}</th>
+                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_amount')}</th>
+                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_description')}</th>
+                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_time')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -250,7 +253,7 @@ const WalletPage = () => {
                                             </span>
                                         </td>
                                         <td className={`px-6 py-4 font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
-                                            {['TOPUP', 'REFUND'].includes(tx.type) ? '+' : ''}{formatCurrency(Math.abs(tx.amount))}
+                                            {tx.type === 'TOPUP' || tx.type === 'REFUND' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">{tx.description}</td>
                                         <td className="px-6 py-4 text-gray-500 font-medium">{formatDate(tx.createdAt)}</td>
@@ -268,7 +271,7 @@ const WalletPage = () => {
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col">
                         <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center shrink-0">
                             <h3 className="text-xl font-bold text-gray-800">
-                                {showQR ? 'Thông tin chuyển khoản' : 'Nạp tiền vào ví'}
+                                {showQR ? t('wallet.qr_title') : t('wallet.topup_modal_title')}
                             </h3>
                             <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600">
                                 <X size={24} />
@@ -279,7 +282,7 @@ const WalletPage = () => {
                             {!showQR ? (
                                 <form onSubmit={handleTopup} className="p-6">
                                     <div className="mb-6">
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn nạp (VNĐ)</label>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn nạp ({t('common.currency')})</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
@@ -290,9 +293,9 @@ const WalletPage = () => {
                                                 min="10000"
                                                 autoFocus
                                             />
-                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">VNĐ</span>
+                                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">{t('common.currency')}</span>
                                         </div>
-                                        <p className="text-xs text-gray-500 mt-2 ml-1">Tối thiểu 10.000 VNĐ</p>
+                                        <p className="text-xs text-gray-500 mt-2 ml-1">{t('wallet.min_topup')}</p>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-3 mb-6">
@@ -314,13 +317,13 @@ const WalletPage = () => {
                                             onClick={handleCloseModal}
                                             className="flex-1 px-4 py-3 rounded-xl border border-gray-200 font-bold text-gray-700 hover:bg-gray-50 transition-colors"
                                         >
-                                            Hủy
+                                            {t('wallet.topup_cancel')}
                                         </button>
                                         <button
                                             type="submit"
                                             className="flex-1 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors"
                                         >
-                                            Tiếp tục
+                                            {t('wallet.topup_continue')}
                                         </button>
                                     </div>
                                 </form>
@@ -331,45 +334,45 @@ const WalletPage = () => {
                                         <div className="bg-white p-2 rounded-xl border border-gray-200 inline-block shadow-sm">
                                             <img
                                                 src={qrUrl}
-                                                alt="Mã QR chuyển khoản"
+                                                alt={t('wallet.qr_title')}
                                                 className="w-64 h-64 object-contain"
                                             />
                                         </div>
-                                        <p className="text-sm text-gray-500 mt-2">Quét mã QR để thanh toán tự động</p>
+                                        <p className="text-sm text-gray-500 mt-2">{t('wallet.qr_subtitle')}</p>
                                     </div>
 
                                     {/* Bank Info Details */}
                                     <div className="bg-blue-50 rounded-xl p-4 mb-6 space-y-3 border border-blue-100">
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Ngân hàng</span>
+                                            <span className="text-gray-500">{t('wallet.bank_name')}</span>
                                             <span className="font-bold text-gray-900">{BANK_INFO.BANK_ID}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Số tài khoản</span>
+                                            <span className="text-gray-500">{t('wallet.account_no')}</span>
                                             <span className="font-bold text-gray-900 flex items-center gap-2">
                                                 {BANK_INFO.ACCOUNT_NO}
-                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(BANK_INFO.ACCOUNT_NO)} />
+                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => { navigator.clipboard.writeText(BANK_INFO.ACCOUNT_NO); alert(t('wallet.copy_success')); }} />
                                             </span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Chủ tài khoản</span>
+                                            <span className="text-gray-500">{t('wallet.account_holder')}</span>
                                             <span className="font-bold text-gray-900">{BANK_INFO.ACCOUNT_NAME}</span>
                                         </div>
                                         <div className="flex justify-between text-sm">
-                                            <span className="text-gray-500">Số tiền</span>
+                                            <span className="text-gray-500">{t('wallet.amount')}</span>
                                             <span className="font-bold text-blue-600">{formatCurrency(Number(amount))}</span>
                                         </div>
                                         <div className="flex justify-between text-sm pt-2 border-t border-blue-200">
-                                            <span className="text-gray-500">Nội dung CK</span>
+                                            <span className="text-gray-500">{t('wallet.transfer_content')}</span>
                                             <span className="font-bold text-red-600 flex items-center gap-2">
                                                 {transferContent}
-                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => navigator.clipboard.writeText(transferContent)} />
+                                                <Copy size={14} className="cursor-pointer text-blue-600" onClick={() => { navigator.clipboard.writeText(transferContent); alert(t('wallet.copy_success')); }} />
                                             </span>
                                         </div>
                                     </div>
 
                                     <div className="bg-yellow-50 text-yellow-800 text-xs p-3 rounded-lg mb-6">
-                                        <strong>Lưu ý:</strong> Vui lòng nhập chính xác nội dung chuyển khoản <strong>{transferContent}</strong> để tiền được cộng tự động vào ví.
+                                        <strong>{t('common.note')}:</strong> {t('wallet.qr_note')} <strong>{transferContent}</strong>.
                                     </div>
 
                                     <div className="text-center mt-4">
@@ -377,7 +380,7 @@ const WalletPage = () => {
                                             onClick={handleCloseModal}
                                             className="text-gray-500 hover:text-gray-700 font-medium text-sm underline"
                                         >
-                                            Đóng cửa sổ này
+                                            {t('wallet.qr_close')}
                                         </button>
                                     </div>
                                 </div>
@@ -403,10 +406,10 @@ const WalletPage = () => {
                         <div className="px-6 pt-6">
                             <div className="bg-gray-100 p-1 rounded-xl flex">
                                 <div className={`flex-1 py-2 text-center text-sm font-bold rounded-lg transition-all ${withdrawStep === 'FORM' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
-                                    1. Thông tin
+                                    {t('wallet.withdraw_step_1')}
                                 </div>
                                 <div className={`flex-1 py-2 text-center text-sm font-bold rounded-lg transition-all ${withdrawStep === 'OTP' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-400'}`}>
-                                    2. Xác thực
+                                    {t('wallet.withdraw_step_2')}
                                 </div>
                             </div>
                         </div>
@@ -415,12 +418,12 @@ const WalletPage = () => {
                             {withdrawStep === 'FORM' ? (
                                 <form onSubmit={handleInitiateWithdraw} className="space-y-6">
                                     <div>
-                                        <h4 className="text-lg font-bold text-gray-900 mb-2">Bước 1: Chi tiết rút tiền</h4>
-                                        <p className="text-gray-500 text-sm mb-6">Nhập số tiền và thông tin tài khoản nhận tiền.</p>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-2">{t('wallet.withdraw_info_title')}</h4>
+                                        <p className="text-gray-500 text-sm mb-6">{t('wallet.withdraw_info_subtitle')}</p>
 
                                         {/* Amount Input */}
                                         <div className="mb-6">
-                                            <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn rút</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">{t('wallet.withdraw_amount_label')}</label>
                                             <div className="relative group">
                                                 <input
                                                     type="number"
@@ -431,31 +434,31 @@ const WalletPage = () => {
                                                     className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 outline-none font-bold text-3xl text-gray-900 transition-all placeholder:text-gray-300"
                                                     placeholder="0"
                                                 />
-                                                <span className="absolute right-24 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">VNĐ</span>
+                                                <span className="absolute right-24 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xl">{t('common.currency')}</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => setWithdrawAmount(wallet?.balance?.toString() || '0')}
                                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded hover:bg-blue-100 transition-colors"
                                                 >
-                                                    TỐI ĐA
+                                                    {t('wallet.withdraw_max')}
                                                 </button>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-2">Khả dụng: <span className="font-bold text-gray-700">{formatCurrency(wallet?.balance || 0)}</span></p>
+                                            <p className="text-xs text-gray-500 mt-2">{t('wallet.withdraw_available')}: <span className="font-bold text-gray-700">{formatCurrency(wallet?.balance || 0)}</span></p>
                                             {Number(withdrawAmount) > (wallet?.balance || 0) && (
-                                                <p className="text-red-500 text-xs font-bold mt-1">⚠️ Số tiền rút vượt quá số dư khả dụng</p>
+                                                <p className="text-red-500 text-xs font-bold mt-1">⚠️ {t('wallet.withdraw_error_limit')}</p>
                                             )}
                                         </div>
 
                                         {/* Bank Info */}
                                         <div>
-                                            <label className="block text-sm font-bold text-gray-700 mb-2">Chọn tài khoản ngân hàng</label>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">{t('wallet.withdraw_bank_label')}</label>
 
                                             {/* Bank Form Fields styled as a 'New Account' card */}
                                             <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-4 space-y-3 relative overflow-hidden">
                                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                                                 <div className="grid grid-cols-2 gap-3">
                                                     <div className="col-span-2">
-                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Ngân hàng</label>
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">{t('wallet.bank_name')}</label>
                                                         <select
                                                             value={COMMON_BANKS.includes(bankDetails.bankName) ? bankDetails.bankName : 'other'}
                                                             onChange={(e) => {
@@ -467,11 +470,11 @@ const WalletPage = () => {
                                                             }}
                                                             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none mb-2"
                                                         >
-                                                            <option value="" disabled>Chọn ngân hàng</option>
+                                                            <option value="" disabled>{t('wallet.withdraw_bank_placeholder')}</option>
                                                             {COMMON_BANKS.map(bank => (
                                                                 <option key={bank} value={bank}>{bank}</option>
                                                             ))}
-                                                            <option value="other">Ngân hàng khác...</option>
+                                                            <option value="other">{t('wallet.withdraw_bank_other')}</option>
                                                         </select>
 
                                                         {(!COMMON_BANKS.includes(bankDetails.bankName) || bankDetails.bankName === '') && (
@@ -481,7 +484,7 @@ const WalletPage = () => {
                                                                 value={bankDetails.bankName}
                                                                 onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
                                                                 className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none animate-in fade-in slide-in-from-top-1"
-                                                                placeholder="Nhập tên ngân hàng..."
+                                                                placeholder={t('wallet.withdraw_bank_other_placeholder')}
                                                             />
                                                         )}
                                                     </div>
@@ -497,7 +500,7 @@ const WalletPage = () => {
                                                         />
                                                     </div>
                                                     <div className="col-span-2 md:col-span-1">
-                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Chủ tài khoản</label>
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">{t('wallet.withdraw_account_holder')}</label>
                                                         <input
                                                             type="text"
                                                             required
@@ -512,13 +515,12 @@ const WalletPage = () => {
                                         </div>
                                     </div>
 
-
                                     {/* Info Alert */}
                                     <div className="bg-blue-50 p-4 rounded-xl flex gap-3 items-start text-sm text-blue-800">
                                         <CheckCircle size={20} className="shrink-0 mt-0.5" />
                                         <div>
-                                            <p className="font-bold mb-1">Thời gian xử lý</p>
-                                            <p className="opacity-90">Yêu cầu rút tiền thường được xử lý trong 2-4 giờ làm việc. Phí giao dịch: <span className="font-bold">Miễn phí</span>.</p>
+                                            <p className="font-bold mb-1">{t('wallet.withdraw_processing_title')}</p>
+                                            <p className="opacity-90">{t('wallet.withdraw_processing_desc')} <span className="font-bold">{t('wallet.withdraw_fee_free')}</span>.</p>
                                         </div>
                                     </div>
 
@@ -530,7 +532,7 @@ const WalletPage = () => {
                                             disabled={isSubmitting}
                                             className="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50"
                                         >
-                                            Hủy
+                                            {t('common.cancel')}
                                         </button>
                                         <button
                                             type="submit"
@@ -540,11 +542,11 @@ const WalletPage = () => {
                                             {isSubmitting ? (
                                                 <>
                                                     <Clock size={18} className="animate-spin" />
-                                                    Đang xử lý...
+                                                    {t('common.processing')}
                                                 </>
                                             ) : (
                                                 <>
-                                                    Tiếp tục xác thực
+                                                    {t('wallet.withdraw_btn_verify')}
                                                     <ArrowUpRight size={18} />
                                                 </>
                                             )}
@@ -554,13 +556,13 @@ const WalletPage = () => {
                             ) : (
                                 <form onSubmit={handleVerifyWithdraw} className="space-y-6">
                                     <div>
-                                        <h4 className="text-lg font-bold text-gray-900 mb-2">Bước 2: Xác thực</h4>
-                                        <p className="text-gray-500 text-sm mb-6">Nhập mã OTP được gửi về email của bạn để xác nhận rút tiền.</p>
+                                        <h4 className="text-lg font-bold text-gray-900 mb-2">{t('wallet.withdraw_otp_title')}</h4>
+                                        <p className="text-gray-500 text-sm mb-6">{t('wallet.withdraw_otp_subtitle')}</p>
 
                                         <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
                                             <p className="text-sm text-yellow-800 flex items-center gap-2">
                                                 <Clock size={16} />
-                                                Mã OTP hết hạn sau 10 phút.
+                                                {t('wallet.withdraw_otp_expire')}
                                             </p>
                                         </div>
 
@@ -584,13 +586,13 @@ const WalletPage = () => {
                                             onClick={() => setWithdrawStep('FORM')}
                                             className="flex-1 py-3 px-6 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
                                         >
-                                            Quay lại
+                                            {t('wallet.withdraw_back')}
                                         </button>
                                         <button
                                             type="submit"
                                             className="flex-1 py-3 px-6 rounded-xl bg-green-500 text-white font-bold hover:bg-green-600 shadow-lg shadow-green-500/30 transition-all"
                                         >
-                                            Xác nhận rút tiền
+                                            {t('wallet.withdraw_confirm')}
                                         </button>
                                     </div>
                                 </form>
@@ -598,34 +600,31 @@ const WalletPage = () => {
                         </div>
                     </div>
                 </div>
-            )
-            }
+            )}
 
-            {/* Success Success Check Modal */}
-            {
-                showSuccess && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300 transform">
-                            <div className="p-8 text-center">
-                                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 animate-bounce">
-                                    <CheckCircle size={48} />
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h3>
-                                <p className="text-gray-500 mb-8">
-                                    Số tiền đã được cộng vào tài khoản của bạn.
-                                </p>
-                                <button
-                                    onClick={() => setShowSuccess(false)}
-                                    className="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
-                                >
-                                    Tuyệt vời
-                                </button>
+            {/* Success Modal */}
+            {showSuccess && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-300 transform">
+                        <div className="p-8 text-center">
+                            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 text-green-600 animate-bounce">
+                                <CheckCircle size={48} />
                             </div>
+                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('wallet.success_title')}</h3>
+                            <p className="text-gray-500 mb-8">
+                                {t('wallet.success_desc')}
+                            </p>
+                            <button
+                                onClick={() => setShowSuccess(false)}
+                                className="w-full px-6 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20"
+                            >
+                                {t('wallet.success_btn')}
+                            </button>
                         </div>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 };
 

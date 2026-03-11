@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Package, Home, Building2, User, LogOut, PlusCircle, MessageCircle, Shield, CreditCard, Crown, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -6,8 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { chatAPI } from '../services/api';
 import NotificationDropdown from './notifications/NotificationDropdown';
 import { useToast } from '../context/ToastContext';
+import LanguageSwitcher from './LanguageSwitcher';
+import LocalizedLink from './common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const Navbar = () => {
+    const { t } = useTranslation();
     const { user, isAuthenticated, logout } = useAuth();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const { success } = useToast();
@@ -26,30 +29,30 @@ const Navbar = () => {
     const handleLogout = () => {
         logout();
         setIsDropdownOpen(false);
-        success('Đăng xuất thành công!');
+        success(t('common.success_logout'));
     };
 
     return (
         <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
             <div className="w-full px-4 md:px-8 h-[72px] flex justify-between items-center">
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-2">
+                <LocalizedLink to="/" className="flex items-center gap-2">
                     <div className="bg-blue-600 p-1.5 rounded-lg text-white">
                         <Package size={24} />
                     </div>
                     <span className="text-xl font-bold text-gray-900 tracking-tight">EstateMarket</span>
-                </Link>
+                </LocalizedLink>
 
                 {/* Centered Navigation */}
                 <div className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
-                    <Link to="/buy" className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors">
+                    <LocalizedLink to="/buy" className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors">
                         <Home size={18} />
-                        <span>Mua bán</span>
-                    </Link>
-                    <Link to="/rent" className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors">
+                        <span>{t('navbar.buy')}</span>
+                    </LocalizedLink>
+                    <LocalizedLink to="/rent" className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium transition-colors">
                         <Building2 size={18} />
-                        <span>Cho thuê</span>
-                    </Link>
+                        <span>{t('navbar.rent')}</span>
+                    </LocalizedLink>
                 </div>
 
                 {/* Right Actions */}
@@ -57,32 +60,34 @@ const Navbar = () => {
                     {isAuthenticated ? (
                         // Logged In State
                         <div className="flex items-center gap-4">
-                            <Link to="/post-ad" className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                            <LocalizedLink to="/post-ad" className="hidden md:flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-lg transition-all shadow-lg shadow-blue-600/20">
                                 <PlusCircle size={18} />
-                                <span className="hidden md:inline">Đăng tin</span>
-                            </Link>
+                                <span className="hidden md:inline">{t('navbar.post_ad')}</span>
+                            </LocalizedLink>
 
                             <NotificationDropdown />
 
-                            <Link
+                            <LocalizedLink
                                 to="/loyalty"
                                 className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-200 hover:bg-amber-100 transition-all group"
-                                title="Điểm thưởng"
+                                title={t('navbar.points')}
                             >
                                 <div className="p-1 bg-amber-500 rounded-full text-white group-hover:scale-110 transition-transform">
                                     <Award size={12} fill="currentColor" />
                                 </div>
                                 <span className="text-xs font-black text-amber-700">{user?.points || 0}</span>
-                            </Link>
+                            </LocalizedLink>
 
-                            <Link to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
+                            <LocalizedLink to="/chat" className="text-gray-500 hover:bg-gray-100 p-2 rounded-full transition-colors relative">
                                 <MessageCircle size={24} />
                                 {unreadCount > 0 && (
                                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
                                         {unreadCount > 9 ? '9+' : unreadCount}
                                     </span>
                                 )}
-                            </Link>
+                            </LocalizedLink>
+
+                            <LanguageSwitcher />
 
                             {/* User Dropdown */}
                             <div className="relative">
@@ -135,55 +140,55 @@ const Navbar = () => {
 
                                             {/* Links */}
                                             <div className="py-2">
-                                                <Link
+                                                <LocalizedLink
                                                     to="/profile"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <User size={18} className="text-gray-400" />
-                                                    Thông tin cá nhân
-                                                </Link>
-                                                <Link
+                                                    {t('navbar.profile')}
+                                                </LocalizedLink>
+                                                <LocalizedLink
                                                     to="/profile?tab=posts"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <PlusCircle size={18} className="text-gray-400" />
-                                                    Tin của tôi
-                                                </Link>
-                                                <Link
+                                                    {t('navbar.my_posts')}
+                                                </LocalizedLink>
+                                                <LocalizedLink
                                                     to="/loyalty"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <Award size={18} className="text-gray-400" />
-                                                    Điểm thưởng
-                                                </Link>
-                                                <Link
+                                                    {t('navbar.points')}
+                                                </LocalizedLink>
+                                                <LocalizedLink
                                                     to="/profile?tab=wallet"
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <CreditCard size={18} className="text-gray-400" />
-                                                    Ví của tôi
-                                                </Link>
-                                                <Link
-                                                    to={`/user/${user?._id}`}
+                                                    {t('navbar.wallet')}
+                                                </LocalizedLink>
+                                                <LocalizedLink
+                                                    to={user ? `/user/${user._id || (user as any).id}` : '#'}
                                                     className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                     onClick={() => setIsDropdownOpen(false)}
                                                 >
                                                     <Home size={18} className="text-gray-400" />
-                                                    Trang cá nhân (Public)
-                                                </Link>
+                                                    {t('navbar.public_profile')}
+                                                </LocalizedLink>
                                                 {user?.role === 'ADMIN' && (
-                                                    <Link
+                                                    <LocalizedLink
                                                         to="/admin"
                                                         className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                                                         onClick={() => setIsDropdownOpen(false)}
                                                     >
                                                         <Shield size={18} className="text-gray-400" />
-                                                        Quản trị viên
-                                                    </Link>
+                                                        {t('navbar.admin')}
+                                                    </LocalizedLink>
                                                 )}
                                             </div>
 
@@ -194,7 +199,7 @@ const Navbar = () => {
                                                     className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                                                 >
                                                     <LogOut size={18} />
-                                                    Đăng xuất
+                                                    {t('navbar.logout')}
                                                 </button>
                                             </div>
                                         </div>
@@ -204,18 +209,19 @@ const Navbar = () => {
                         </div>
                     ) : (
                         // Guest State
-                        <>
-                            <Link to="/post-ad" className="hidden md:block text-gray-900 font-bold hover:text-blue-600 transition-colors">
-                                Đăng tin
-                            </Link>
+                        <div className="flex items-center gap-4">
+                            <LanguageSwitcher />
+                            <LocalizedLink to="/post-ad" className="hidden md:block text-gray-900 font-bold hover:text-blue-600 transition-colors">
+                                {t('navbar.post_ad')}
+                            </LocalizedLink>
                             <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
-                            <Link to="/login" className="font-bold text-gray-700 hover:text-blue-600 transition-colors">
-                                Đăng nhập
-                            </Link>
-                            <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-blue-600/20">
-                                Đăng ký
-                            </Link>
-                        </>
+                            <LocalizedLink to="/login" className="font-bold text-gray-700 hover:text-blue-600 transition-colors">
+                                {t('navbar.login')}
+                            </LocalizedLink>
+                            <LocalizedLink to="/register" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-blue-600/20">
+                                {t('navbar.register')}
+                            </LocalizedLink>
+                        </div>
                     )}
                 </div>
             </div>

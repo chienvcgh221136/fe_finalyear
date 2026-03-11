@@ -113,7 +113,7 @@ export interface Wallet {
 export interface Transaction {
     _id: string;
     userId: string;
-    type: 'TOPUP' | 'VIP_PURCHASE' | 'POST_FEE';
+    type: 'TOPUP' | 'VIP_PURCHASE' | 'POST_FEE' | 'WITHDRAWAL' | 'REFUND';
     amount: number;
     balanceAfter: number;
     description: string;

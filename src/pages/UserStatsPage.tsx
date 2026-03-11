@@ -3,11 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { statsAPI } from '../services/api';
 import type { UserStats } from '../types';
-import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Bar, Area, CartesianGrid, XAxis, YAxis, Legend } from 'recharts';
-import { LayoutDashboard, Eye, MessageSquare, DollarSign, Package, ArrowUpCircle, TrendingUp, Users, Target, Activity } from 'lucide-react';
+import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ComposedChart, Bar, Area, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Eye, DollarSign, Package, ArrowUpCircle, TrendingUp, Users, Target, Activity } from 'lucide-react';
 import UpgradeWizard from '../components/vip/UpgradeWizard';
+import { useTranslation } from 'react-i18next';
+import { formatVND } from '../utils/currencyUtils';
 
 const UserStatsPage = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -19,18 +22,18 @@ const UserStatsPage = () => {
         },
     });
 
-    if (isLoading) return <div className="p-12 text-center text-gray-500 animate-pulse">Đang tải dữ liệu phân tích...</div>;
+    if (isLoading) return <div className="p-12 text-center text-gray-500 animate-pulse">{t('stats.loading')}</div>;
 
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
     const postStatusData = [
-        { name: 'Đang hiển thị', value: stats?.activePosts || 0 },
-        { name: 'Đã bán', value: stats?.soldPosts || 0 },
-        { name: 'VIP', value: stats?.vipPosts || 0 },
-        { name: 'Khác', value: (stats?.totalPosts || 0) - (stats?.activePosts || 0) - (stats?.soldPosts || 0) }
+        { name: t('stats.status_active'), value: stats?.activePosts || 0 },
+        { name: t('stats.status_sold'), value: stats?.soldPosts || 0 },
+        { name: t('stats.status_vip'), value: stats?.vipPosts || 0 },
+        { name: t('stats.status_other'), value: (stats?.totalPosts || 0) - (stats?.activePosts || 0) - (stats?.soldPosts || 0) }
     ].filter(i => i.value > 0);
 
-    const formatCurrency = (val: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
+    const formatCurrency = (val: number) => formatVND(val);
 
     return (
         <div className="w-full px-4 md:px-0 py-4 relative">
@@ -39,13 +42,13 @@ const UserStatsPage = () => {
                 <div>
                     <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
                         <Activity className="text-blue-600" size={32} />
-                        Bảng điều khiển phân tích
+                        {t('stats.dashboard_title')}
                     </h1>
-                    <p className="text-gray-500 mt-1">Theo dõi hiệu quả đăng tin và tương tác khách hàng của bạn.</p>
+                    <p className="text-gray-500 mt-1">{t('stats.dashboard_subtitle')}</p>
                 </div>
                 <div className="flex items-center gap-2 text-xs font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full w-fit">
                     <TrendingUp size={14} />
-                    Cập nhật thời gian thực
+                    {t('stats.realtime_update')}
                 </div>
             </div>
 
@@ -64,23 +67,23 @@ const UserStatsPage = () => {
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-amber-600 font-bold text-sm tracking-wider uppercase">Premium Status</span>
+                                        <span className="text-amber-600 font-bold text-sm tracking-wider uppercase">{t('stats.premium_status')}</span>
                                         <span className="h-1 w-1 bg-amber-300 rounded-full"></span>
-                                        <span className="text-gray-400 text-xs">{user.vip.vipType.toUpperCase()} Member</span>
+                                        <span className="text-gray-400 text-xs">{t('stats.member_type', { type: user.vip.vipType.toUpperCase() })}</span>
                                     </div>
                                     <h2 className="text-3xl font-black text-gray-900 mb-2">
                                         {user.vip.vipType}
                                     </h2>
                                     <div className="flex flex-wrap items-center gap-4 text-sm font-medium">
                                         <div className="flex items-center gap-1.5 text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">
-                                            <span className="text-xs uppercase font-bold tracking-tight">Hết hạn:</span>
+                                            <span className="text-xs uppercase font-bold tracking-tight">{t('stats.expired_at')}:</span>
                                             {(() => {
                                                 const end = new Date(user.vip.expiredAt || '');
-                                                return end.toLocaleDateString('vi-VN');
+                                                return end.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US');
                                             })()}
                                         </div>
                                         <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
-                                            <span className="text-xs uppercase font-bold tracking-tight">Priority Level:</span>
+                                            <span className="text-xs uppercase font-bold tracking-tight">{t('stats.priority_level')}:</span>
                                             {user.vip.priorityScore}
                                         </div>
                                     </div>
@@ -93,7 +96,7 @@ const UserStatsPage = () => {
                                     className="w-full md:w-auto px-8 py-4 bg-gray-900 text-white font-black rounded-2xl shadow-xl hover:bg-black transition-all transform hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-3"
                                 >
                                     <ArrowUpCircle size={22} className="text-amber-400" />
-                                    Nâng cấp ngay
+                                    {t('stats.btn_upgrade')}
                                 </button>
                             )}
                         </div>
@@ -104,10 +107,10 @@ const UserStatsPage = () => {
             {/* KPI Cards section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 {[
-                    { label: 'Tin đăng', value: stats?.totalPosts, icon: Package, color: 'blue', desc: 'Tổng số tin đã đăng' },
-                    { label: 'Lượt xem', value: stats?.totalViews, icon: Eye, color: 'green', desc: 'Tổng lượt tiếp cận' },
-                    { label: 'Tiếp cận', value: stats?.totalLeads, icon: Users, color: 'purple', desc: 'Khách hàng quan tâm' },
-                    { label: 'Chi tiêu', value: formatCurrency(stats?.totalSpent || 0), icon: DollarSign, color: 'red', desc: 'Tổng chi phí dịch vụ' },
+                    { label: t('stats.kpi_posts'), value: stats?.totalPosts, icon: Package, color: 'blue', desc: t('stats.kpi_posts_desc') },
+                    { label: t('stats.kpi_views'), value: stats?.totalViews, icon: Eye, color: 'green', desc: t('stats.kpi_views_desc') },
+                    { label: t('stats.kpi_leads'), value: stats?.totalLeads, icon: Users, color: 'purple', desc: t('stats.kpi_leads_desc') },
+                    { label: t('stats.kpi_spent'), value: formatCurrency(stats?.totalSpent || 0), icon: DollarSign, color: 'red', desc: t('stats.kpi_spent_desc') },
                 ].map((kpi, i) => {
                     const colorClasses: Record<string, string> = {
                         blue: 'bg-blue-50 text-blue-600',
@@ -141,12 +144,12 @@ const UserStatsPage = () => {
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Xu hướng tương tác</h3>
-                            <p className="text-sm text-gray-500 font-medium">Hoạt động trong 7 ngày gần nhất</p>
+                            <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{t('stats.chart_interaction_trend')}</h3>
+                            <p className="text-sm text-gray-500 font-medium">{t('stats.chart_interaction_subtitle')}</p>
                         </div>
                         <div className="flex gap-2">
-                            <div className="w-3 h-3 rounded-full bg-blue-500" title="Tin đăng"></div>
-                            <div className="w-3 h-3 rounded-full bg-emerald-500" title="Lượt xem"></div>
+                            <div className="w-3 h-3 rounded-full bg-blue-500" title={t('stats.kpi_posts')}></div>
+                            <div className="w-3 h-3 rounded-full bg-emerald-500" title={t('stats.kpi_views')}></div>
                         </div>
                     </div>
                     <div className="flex-1 min-h-0">
@@ -176,7 +179,7 @@ const UserStatsPage = () => {
                                     cursor={{ stroke: '#f3f4f6', strokeWidth: 2 }}
                                 />
                                 <Bar
-                                    name="Tin đăng"
+                                    name={t('stats.kpi_posts')}
                                     dataKey="posts"
                                     fill="#3b82f6"
                                     radius={[6, 6, 6, 6]}
@@ -184,7 +187,7 @@ const UserStatsPage = () => {
                                 />
                                 <Area
                                     type="monotone"
-                                    name="Lượt xem"
+                                    name={t('stats.kpi_views')}
                                     dataKey="views"
                                     fill="url(#colorViewsNew)"
                                     stroke="#10b981"
@@ -192,7 +195,7 @@ const UserStatsPage = () => {
                                 />
                                 <Area
                                     type="monotone"
-                                    name="Leads"
+                                    name={t('stats.kpi_leads')}
                                     dataKey="leads"
                                     stroke="#8b5cf6"
                                     strokeWidth={3}
@@ -207,8 +210,8 @@ const UserStatsPage = () => {
                 {/* Distribution Chart */}
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
                     <div className="mb-8">
-                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Phân bổ tin đăng</h3>
-                        <p className="text-sm text-gray-500 font-medium">Tỷ lệ theo trạng thái hiển thị</p>
+                        <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{t('stats.chart_distribution_title')}</h3>
+                        <p className="text-sm text-gray-500 font-medium">{t('stats.chart_distribution_subtitle')}</p>
                     </div>
                     <div className="flex-1 flex flex-col md:flex-row items-center gap-8 min-h-0">
                         <div className="flex-1 w-full h-full relative">
@@ -236,7 +239,7 @@ const UserStatsPage = () => {
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span className="text-3xl font-black text-gray-900">{stats?.totalPosts || 0}</span>
-                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">Tông cộng</span>
+                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">{t('stats.total_count')}</span>
                             </div>
                         </div>
                         <div className="w-full md:w-32 space-y-4">

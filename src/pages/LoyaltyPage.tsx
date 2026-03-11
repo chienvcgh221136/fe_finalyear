@@ -4,14 +4,18 @@ import { pointService } from '../services/pointService';
 import { useAuth } from '../context/AuthContext';
 import { Gift, TrendingUp, Users, Clock, ChevronRight, Award, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLocalizedPath } from '../utils/pathUtils';
+import { useTranslation } from 'react-i18next';
 import EarnPointsModal from '../components/modals/EarnPointsModal';
 import PointTermsModal from '../components/modals/PointTermsModal';
 import UseItemModal from '../components/modals/UseItemModal';
 import { useToast } from '../context/ToastContext';
 
 const LoyaltyPage = () => {
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const localizePath = useLocalizedPath();
     const { success, error } = useToast();
     const queryClient = useQueryClient();
 
@@ -33,7 +37,7 @@ const LoyaltyPage = () => {
             setSelectedItem(null);
         },
         onError: (err: any) => {
-            error(err.response?.data?.message || "Sử dụng vật phẩm thất bại");
+            error(err.response?.data?.message || t('common.error'));
         }
     });
 
@@ -60,10 +64,26 @@ const LoyaltyPage = () => {
         }
     };
 
-    if (isLoading) return <div className="p-8 text-center">Loading...</div>;
+    if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
     const { balance, history, inventory = {}, expiringSoon = { total: 0, batches: [] } } = pointData || { balance: 0, history: [], inventory: {}, expiringSoon: { total: 0, batches: [] } };
     const filteredHistory = (history || []).filter((log: any) => log.points > 0 || log.action === 'EXPIRED');
+
+    const formatAction = (action: string) => {
+        switch (action) {
+            case 'POST_CREATED': return t('loyalty.action_post_created');
+            case 'VIP_PURCHASE': return t('loyalty.action_vip_purchase');
+            case 'DAILY_LOGIN': return t('loyalty.action_daily_login');
+            case 'REDEEM_LEAD_CREDIT': return t('loyalty.action_redeem_lead');
+            case 'REDEEM_ITEM_POST_PUSH': return t('loyalty.action_redeem_push');
+            case 'REDEEM_ITEM_VIP_BRONZE_1DAY': return t('loyalty.action_redeem_vip_bronze');
+            case 'REDEEM_ITEM_VIP_SILVER_3DAY': return t('loyalty.action_redeem_vip_silver');
+            case 'REDEEM_ITEM_VIP_GOLD_7DAY': return t('loyalty.action_redeem_vip_gold');
+            case 'EXPIRED': return t('loyalty.action_expired');
+            case 'ADMIN_ADJUSTMENT': return t('loyalty.action_admin');
+            default: return action;
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -81,10 +101,10 @@ const LoyaltyPage = () => {
                         <div className="text-center mb-6">
                             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full mb-3 border border-white/20">
                                 <Award size={12} className="text-yellow-300" />
-                                <p className="text-blue-50 font-medium tracking-wide text-[10px] uppercase">Hội viên EstateHub</p>
+                                <p className="text-blue-50 font-medium tracking-wide text-[10px] uppercase">{t('loyalty.member_title')}</p>
                             </div>
-                            <h1 className="text-2xl font-bold mb-0.5">Xin chào, {user?.name}!</h1>
-                            <p className="text-sm text-blue-100 opacity-70">Cảm ơn bạn đã đồng hành cùng chúng tôi</p>
+                            <h1 className="text-2xl font-bold mb-0.5">{t('loyalty.welcome', { name: user?.name })}</h1>
+                            <p className="text-sm text-blue-100 opacity-70">{t('loyalty.thanks')}</p>
                         </div>
 
                         <div className="flex justify-center items-center relative py-2">
@@ -93,40 +113,40 @@ const LoyaltyPage = () => {
                                 <div className="absolute -inset-1 bg-gradient-to-r from-yellow-300 to-yellow-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
                                 <div className="relative w-40 h-40 rounded-full border-4 border-white/10 flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md shadow-xl">
                                     <Award size={24} className="mb-1 text-yellow-300 drop-shadow-lg" />
-                                    <span className="text-4xl font-black text-white tracking-tight drop-shadow-md">{balance}</span>
-                                    <span className="text-[10px] font-bold text-blue-100 mt-1 uppercase tracking-widest opacity-80">Điểm tiêu dùng</span>
+                                    <span className="text-4xl font-black text-white tracking-tight drop-shadow-md">{balance.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
+                                    <span className="text-[10px] font-bold text-blue-100 mt-1 uppercase tracking-widest opacity-80">{t('loyalty.balance_label')}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Tighter Quick Stats Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8 w-full max-w-2xl mx-auto text-white">
-                            <div onClick={() => navigate('/loyalty/redeem')} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
+                            <div onClick={() => navigate(localizePath('/loyalty/redeem'))} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
                                 <div className="w-8 h-8 mx-auto mb-2 bg-blue-500/30 rounded-full flex items-center justify-center">
                                     <Gift size={16} className="text-white" />
                                 </div>
-                                <span className="text-xs font-bold block">Đổi quà</span>
+                                <span className="text-xs font-bold block">{t('loyalty.btn_redeem')}</span>
                             </div>
 
                             <div onClick={() => setShowTasks(true)} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
                                 <div className="w-8 h-8 mx-auto mb-2 bg-indigo-500/30 rounded-full flex items-center justify-center">
                                     <Award size={16} className="text-white" />
                                 </div>
-                                <span className="text-xs font-bold block">Nhiệm vụ</span>
+                                <span className="text-xs font-bold block">{t('loyalty.btn_tasks')}</span>
                             </div>
 
                             <div onClick={() => scrollToSection('history-section')} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
                                 <div className="w-8 h-8 mx-auto mb-2 bg-emerald-500/30 rounded-full flex items-center justify-center">
                                     <Clock size={16} className="text-white" />
                                 </div>
-                                <span className="text-xs font-bold block">Lịch sử</span>
+                                <span className="text-xs font-bold block">{t('loyalty.btn_history')}</span>
                             </div>
 
                             <div onClick={() => setShowTerms(true)} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl p-3 text-center cursor-pointer hover:bg-white/20 hover:-translate-y-0.5 transition duration-300">
                                 <div className="w-8 h-8 mx-auto mb-2 bg-amber-500/30 rounded-full flex items-center justify-center">
                                     <ShieldCheck size={16} className="text-white" />
                                 </div>
-                                <span className="text-xs font-bold block">Điều khoản</span>
+                                <span className="text-xs font-bold block">{t('loyalty.btn_terms')}</span>
                             </div>
                         </div>
                     </div>
@@ -143,10 +163,15 @@ const LoyaltyPage = () => {
                             </div>
                             <div className="flex-1">
                                 <h4 className="text-orange-900 font-bold mb-1">
-                                    {expiringSoon.total.toLocaleString()} điểm sắp hết hạn
+                                    {t('loyalty.expiring_warning', { count: expiringSoon.total.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') })}
                                 </h4>
                                 <p className="text-orange-700 text-sm leading-relaxed">
-                                    Bạn đang có {expiringSoon.total.toLocaleString()} điểm sẽ hết hạn vào {expiringSoon.expiryDay}/{expiringSoon.expiryMonth}{expiringSoon.year ? `/${expiringSoon.year}` : ''} tới đây. Hãy tranh thủ đổi lấy những phần quà hấp dẫn trước khi quá hạn nhé.
+                                    {t('loyalty.expiring_desc', {
+                                        total: expiringSoon.total.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US'),
+                                        expiryDay: expiringSoon.expiryDay,
+                                        expiryMonth: expiringSoon.expiryMonth,
+                                        year: expiringSoon.year ? `/${expiringSoon.year}` : ''
+                                    })}
                                 </p>
                             </div>
                         </div>
@@ -157,10 +182,10 @@ const LoyaltyPage = () => {
                 <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                            <Gift size={20} className="text-gray-400" /> Kho quà của bạn
+                            <Gift size={20} className="text-gray-400" /> {t('loyalty.inventory_title')}
                         </h3>
-                        <button onClick={() => navigate('/loyalty/redeem')} className="text-sm text-blue-600 font-bold hover:underline">
-                            Đổi thêm quà
+                        <button onClick={() => navigate(localizePath('/loyalty/redeem'))} className="text-sm text-blue-600 font-bold hover:underline">
+                            {t('loyalty.inventory_redeem_more')}
                         </button>
                     </div>
 
@@ -168,37 +193,37 @@ const LoyaltyPage = () => {
                         <InventoryItem
                             icon={TrendingUp}
                             color="bg-cyan-100 text-cyan-600"
-                            label="Đẩy tin"
+                            label={t('loyalty.item_push')}
                             count={inventory.postPush || 0}
-                            onClick={() => handleItemClick('ITEM_POST_PUSH', 'Đẩy tin', TrendingUp, 'bg-cyan-100 text-cyan-600', inventory.postPush)}
+                            onClick={() => handleItemClick('ITEM_POST_PUSH', t('loyalty.item_push'), TrendingUp, 'bg-cyan-100 text-cyan-600', inventory.postPush)}
                         />
                         <InventoryItem
                             icon={Users}
                             color="bg-green-100 text-green-600"
-                            label="Xem Lead"
+                            label={t('loyalty.item_lead')}
                             count={inventory.leadCredit || 0}
-                            onClick={() => handleItemClick('LEAD_CREDIT', 'Xem Lead', Users, 'bg-green-100 text-green-600', inventory.leadCredit)}
+                            onClick={() => handleItemClick('LEAD_CREDIT', t('loyalty.item_lead'), Users, 'bg-green-100 text-green-600', inventory.leadCredit)}
                         />
                         <InventoryItem
                             icon={Award}
                             color="bg-amber-100 text-amber-700"
-                            label="VIP Bronze (1 Ngày)"
+                            label={t('loyalty.item_vip_bronze')}
                             count={inventory.vipBronze1Day || 0}
-                            onClick={() => handleItemClick('ITEM_VIP_BRONZE_1DAY', 'VIP Bronze (1 Ngày)', Award, 'bg-amber-100 text-amber-700', inventory.vipBronze1Day)}
+                            onClick={() => handleItemClick('ITEM_VIP_BRONZE_1DAY', t('loyalty.item_vip_bronze'), Award, 'bg-amber-100 text-amber-700', inventory.vipBronze1Day)}
                         />
                         <InventoryItem
                             icon={Award}
                             color="bg-gray-200 text-gray-600"
-                            label="VIP Silver (3 Ngày)"
+                            label={t('loyalty.item_vip_silver')}
                             count={inventory.vipSilver3Day || 0}
-                            onClick={() => handleItemClick('ITEM_VIP_SILVER_3DAY', 'VIP Silver (3 Ngày)', Award, 'bg-gray-200 text-gray-600', inventory.vipSilver3Day)}
+                            onClick={() => handleItemClick('ITEM_VIP_SILVER_3DAY', t('loyalty.item_vip_silver'), Award, 'bg-gray-200 text-gray-600', inventory.vipSilver3Day)}
                         />
                         <InventoryItem
                             icon={Award}
                             color="bg-yellow-100 text-yellow-600"
-                            label="VIP Gold (7 Ngày)"
+                            label={t('loyalty.item_vip_gold')}
                             count={inventory.vipGold7Day || 0}
-                            onClick={() => handleItemClick('ITEM_VIP_GOLD_7DAY', 'VIP Gold (7 Ngày)', Award, 'bg-yellow-100 text-yellow-600', inventory.vipGold7Day)}
+                            onClick={() => handleItemClick('ITEM_VIP_GOLD_7DAY', t('loyalty.item_vip_gold'), Award, 'bg-yellow-100 text-yellow-600', inventory.vipGold7Day)}
                         />
                     </div>
                 </div>
@@ -206,14 +231,14 @@ const LoyaltyPage = () => {
                 {/* Redeem Link Section */}
                 <div id="redeem-section" className="scroll-mt-24">
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 hover:shadow-lg transition cursor-pointer"
-                        onClick={() => navigate('/loyalty/redeem')}
+                        onClick={() => navigate(localizePath('/loyalty/redeem'))}
                     >
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Kho quà tặng & Dịch vụ</h2>
-                            <p className="text-gray-500">Sử dụng điểm tích lũy để đổi lấy các lượt đăng tin, xem lead và quyền lợi VIP.</p>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('loyalty.redeem_banner_title')}</h2>
+                            <p className="text-gray-500">{t('loyalty.redeem_banner_desc')}</p>
                         </div>
                         <button className="bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition flex items-center gap-2 whitespace-nowrap">
-                            Khám phá ngay <ChevronRight size={20} />
+                            {t('loyalty.redeem_banner_btn')} <ChevronRight size={20} />
                         </button>
                     </div>
                 </div>
@@ -223,23 +248,23 @@ const LoyaltyPage = () => {
                     <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <div>
                             <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-                                <Clock size={20} className="text-gray-400" /> Lịch sử hoạt động
+                                <Clock size={20} className="text-gray-400" /> {t('loyalty.history_title')}
                             </h3>
-                            <p className="text-gray-500 text-sm mt-1">Theo dõi biến động số dư của bạn</p>
+                            <p className="text-gray-500 text-sm mt-1">{t('loyalty.history_subtitle')}</p>
                         </div>
                         <select className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none shadow-sm">
-                            <option>Gần đây nhất</option>
-                            <option>Tháng này</option>
-                            <option>Tháng trước</option>
+                            <option>{t('loyalty.history_filter_recent')}</option>
+                            <option>{t('loyalty.history_filter_month')}</option>
+                            <option>{t('loyalty.history_filter_last_month')}</option>
                         </select>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-100/50 text-gray-500 font-semibold uppercase tracking-wider text-xs">
                                 <tr>
-                                    <th className="px-8 py-5">Hoạt động</th>
-                                    <th className="px-8 py-5">Thời gian</th>
-                                    <th className="px-8 py-5 text-right">Điểm</th>
+                                    <th className="px-8 py-5">{t('loyalty.col_action')}</th>
+                                    <th className="px-8 py-5">{t('loyalty.col_time')}</th>
+                                    <th className="px-8 py-5 text-right">{t('loyalty.col_points')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -249,11 +274,11 @@ const LoyaltyPage = () => {
                                             {formatAction(log.action)}
                                         </td>
                                         <td className="px-8 py-5 text-gray-500">
-                                            {new Date(log.createdAt).toLocaleDateString('vi-VN')} <span className="text-gray-300 mx-2">|</span> {new Date(log.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(log.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} <span className="text-gray-300 mx-2">|</span> {new Date(log.createdAt).toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                                         </td>
                                         <td className="px-8 py-5 text-right font-bold text-base flex flex-col items-end">
                                             <div className={`${log.type === 'EARN' ? 'text-green-600' : 'text-orange-500'}`}>
-                                                {log.type === 'EARN' ? '+' : '-'}{log.points}
+                                                {log.type === 'EARN' ? '+' : '-'}{log.points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                             </div>
                                         </td>
                                     </tr>
@@ -263,7 +288,7 @@ const LoyaltyPage = () => {
                                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                                 <Clock size={32} className="text-gray-300" />
                                             </div>
-                                            Chưa có lịch sử giao dịch nào
+                                            {t('loyalty.no_history')}
                                         </td>
                                     </tr>
                                 )}
@@ -302,21 +327,5 @@ const InventoryItem = ({ icon: Icon, color, label, count, onClick }: any) => (
         <span className={`font-extrabold text-xl ${count > 0 ? 'text-gray-900' : 'text-gray-400'}`}>{count}</span>
     </div>
 );
-
-const formatAction = (action: string) => {
-    switch (action) {
-        case 'POST_CREATED': return 'Đăng tin mới';
-        case 'VIP_PURCHASE': return 'Mua/Gia hạn VIP';
-        case 'DAILY_LOGIN': return 'Điểm danh hàng ngày';
-        case 'REDEEM_LEAD_CREDIT': return 'Đổi lượt xem Lead';
-        case 'REDEEM_ITEM_POST_PUSH': return 'Đổi lượt Đẩy Tin';
-        case 'REDEEM_ITEM_VIP_BRONZE_1DAY': return 'Đổi VIP Bronze 1 Ngày';
-        case 'REDEEM_ITEM_VIP_SILVER_3DAY': return 'Đổi VIP Silver 3 Ngày';
-        case 'REDEEM_ITEM_VIP_GOLD_7DAY': return 'Đổi VIP Gold 7 Ngày';
-        case 'EXPIRED': return 'Điểm hết hạn';
-        case 'ADMIN_ADJUSTMENT': return 'Admin điều chỉnh';
-        default: return action;
-    }
-};
 
 export default LoyaltyPage;

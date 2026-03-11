@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import LocalizedLink from '../components/common/LocalizedLink';
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -8,6 +10,7 @@ import { useToast } from '../context/ToastContext';
 import ForgotPasswordModal from '../components/modals/ForgotPasswordModal';
 
 const Login = () => {
+    const { t } = useTranslation();
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const [showForgotModal, setShowForgotModal] = useState(false);
@@ -20,16 +23,16 @@ const Login = () => {
             if (credentialResponse.credential) {
                 const result = await googleLogin(credentialResponse.credential);
                 if (result.success) {
-                    success('Đăng nhập Google thành công! Đang chuyển hướng...');
+                    success(t('auth.login_google_success'));
                     setTimeout(() => {
                         navigate('/');
                     }, 1000);
                 } else {
-                    error(result.error || 'Đăng nhập Google thất bại');
+                    error(result.error || t('auth.login_google_error'));
                 }
             }
         } catch (err) {
-            error('Đăng nhập Google thất bại');
+            error(t('auth.login_google_error'));
         }
     };
 
@@ -37,15 +40,15 @@ const Login = () => {
         try {
             const result = await login(data.email, data.password);
             if (result.success) {
-                success('Đăng nhập thành công! Đang chuyển hướng...');
+                success(t('auth.login_success'));
                 setTimeout(() => {
                     navigate('/');
                 }, 1000);
             } else {
-                error(result.error || 'Đăng nhập thất bại');
+                error(result.error || t('auth.login_error'));
             }
         } catch (err) {
-            error('Đăng nhập thất bại');
+            error(t('auth.login_error'));
         }
     };
 
@@ -53,39 +56,39 @@ const Login = () => {
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
             <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg">
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900">Chào mừng trở lại</h2>
-                    <p className="text-gray-500 mt-2">Đăng nhập để quản lý tài sản hoặc tìm ngôi nhà tiếp theo của bạn.</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{t('auth.login_title')}</h2>
+                    <p className="text-gray-500 mt-2">{t('auth.login_subtitle')}</p>
                 </div>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="block text-sm font-bold text-gray-700">Email</label>
+                        <label className="block text-sm font-bold text-gray-700">{t('auth.email')}</label>
                         <input
                             type="email"
-                            placeholder="ví dụ: ten@company.com"
+                            placeholder={t('auth.email_placeholder')}
                             className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            {...register('email', { required: 'Vui lòng nhập Email' })}
+                            {...register('email', { required: t('auth.email_required') })}
                         />
                         {errors.email && <span className="text-sm text-red-500">{errors.email.message as string}</span>}
                     </div>
 
                     <div className="space-y-1">
                         <div className="flex justify-between items-center">
-                            <label className="block text-sm font-bold text-gray-700">Mật khẩu</label>
+                            <label className="block text-sm font-bold text-gray-700">{t('auth.password')}</label>
                             <button
                                 type="button"
                                 onClick={() => setShowForgotModal(true)}
                                 className="text-sm text-blue-600 font-semibold hover:text-blue-700 bg-transparent"
                             >
-                                Quên mật khẩu?
+                                {t('auth.forgot_password')}
                             </button>
                         </div>
                         <div className="relative">
                             <input
                                 type={showPassword ? "text" : "password"}
-                                placeholder="Nhập mật khẩu của bạn"
+                                placeholder={t('auth.password_placeholder')}
                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all pr-12"
-                                {...register('password', { required: 'Vui lòng nhập mật khẩu' })}
+                                {...register('password', { required: t('auth.password_required') })}
                             />
                             <button
                                 type="button"
@@ -102,7 +105,7 @@ const Login = () => {
                         type="submit"
                         className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors shadow-sm mt-2"
                     >
-                        Đăng nhập
+                        {t('auth.btn_login')}
                     </button>
                 </form>
 
@@ -111,14 +114,14 @@ const Login = () => {
                         <div className="w-full border-t border-gray-200"></div>
                     </div>
                     <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500 font-medium">HOẶC</span>
+                        <span className="px-2 bg-white text-gray-500 font-medium">{t('auth.or')}</span>
                     </div>
                 </div>
 
                 <div className="flex justify-center w-full">
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}
-                        onError={() => error("Đăng nhập Google thất bại")}
+                        onError={() => error(t('auth.login_google_error'))}
                         theme="outline"
                         size="large"
                         width="100%"
@@ -129,7 +132,7 @@ const Login = () => {
 
                 <div className="text-center mt-6">
                     <p className="text-gray-600">
-                        Chưa có tài khoản? <Link to="/register" className="text-blue-600 font-bold hover:text-blue-700 ml-1">Tạo tài khoản</Link>
+                        {t('auth.no_account')} <LocalizedLink to="/register" className="text-blue-600 font-bold hover:text-blue-700 ml-1">{t('auth.btn_register_now')}</LocalizedLink>
                     </p>
                 </div>
             </div>
@@ -141,5 +144,6 @@ const Login = () => {
         </div>
     );
 };
+
 
 export default Login;

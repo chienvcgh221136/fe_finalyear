@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { vipAPI, postsAPI } from '../services/api';
-
 import { Crown, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import LocalizedLink from '../components/common/LocalizedLink';
+import { useTranslation } from 'react-i18next';
 
 const VipManagement = () => {
+    const { t, i18n } = useTranslation();
+    const queryClient = useQueryClient();
+
     // Queries
     const { data: myVipRes, isLoading: loadingVip } = useQuery({
         queryKey: ['vip', 'me'],
@@ -17,14 +20,11 @@ const VipManagement = () => {
         queryFn: postsAPI.getMyPosts
     });
 
-
-
-    const queryClient = useQueryClient();
     const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
     const [actionLoading, setActionLoading] = useState(false);
 
     // Derived State
-    const myVip = myVipRes?.data?.data || myVipRes?.data || {};
+    const myVip = useMemo(() => myVipRes?.data?.data || myVipRes?.data || {}, [myVipRes]);
     const posts = useMemo(() => myPostsRes?.data?.data || myPostsRes?.data || [], [myPostsRes]);
 
     const activePosts = useMemo(() => {
@@ -48,19 +48,30 @@ const VipManagement = () => {
 
     // Remaining time text
     const timeRemainingText = useMemo(() => {
-        if (!myVip.expiredAt) return 'Đã hết hạn';
+        if (!myVip.expiredAt) return t('vip_management.expired');
         const diff = new Date(myVip.expiredAt).getTime() - new Date().getTime();
 
-        if (diff <= 0) return 'Đã hết hạn';
+        if (diff <= 0) return t('vip_management.expired');
 
         const hours = Math.ceil(diff / (1000 * 60 * 60));
         if (hours < 24) {
-            return `Còn ${hours} giờ`;
+            return t('vip_management.remaining_hours', { count: hours });
         }
 
         const days = Math.ceil(diff / (1000 * 3600 * 24));
-        return `Còn ${days} ngày`;
-    }, [myVip.expiredAt]);
+        return t('vip_management.remaining_days', { count: days });
+    }, [myVip.expiredAt, t]);
+
+    const formatPrice = (price: number) => {
+        if (!price) return t('common.contact');
+        if (price >= 1000000000) {
+            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
+        }
+        if (price >= 1000000) {
+            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
+        }
+        return new Intl.NumberFormat('vi-VN').format(price) + ' ' + t('common.currency');
+    };
 
 
     // Handlers
@@ -75,26 +86,26 @@ const VipManagement = () => {
     const attachVipMutation = useMutation({
         mutationFn: (ids: string[]) => vipAPI.attach(ids),
         onSuccess: (res) => {
-            alert(res.data.message || "Attached VIP successfully!");
+            alert(res.data.message || t('common.success'));
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
             queryClient.invalidateQueries({ queryKey: ['vip', 'me'] });
             setSelectedPosts([]);
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || "Failed to attach VIP.");
+            alert(err.response?.data?.message || t('common.error'));
         }
     });
 
     const detachVipMutation = useMutation({
         mutationFn: (ids: string[]) => vipAPI.detach(ids),
         onSuccess: (res) => {
-            alert(res.data.message || "Detached VIP successfully!");
+            alert(res.data.message || t('common.success'));
             queryClient.invalidateQueries({ queryKey: ['posts', 'me'] });
             queryClient.invalidateQueries({ queryKey: ['vip', 'me'] });
             setSelectedPosts([]);
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || "Failed to detach VIP.");
+            alert(err.response?.data?.message || t('common.error'));
         }
     });
 
@@ -103,11 +114,11 @@ const VipManagement = () => {
         // Check VIP or Bonus
         const hasBonus = (myVip.bonusPushCredits || 0) > 0;
         if (!isVipActive && !hasBonus) {
-            alert("Bạn chưa đăng ký gói VIP hoặc hết lượt đẩy tin.");
+            alert(t('vip_management.error_no_vip'));
             return;
         }
         if (dailyUsed + selectedPosts.length > limit) {
-            alert(`Bạn chỉ còn ${limit - dailyUsed} lượt gắn VIP hôm nay. Bạn đang chọn ${selectedPosts.length} tin.`);
+            alert(t('vip_management.error_slot_limit', { remaining: limit - dailyUsed, selected: selectedPosts.length }));
             return;
         }
         setActionLoading(true);
@@ -118,7 +129,7 @@ const VipManagement = () => {
 
     const handleDetach = () => {
         if (selectedPosts.length === 0) return;
-        if (!window.confirm("Lưu ý: Gỡ VIP sẽ KHÔNG hoàn lại lượt gắn VIP đã trừ trong ngày hôm nay. Bạn có chắc chắn?")) return;
+        if (!window.confirm(t('vip_management.confirm_detach'))) return;
 
         setActionLoading(true);
         detachVipMutation.mutate(selectedPosts, {
@@ -127,7 +138,7 @@ const VipManagement = () => {
     };
 
 
-    if (loadingVip || loadingPosts) return <div className="p-8 text-center">Đang tải dữ liệu...</div>;
+    if (loadingVip || loadingPosts) return <div className="p-8 text-center">{t('vip_management.loading')}</div>;
 
     // Show full UI for all users, even without VIP
     return (
@@ -135,12 +146,12 @@ const VipManagement = () => {
             <div className="w-full px-4 md:px-8 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Quản lý VIP</h1>
-                        <p className="text-gray-500">Tối ưu hóa hiển thị tin đăng của bạn</p>
+                        <h1 className="text-3xl font-bold text-gray-900">{t('vip_management.title')}</h1>
+                        <p className="text-gray-500">{t('vip_management.subtitle')}</p>
                     </div>
-                    <Link to="/profile?tab=vip" className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition">
-                        Lịch sử & Gói cước
-                    </Link>
+                    <LocalizedLink to="/profile?tab=vip" className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition">
+                        {t('vip_management.btn_history_packages')}
+                    </LocalizedLink>
                 </div>
 
                 {/* Info Cards */}
@@ -148,7 +159,7 @@ const VipManagement = () => {
                     {/* Status Card */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 relative overflow-hidden">
                         <div className="relative z-10">
-                            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Gói hiện tại</p>
+                            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">{t('vip_management.current_package')}</p>
                             <h2 className="text-3xl font-bold text-gray-900 mb-2">{myVip.vipType}</h2>
                             <div className="flex items-center gap-2 text-green-600 bg-green-50 w-fit px-3 py-1 rounded-full text-sm font-bold">
                                 <Clock size={16} />
@@ -163,14 +174,14 @@ const VipManagement = () => {
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Lượt VIP còn lại</p>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">{t('vip_management.vip_slots_remaining')}</p>
                                 <h2 className="text-3xl font-bold text-gray-900">
                                     {Math.max(0, limit - dailyUsed)}
                                 </h2>
                                 <div className="flex gap-3 mt-1">
-                                    <span className="text-xs text-blue-600 font-medium">Theo gói: {Math.max(0, baseLimit - dailyUsed)}</span>
+                                    <span className="text-xs text-blue-600 font-medium">{t('vip_management.base_slots', { count: Math.max(0, baseLimit - dailyUsed) })}</span>
                                     {myVip.bonusPushCredits > 0 && (
-                                        <span className="text-xs text-orange-600 font-bold">Thưởng: {myVip.bonusPushCredits}</span>
+                                        <span className="text-xs text-orange-600 font-bold">{t('vip_management.bonus_slots', { count: myVip.bonusPushCredits })}</span>
                                     )}
                                 </div>
                             </div>
@@ -182,21 +193,21 @@ const VipManagement = () => {
                                 style={{ width: `${limit > 0 ? Math.min(100, ((limit - dailyUsed) / limit) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Gồm {baseLimit} lượt gói + {myVip.bonusPushCredits || 0} lượt thưởng.</p>
+                        <p className="text-xs text-gray-400">{t('vip_management.slot_limit_info', { base: baseLimit, bonus: myVip.bonusPushCredits || 0 })}</p>
                     </div>
 
                     {/* Leads Card */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 md:col-span-2 lg:col-span-1">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Lượt xem SĐT còn lại</p>
+                                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">{t('vip_management.phone_slots_remaining')}</p>
                                 <h2 className="text-3xl font-bold text-gray-900">
                                     {Math.max(0, limitViewPhone - dailyViewedPhones)}
                                 </h2>
                                 <div className="flex gap-3 mt-1">
-                                    <span className="text-xs text-purple-600 font-medium">Theo gói: {Math.max(0, baseViewLimit - dailyViewedPhones)}</span>
+                                    <span className="text-xs text-purple-600 font-medium">{t('vip_management.base_slots', { count: Math.max(0, baseViewLimit - dailyViewedPhones) })}</span>
                                     {myVip.bonusLeadCredits > 0 && (
-                                        <span className="text-xs text-orange-600 font-bold">Thưởng: {myVip.bonusLeadCredits}</span>
+                                        <span className="text-xs text-orange-600 font-bold">{t('vip_management.bonus_slots', { count: myVip.bonusLeadCredits })}</span>
                                     )}
                                 </div>
                             </div>
@@ -208,7 +219,7 @@ const VipManagement = () => {
                                 style={{ width: `${limitViewPhone > 0 ? Math.min(100, ((limitViewPhone - dailyViewedPhones) / limitViewPhone) * 100) : 0}%` }}
                             ></div>
                         </div>
-                        <p className="text-xs text-gray-400">Gồm {baseViewLimit} lượt gói + {myVip.bonusLeadCredits || 0} lượt thưởng. Làm mới lúc 00:00 hằng ngày.</p>
+                        <p className="text-xs text-gray-400">{t('vip_management.phone_limit_info', { base: baseViewLimit, bonus: myVip.bonusLeadCredits || 0 })}</p>
                     </div>
 
 
@@ -217,7 +228,7 @@ const VipManagement = () => {
                 {/* List Table */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <h3 className="font-bold text-gray-900 text-xl">Danh sách tin đang hiển thị ({activePosts.length})</h3>
+                        <h3 className="font-bold text-gray-900 text-xl">{t('vip_management.active_posts_list', { count: activePosts.length })}</h3>
 
                         <div className="flex gap-3 w-full md:w-auto">
                             <button
@@ -225,14 +236,14 @@ const VipManagement = () => {
                                 disabled={selectedPosts.length === 0 || actionLoading || dailyUsed >= limit}
                                 className="flex-1 md:flex-none px-6 py-2 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
                             >
-                                <Crown size={18} /> Gắn VIP ({selectedPosts.length})
+                                <Crown size={18} /> {t('vip_management.btn_attach_vip', { count: selectedPosts.length })}
                             </button>
                             <button
                                 onClick={handleDetach}
                                 disabled={selectedPosts.length === 0 || actionLoading}
                                 className="flex-1 md:flex-none px-6 py-2 border border-red-200 text-red-600 bg-red-50 font-bold rounded-xl hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                             >
-                                Gỡ VIP
+                                {t('vip_management.btn_detach_vip')}
                             </button>
                         </div>
                     </div>
@@ -244,10 +255,10 @@ const VipManagement = () => {
                                     <th className="p-4 w-12">
                                         {/* Select All Checkbox could go here */}
                                     </th>
-                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">Tin đăng</th>
-                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">Trạng thái</th>
-                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">Trạng thái VIP</th>
-                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase text-right">Giá</th>
+                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">{t('vip_management.col_post')}</th>
+                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">{t('vip_management.col_status')}</th>
+                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase">{t('vip_management.col_vip_status')}</th>
+                                    <th className="p-4 text-sm font-bold text-gray-500 uppercase text-right">{t('vip_management.col_price')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -272,7 +283,7 @@ const VipManagement = () => {
                                                     </div>
                                                     <div>
                                                         <h4 className="font-bold text-gray-900 line-clamp-1">{post.title}</h4>
-                                                        <p className="text-xs text-gray-500">Đăng ngày: {new Date(post.createdAt).toLocaleDateString('vi-VN')}</p>
+                                                        <p className="text-xs text-gray-500">{t('vip_management.posted_on')}: {new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -293,14 +304,11 @@ const VipManagement = () => {
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-gray-400 text-sm italic">None</span>
+                                                    <span className="text-gray-400 text-sm italic">{t('common.none')}</span>
                                                 )}
                                             </td>
                                             <td className="p-4 text-right font-bold text-gray-900">
-                                                {post.price >= 1000000000
-                                                    ? `${(post.price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`
-                                                    : `${(post.price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Triệu`
-                                                }
+                                                {formatPrice(post.price)}
                                             </td>
                                         </tr>
                                     );
@@ -308,7 +316,7 @@ const VipManagement = () => {
                                 {activePosts.length === 0 && (
                                     <tr>
                                         <td colSpan={5} className="p-12 text-center text-gray-500 italic">
-                                            Bạn chưa có tin đăng nào đang hiển thị (ACTIVE).
+                                            {t('vip_management.no_active_posts')}
                                         </td>
                                     </tr>
                                 )}

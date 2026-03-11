@@ -3,9 +3,10 @@ import { Star, User, Send } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reviewsAPI } from '../../services/api';
 import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
+import { vi, enUS } from 'date-fns/locale';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 interface ReviewSectionProps {
     postId: string;
@@ -13,10 +14,13 @@ interface ReviewSectionProps {
 
 const ReviewSection = ({ postId }: ReviewSectionProps) => {
     const { user } = useAuth();
+    const { t, i18n } = useTranslation();
     const queryClient = useQueryClient();
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
     const [hoverRating, setHoverRating] = useState(0);
+
+    const dateLocale = i18n.language === 'vi' ? vi : enUS;
 
     // Edit State
     const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
@@ -38,10 +42,10 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
             setRating(5);
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            success("Cảm ơn đánh giá của bạn!");
+            success(t('post_detail.thanks_review'));
         },
         onError: (err: any) => {
-            error(err.response?.data?.message || "Có lỗi xảy ra");
+            error(err.response?.data?.message || t('common.error_occurred'));
         }
     });
 
@@ -50,9 +54,9 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            success("Đã xóa đánh giá");
+            success(t('common.success'));
         },
-        onError: (err: any) => error(err.response?.data?.message || "Lỗi khi xóa")
+        onError: (err: any) => error(err.response?.data?.message || t('common.error_occurred'))
     });
 
     const updateMutation = useMutation({
@@ -61,9 +65,9 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
             setEditingReviewId(null);
             queryClient.invalidateQueries({ queryKey: ['reviews', postId] });
             queryClient.invalidateQueries({ queryKey: ['post', postId] });
-            success("Đã cập nhật đánh giá");
+            success(t('common.success'));
         },
-        onError: (err: any) => error(err.response?.data?.message || "Lỗi khi cập nhật")
+        onError: (err: any) => error(err.response?.data?.message || t('common.error_occurred'))
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -87,14 +91,14 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
             <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
                 <Star className="text-yellow-400 fill-yellow-400" size={20} />
-                Đánh giá & Bình luận ({reviews.length})
+                {t('post_detail.rating_and_comments')} ({reviews.length})
             </h3>
 
             {/* Writing Form */}
             {user ? (
                 <form onSubmit={handleSubmit} className="mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="text-sm font-bold text-gray-700">Đánh giá của bạn:</span>
+                        <span className="text-sm font-bold text-gray-700">{t('post_detail.your_rating')}</span>
                         <div className="flex gap-1" onMouseLeave={() => setHoverRating(0)}>
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -120,7 +124,7 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                             type="text"
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
-                            placeholder="Chia sẻ trải nghiệm của bạn..."
+                            placeholder={t('post_detail.share_experience_placeholder')}
                             className="w-full pl-4 pr-12 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         />
                         <button
@@ -134,15 +138,15 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                 </form>
             ) : (
                 <p className="text-sm text-center text-gray-500 mb-6 bg-gray-50 p-3 rounded-lg">
-                    Vui lòng đăng nhập để gửi đánh giá.
+                    {t('post_detail.login_to_review')}
                 </p>
             )}
 
             <div className="space-y-4">
                 {isLoading ? (
-                    <div className="text-center text-gray-500">Đang tải đánh giá...</div>
+                    <div className="text-center text-gray-500">{t('post_detail.loading_reviews')}</div>
                 ) : reviews.length === 0 ? (
-                    <div className="text-center text-gray-400 py-4 italic">Chưa có đánh giá nào.</div>
+                    <div className="text-center text-gray-400 py-4 italic">{t('post_detail.no_reviews')}</div>
                 ) : (
                     reviews.map((review: any) => (
                         <div key={review._id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0 group">
@@ -157,7 +161,7 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <p className="text-sm font-bold text-gray-900">{review.buyerId?.name || "Người dùng ẩn danh"}</p>
+                                            <p className="text-sm font-bold text-gray-900">{review.buyerId?.name || t('post_detail.anonymous_user')}</p>
 
                                             {/* Edit Rating Mode */}
                                             {editingReviewId === review._id ? (
@@ -178,7 +182,7 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                                                         />
                                                     ))}
                                                     <span className="text-xs text-gray-400 ml-2">
-                                                        {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: vi })}
+                                                        {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: dateLocale })}
                                                     </span>
                                                 </div>
                                             )}
@@ -187,8 +191,8 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                                         {/* Action Buttons */}
                                         {user && user._id === review.buyerId?._id && !editingReviewId && (
                                             <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                                <button onClick={() => handleEditStart(review)} className="text-xs text-blue-500 font-medium hover:underline">Sửa</button>
-                                                <button onClick={() => { if (confirm('Xóa đánh giá này?')) deleteMutation.mutate(review._id) }} className="text-xs text-red-500 font-medium hover:underline">Xóa</button>
+                                                <button onClick={() => handleEditStart(review)} className="text-xs text-blue-500 font-medium hover:underline">{t('common.edit')}</button>
+                                                <button onClick={() => { if (confirm(t('post_detail.confirm_delete_review'))) deleteMutation.mutate(review._id) }} className="text-xs text-red-500 font-medium hover:underline">{t('common.delete')}</button>
                                             </div>
                                         )}
                                     </div>
@@ -204,8 +208,8 @@ const ReviewSection = ({ postId }: ReviewSectionProps) => {
                                         onChange={(e) => setEditContent(e.target.value)}
                                         className="flex-1 border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-blue-500"
                                     />
-                                    <button onClick={handleUpdate} className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg">Lưu</button>
-                                    <button onClick={() => setEditingReviewId(null)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-lg">Hủy</button>
+                                    <button onClick={handleUpdate} className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg">{t('common.save')}</button>
+                                    <button onClick={() => setEditingReviewId(null)} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-lg">{t('common.cancel')}</button>
                                 </div>
                             ) : (
                                 <p className="text-gray-600 text-sm bg-gray-50/50 p-3 rounded-xl italic">"{review.comment}"</p>
