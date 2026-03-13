@@ -36,9 +36,9 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
             {/* Hero Section */}
-            <section className="relative pt-20 pb-24 lg:pt-32 lg:pb-40 overflow-hidden">
+            <section className="relative pt-20 pb-24 lg:pt-32 lg:pb-40">
                 {/* Background Decor */}
-                <div className="absolute inset-0 bg-white">
+                <div className="absolute inset-0 bg-white overflow-hidden">
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
                     <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-400 opacity-20 blur-[100px]"></div>
                     <div className="absolute right-0 top-0 -z-10 h-full w-1/2 bg-gradient-to-b from-blue-50/50 to-transparent blur-3xl"></div>

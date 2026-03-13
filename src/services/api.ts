@@ -212,6 +212,7 @@ export const pointsAPI = {
 
 export const chatbotAPI = {
     query: (message: string) => api.post('/chatbot/query', { message }),
+    getHistory: () => api.get('/chatbot/history'),
 };
 
 export default api;

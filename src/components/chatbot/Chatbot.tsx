@@ -29,7 +29,7 @@ const Chatbot = () => {
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [anonymousCount, setAnonymousCount] = useState(0);
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const navigate = useNavigate();
     const localizePath = useLocalizedPath();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -39,6 +39,46 @@ const Chatbot = () => {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages, isLoading]);
+
+    // Unified effect for history management and state clearing
+    useEffect(() => {
+        const syncHistory = async () => {
+            // 1. Always reset messages to welcome when user changes or logout
+            const welcomeMsg: Message = {
+                id: '1',
+                text: t('chatbot.welcome', 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?'),
+                sender: 'bot'
+            };
+            
+            setMessages([welcomeMsg]);
+            
+            if (!isAuthenticated || !user?.id) {
+                setAnonymousCount(0);
+                return;
+            }
+
+            // 2. If authenticated and open, fetch true history
+            if (isOpen) {
+                try {
+                    console.log('[Chatbot] Fetching history for user:', user.id);
+                    const response = await chatbotAPI.getHistory();
+                    if (response.data.success && response.data.data.length > 0) {
+                        const historyMessages: Message[] = response.data.data.map((m: any, idx: number) => ({
+                            id: `history-${idx}-${Date.now()}`,
+                            text: m.content,
+                            sender: m.role === 'user' ? 'user' : 'bot',
+                            posts: m.posts || []
+                        }));
+                        setMessages([welcomeMsg, ...historyMessages]);
+                    }
+                } catch (error) {
+                    console.error('Fetch chatbot history error:', error);
+                }
+            }
+        };
+
+        syncHistory();
+    }, [user?.id, isAuthenticated, isOpen, t]); // user.id is the ultimate source of truth
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
@@ -92,16 +132,30 @@ const Chatbot = () => {
     };
 
     const renderMessageContent = (msg: Message) => {
-        const parts = msg.text.split(/(\[PROPERTY:[0-9a-fA-F]+\])/g);
+        // More permissive regex to catch any variation like [PROPERTY:...] or [PROPERTY: ...]
+        const parts = msg.text.split(/(\[PROPERTY:?\s*[^\]\s]+\s*\])/g);
 
         return (
             <div className="space-y-4">
                 <div className="whitespace-pre-wrap">
                     {parts.map((part, i) => {
-                        const match = part.match(/\[PROPERTY:(.+?)\]/);
-                        if (match && msg.posts) {
-                            const postId = match[1];
-                            const post = msg.posts.find(p => (p._id === postId || p.id === postId));
+                        const match = part.match(/\[PROPERTY:?\s*([^\]\s]+)\s*\]/);
+                        if (match) {
+                            const postId = match[1].trim();
+                            // Search in current message first, then fallback to all messages
+                            let post = msg.posts?.find(p => (String(p._id) === postId || String(p.id) === postId));
+
+                            if (!post && messages) {
+                                // Find in any other message that has posts
+                                for (const otherMsg of messages) {
+                                    const found = otherMsg.posts?.find(p => (String(p._id) === postId || String(p.id) === postId));
+                                    if (found) {
+                                        post = found;
+                                        break;
+                                    }
+                                }
+                            }
+
                             if (post) {
                                 return (
                                     <div key={i} className="my-4 max-w-full sm:max-w-[320px] group">
