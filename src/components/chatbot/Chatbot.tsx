@@ -40,26 +40,51 @@ const Chatbot = () => {
         }
     }, [messages, isLoading]);
 
+    const prevUserId = useRef<string | undefined>('__init__');
+    const hasFetchedForCurrentSession = useRef(false);
+
     // Unified effect for history management and state clearing
     useEffect(() => {
         const syncHistory = async () => {
-            // 1. Always reset messages to welcome when user changes or logout
+            const userChanged = prevUserId.current !== user?.id;
+            
+            // If user didn't change and we already fetched (or initialized) for this session, do nothing.
+            // This prevents wiping history when language (t) changes or chatbot is toggled close/open.
+            if (!userChanged && hasFetchedForCurrentSession.current) {
+                // If the chat is closed but we already fetched, we can safely return.
+                // If it's open and we already fetched, we also return.
+                // BUT if it's the first time opening for a logged-in user, we need to fetch.
+                if (!isAuthenticated || !isOpen) return;
+            }
+
+            // Only fetch if it's open and we haven't fetched OR if user changed
+            if (!userChanged && isOpen && hasFetchedForCurrentSession.current) {
+                return;
+            }
+
+            prevUserId.current = user?.id;
+            
+            // 1. Reset messages to welcome when user changes or on first load
             const welcomeMsg: Message = {
                 id: '1',
                 text: t('chatbot.welcome', 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?'),
                 sender: 'bot'
             };
             
-            setMessages([welcomeMsg]);
+            if (userChanged) {
+                 setMessages([welcomeMsg]);
+            }
             
             if (!isAuthenticated || !user?.id) {
                 setAnonymousCount(0);
+                hasFetchedForCurrentSession.current = true;
                 return;
             }
 
             // 2. If authenticated and open, fetch true history
             if (isOpen) {
                 try {
+                    hasFetchedForCurrentSession.current = true;
                     console.log('[Chatbot] Fetching history for user:', user.id);
                     const response = await chatbotAPI.getHistory();
                     if (response.data.success && response.data.data.length > 0) {
@@ -73,12 +98,14 @@ const Chatbot = () => {
                     }
                 } catch (error) {
                     console.error('Fetch chatbot history error:', error);
+                    hasFetchedForCurrentSession.current = false;
                 }
             }
         };
 
         syncHistory();
-    }, [user?.id, isAuthenticated, isOpen, t]); // user.id is the ultimate source of truth
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id, isAuthenticated, isOpen]); // user.id is the ultimate source of truth, removed t
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;

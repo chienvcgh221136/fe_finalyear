@@ -81,6 +81,10 @@ const MainLayout = () => {
   const isProfilePage = location.pathname.includes('/profile');
   const isLoyaltyPage = location.pathname.includes('/loyalty');
   const isSearchPage = location.pathname.includes('/buy') || location.pathname.includes('/rent') || location.pathname.includes('/search');
+  const isCreatePostPage = location.pathname.includes('/post-ad');
+  const isPostDetailPage = location.pathname.includes('/post/');
+
+  const shouldHideFooter = isChatPage || isProfilePage || isLoyaltyPage || isSearchPage || isCreatePostPage || isPostDetailPage;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -89,7 +93,7 @@ const MainLayout = () => {
         <Outlet />
       </main>
       <Chatbot />
-      {!isChatPage && !isProfilePage && !isLoyaltyPage && !isSearchPage && <Footer />}
+      {!shouldHideFooter && <Footer />}
     </div>
   );
 };
