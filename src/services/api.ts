@@ -11,6 +11,8 @@ const api = axios.create({
 // Request interceptor (no longer needs to add token manually)
 api.interceptors.request.use(
     (config) => {
+        const lang = localStorage.getItem('i18nextLng') || 'vi';
+        config.headers['Accept-Language'] = lang;
         return config;
     },
     (error) => Promise.reject(error)

@@ -2,18 +2,25 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Globe } from 'lucide-react';
 import { getLocalizedPath } from '../utils/pathUtils';
+import { useAuth } from '../context/AuthContext';
+import { usersAPI } from '../services/api';
 
 const LanguageSwitcher = () => {
     const { i18n } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { lng } = useParams();
+    const { isAuthenticated } = useAuth();
 
     const changeLanguage = (newLng: string) => {
         if (newLng === lng) return;
 
         i18n.changeLanguage(newLng);
         localStorage.setItem('i18nextLng', newLng);
+
+        if (isAuthenticated) {
+            usersAPI.updateProfile({ language: newLng }).catch(err => console.error("Failed to update language:", err));
+        }
 
         const newPath = getLocalizedPath(location.pathname, newLng);
         navigate(`${newPath}${location.search}`, { replace: true });
