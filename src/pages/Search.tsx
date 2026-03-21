@@ -65,10 +65,11 @@ const Search = () => {
 
     const [propertyTypes, setPropertyTypes] = useState<string[]>([]);
     const PROPERTY_TYPE_LABELS: Record<string, string> = {
-        'Apartment': 'Căn hộ',
-        'Detached House': 'Nhà riêng',
-        'Condo': 'Chung cư',
-        'Townhouse': 'Nhà phố'
+        'APARTMENT': 'Căn hộ',
+        'HOUSE': 'Nhà riêng',
+        'LAND': 'Đất nền',
+        'OFFICE': 'Văn phòng',
+        'SHOPHOUSE': 'Shophouse'
     };
 
     const [availableCities, setAvailableCities] = useState<string[]>([]);
@@ -93,8 +94,10 @@ const Search = () => {
                 // Filter by Transaction Type (Path)
                 if (isBuyPage) {
                     initialFiltered = initialFiltered.filter(p => p.transactionType === 'SALE');
+                    setTransactionTypes(['SALE']);
                 } else if (isRentPage) {
                     initialFiltered = initialFiltered.filter(p => p.transactionType === 'RENT');
+                    setTransactionTypes(['RENT']);
                 }
                 // If /search, show all (unless filtered by param below)
 
@@ -221,7 +224,12 @@ const Search = () => {
     // Transaction Type Filter Logic
     const [transactionTypes, setTransactionTypes] = useState<string[]>([]);
 
-
+    const handleTransactionTypeChange = (type: string) => {
+        setTransactionTypes(prev => {
+            if (prev.includes(type)) return prev.filter(t => t !== type);
+            return [...prev, type];
+        });
+    };
 
     const handleApplyFilters = () => {
         setAreaError(''); // Clear previous error
@@ -234,12 +242,7 @@ const Search = () => {
 
         let result = [...listings];
 
-        // Ensure we respect the current page context (Buy vs Rent)
-        if (location.pathname === '/buy') {
-            result = result.filter(post => post.transactionType === 'SALE');
-        } else if (location.pathname === '/rent') {
-            result = result.filter(post => post.transactionType === 'RENT');
-        }
+        // Ensure we use what's selected in the sidebar, rather than hardcoding /buy to SALE here
 
         if (city) {
             result = result.filter(post => (post.address?.city === city) || (post.city === city));
@@ -260,7 +263,7 @@ const Search = () => {
         });
 
         if (propertyTypes.length > 0) {
-            result = result.filter(post => propertyTypes.includes(post.type));
+            result = result.filter(post => propertyTypes.includes(post.propertyType) || propertyTypes.includes(post.type));
         }
 
         // Filter by Transaction Type (Sidebar)
@@ -284,8 +287,17 @@ const Search = () => {
         setMaxArea('');
         setPriceRange([0, MAX_PRICE]); // Reset Price Slider
         setPropertyTypes([]);
-        setTransactionTypes([]); // Clear Transaction Filter
-        setFilteredListings(listings);
+
+        let initialT: string[] = [];
+        if (location.pathname.endsWith('/buy')) initialT = ['SALE'];
+        else if (location.pathname.endsWith('/rent')) initialT = ['RENT'];
+        setTransactionTypes(initialT);
+
+        let initialListings = [...listings];
+        if (initialT.length > 0) {
+            initialListings = initialListings.filter(p => initialT.includes(p.transactionType));
+        }
+        setFilteredListings(initialListings);
         setAreaError('');
     };
 
@@ -439,9 +451,25 @@ const Search = () => {
                     </div>
 
                     <div className="filter-group">
+                        <label className="font-bold mb-2 block text-sm">Loại giao dịch</label>
+                        <div className="checkbox-group">
+                            {['SALE', 'RENT'].map(type => (
+                                <label key={type} className="checkbox-item">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionTypes.includes(type)}
+                                        onChange={() => handleTransactionTypeChange(type)}
+                                    />
+                                    {type === 'SALE' ? 'Mua bán' : 'Cho thuê'}
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="filter-group">
                         <label className="font-bold mb-2 block text-sm">Loại bất động sản</label>
                         <div className="checkbox-group">
-                            {['Apartment', 'Detached House', 'Condo', 'Townhouse'].map(type => (
+                            {['APARTMENT', 'HOUSE', 'LAND', 'OFFICE', 'SHOPHOUSE'].map(type => (
                                 <label key={type} className="checkbox-item">
                                     <input
                                         type="checkbox"

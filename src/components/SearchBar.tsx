@@ -16,7 +16,7 @@ export function SearchBar() {
     const localizePath = useLocalizedPath();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [keyword, setKeyword] = useState('');
-    const [type] = useState('SALE'); // SALE or RENT
+    const [type, setType] = useState('SALE'); // SALE or RENT
     const [city] = useState(''); // Empty = Toàn quốc
     const [suggestions, setSuggestions] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -112,6 +112,24 @@ export function SearchBar() {
 
             {/* Main Search Box */}
             <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 pt-6 relative z-0 border border-gray-100">
+                {/* Transaction Type Tabs */}
+                <div className="flex gap-6 mb-4 border-b border-gray-100">
+                    <button
+                        type="button"
+                        onClick={() => setType('SALE')}
+                        className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'SALE' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+                    >
+                        Mua bán
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setType('RENT')}
+                        className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'RENT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
+                    >
+                        Cho thuê
+                    </button>
+                </div>
+
                 <div className="flex flex-col md:flex-row gap-4 relative">
 
 
