@@ -5,6 +5,8 @@ import { postsAPI } from '../services/api';
 import { useForm, Controller } from 'react-hook-form';
 import { Loader2, Upload, X, Plus, Link as LinkIcon, FileText } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import { useTranslation } from 'react-i18next';
+import { CITIES_VI, CITIES_EN, getLocalizedCity, translateCityToVi } from '../utils/cityTranslations';
 
 // Using standard HTML elements with Tailwind
 const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
@@ -29,19 +31,11 @@ const propertyTypes = [
     { value: 'SHOPHOUSE', label: 'Shophouse' },
 ];
 
-const cities = [
-    'Hà Nội',
-    'TP. Hồ Chí Minh',
-    'Đà Nẵng',
-    'Hải Phòng',
-    'Cần Thơ',
-    'Bình Dương',
-    'Đồng Nai',
-    'Khánh Hòa',
-];
+// Cities imported from cityTranslations
 
 const CreatePost = () => {
     const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
     const [searchParams] = useSearchParams();
     const editId = searchParams.get('edit');
     const isEditMode = !!editId;
@@ -80,13 +74,14 @@ const CreatePost = () => {
 
             // Nested Address
             if (data.address) {
-                setValue('city', data.address.city);
+                setValue('city', getLocalizedCity(data.address.city, i18n.language));
                 setValue('district', data.address.district);
                 setValue('ward', data.address.ward);
                 setValue('street', data.address.street);
             } else {
                 // Fallback for old data if any
-                setValue('city', data.city);
+                // Localize city to current language
+                setValue('city', getLocalizedCity(data.city, i18n.language));
                 setValue('district', data.district);
                 setValue('address', data.address); // Old detailed address
             }
@@ -103,13 +98,13 @@ const CreatePost = () => {
             if (data.images && images.length === 0) setImages(data.images);
             if (data.redbookImages && redbookImages.length === 0) setRedbookImages(data.redbookImages);
         }
-    }, [isEditMode, postData, setValue, setImages, setRedbookImages, watch, images.length, redbookImages.length]);
+    }, [isEditMode, postData, setValue, setImages, setRedbookImages, watch, images.length, redbookImages.length, i18n.language]);
 
 
     const createMutation = useMutation({
         mutationFn: (data: any) => isEditMode ? postsAPI.update(editId!, data) : postsAPI.create(data),
         onSuccess: () => {
-            setSuccessMsg(isEditMode ? 'Cập nhật tin thành công! ' : 'Đăng tin thành công! Tin của bạn đang chờ duyệt.');
+            setSuccessMsg(isEditMode ? t('create_post.success_update_msg') : t('create_post.success_msg'));
             setErrorMsg('');
             queryClient.invalidateQueries({ queryKey: ['posts'] });
             setTimeout(() => {
@@ -117,7 +112,7 @@ const CreatePost = () => {
             }, 1000);
         },
         onError: (error: any) => {
-            setErrorMsg(error.response?.data?.message || 'Có lỗi xảy ra');
+            setErrorMsg(error.response?.data?.message || t('common.error_occurred'));
         }
     });
 
@@ -133,12 +128,12 @@ const CreatePost = () => {
         try {
             new URL(url);
         } catch (_) {
-            setErrorMsg('Link ảnh không hợp lệ');
+            setErrorMsg(t('create_post.error_invalid_link'));
             setTimeout(() => setErrorMsg(''), 3000);
             return;
         }
         if (list.length >= limit) {
-            setErrorMsg(`Tối đa ${limit} ảnh`);
+            setErrorMsg(t('create_post.error_max_limit', { limit }));
             return;
         }
         setList([...list, url]);
@@ -154,9 +149,12 @@ const CreatePost = () => {
         setErrorMsg('');
 
         if (images.length === 0) {
-            setErrorMsg('Vui lòng thêm ít nhất 1 ảnh BĐS');
+            setErrorMsg(t('create_post.error_min_image'));
             return;
         }
+
+        // Map city back to Vietnamese standard before submitting
+        const cityToSubmit = translateCityToVi(data.city);
 
         const payload = {
             ...data,
@@ -166,13 +164,17 @@ const CreatePost = () => {
             bathrooms: data.bathrooms ? Number(data.bathrooms) : undefined,
             floor: data.floor ? Number(data.floor) : undefined,
             totalFloors: data.totalFloors ? Number(data.totalFloors) : undefined,
+            transactionType: data.transactionType,
+            propertyType: data.propertyType,
+            apartmentType: data.apartmentType || undefined,
+            furniture: data.furniture || undefined,
             images: images,
-            redbookImages: redbookImages, // standardized name
-            legalImages: redbookImages, // keep for backward compatibility if needed, or remove if backend updated
+            redbookImages: redbookImages,
+            legalImages: redbookImages,
 
             // Construct Nested Address
             address: {
-                city: data.city,
+                city: cityToSubmit,
                 district: data.district,
                 ward: data.ward || '',
                 street: data.street || ''
@@ -191,22 +193,17 @@ const CreatePost = () => {
     // Helper to format price
     const formatPrice = (price: number) => {
         if (!price) return '';
+        const locale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
         if (price >= 1000000000) {
-            return (price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' tỷ';
+            return (price / 1000000000).toLocaleString(locale, { maximumFractionDigits: 2 }) + ' ' + t('common.billion');
+        }
+        if (price >= 1000000) {
+            return (price / 1000000).toLocaleString(locale, { maximumFractionDigits: 2 }) + ' ' + t('common.million');
         }
         if (price >= 1000) {
-            // If larger than million, show million logic, else maybe just show formatted number?
-            // User asked for "tỷ, triệu, nghìn".
-            if (price >= 1000000) {
-                const millions = price / 1000000;
-                if (millions >= 1000) { // 1000 million is 1 billion, handled above, but technically should flow here if I didn't return.
-                    return millions.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' triệu';
-                }
-                return millions.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' triệu';
-            }
-            return (price / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' nghìn';
+            return (price / 1000).toLocaleString(locale, { maximumFractionDigits: 2 }) + ' ' + t('common.thousand');
         }
-        return price.toLocaleString('vi-VN') + ' đ';
+        return price.toLocaleString(locale) + ' ' + t('common.currency');
     };
 
     const priceValue = watch('price');
@@ -227,36 +224,36 @@ const CreatePost = () => {
 
             <div className="container max-w-3xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">
-                    <h1 className="mb-6 text-2xl font-bold text-gray-900">Đăng tin mới</h1>
+                    <h1 className="mb-6 text-2xl font-bold text-gray-900">{t('create_post.title')}</h1>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                         {/* Basic Info */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">Thông tin cơ bản</h2>
+                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.basic_info')}</h2>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label>Loại giao dịch *</Label>
+                                    <Label>{t('create_post.transaction_type')}</Label>
                                     <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        {...register('transactionType', { required: 'Vui lòng chọn loại giao dịch' })}
+                                        {...register('transactionType', { required: t('create_post.req_transaction_type') })}
                                     >
-                                        <option value="">Chọn loại</option>
-                                        <option value="SALE">Bán</option>
-                                        <option value="RENT">Cho thuê</option>
+                                        <option value="">{t('create_post.select_type')}</option>
+                                        <option value="SALE">{t('create_post.sale')}</option>
+                                        <option value="RENT">{t('create_post.rent')}</option>
                                     </select>
                                     {errors.transactionType && <p className="text-xs text-red-500">{errors.transactionType.message as string}</p>}
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Loại BĐS *</Label>
+                                    <Label>{t('create_post.property_type')}</Label>
                                     <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        {...register('propertyType', { required: 'Vui lòng chọn loại BĐS' })}
+                                        {...register('propertyType', { required: t('create_post.req_property_type') })}
                                     >
-                                        <option value="">Chọn loại</option>
+                                        <option value="">{t('create_post.select_type')}</option>
                                         {propertyTypes.map((type) => (
-                                            <option key={type.value} value={type.value}>{type.label}</option>
+                                            <option key={type.value} value={type.value}>{t('search_page.property_type_' + type.value, { defaultValue: type.label })}</option>
                                         ))}
                                     </select>
                                     {errors.propertyType && <p className="text-xs text-red-500">{errors.propertyType.message as string}</p>}
@@ -265,46 +262,46 @@ const CreatePost = () => {
 
                             {watch('propertyType') === 'APARTMENT' && (
                                 <div className="space-y-2">
-                                    <Label>Loại căn hộ</Label>
+                                    <Label>{t('create_post.apartment_type')}</Label>
                                     <select
                                         className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         {...register('apartmentType')}
                                     >
-                                        <option value="">Chọn loại căn hộ</option>
-                                        <option value="MINI">Chung cư mini</option>
-                                        <option value="DORM">Kí túc xá</option>
-                                        <option value="SERVICED">Căn hộ dịch vụ</option>
-                                        <option value="STUDIO">Studio</option>
-                                        <option value="OFFICETEL">Officetel</option>
-                                        <option value="PENTHOUSE">Penthouse</option>
-                                        <option value="DUPLEX">Duplex</option>
-                                        <option value="HIGH_END">Cao cấp</option>
+                                        <option value="">{t('create_post.select_apartment_type')}</option>
+                                        <option value="MINI">{t('create_post.mini_apartment')}</option>
+                                        <option value="DORM">{t('create_post.dormitory')}</option>
+                                        <option value="SERVICED">{t('create_post.serviced_apartment')}</option>
+                                        <option value="STUDIO">{t('create_post.studio')}</option>
+                                        <option value="OFFICETEL">{t('create_post.officetel')}</option>
+                                        <option value="PENTHOUSE">{t('create_post.penthouse')}</option>
+                                        <option value="DUPLEX">{t('create_post.duplex')}</option>
+                                        <option value="HIGH_END">{t('create_post.high_end')}</option>
                                     </select>
                                 </div>
                             )}
 
                             <div className="space-y-2">
-                                <Label>Tiêu đề *</Label>
+                                <Label>{t('create_post.post_title')}</Label>
                                 <Input
-                                    placeholder="VD: Bán căn hộ 2PN Vinhomes Central Park, view sông"
+                                    placeholder={t('create_post.post_title_placeholder')}
                                     {...register('title', {
-                                        required: 'Tiêu đề là bắt buộc',
-                                        minLength: { value: 10, message: 'Tiêu đề tối thiểu 10 ký tự' },
-                                        maxLength: { value: 200, message: 'Tiêu đề tối đa 200 ký tự' }
+                                        required: t('create_post.req_title'),
+                                        minLength: { value: 10, message: t('create_post.err_title_min') },
+                                        maxLength: { value: 200, message: t('create_post.err_title_max') }
                                     })}
                                 />
                                 {errors.title && <p className="text-xs text-red-500">{errors.title.message as string}</p>}
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Mô tả chi tiết *</Label>
+                                <Label>{t('create_post.description')}</Label>
                                 <Textarea
-                                    placeholder="Mô tả chi tiết về bất động sản..."
+                                    placeholder={t('create_post.description_placeholder')}
                                     rows={6}
                                     {...register('description', {
-                                        required: 'Mô tả là bắt buộc',
-                                        minLength: { value: 50, message: 'Mô tả tối thiểu 50 ký tự' },
-                                        maxLength: { value: 5000, message: 'Mô tả tối đa 5000 ký tự' }
+                                        required: t('create_post.req_description'),
+                                        minLength: { value: 50, message: t('create_post.err_desc_min') },
+                                        maxLength: { value: 5000, message: t('create_post.err_desc_max') }
                                     })}
                                 />
                                 {errors.description && <p className="text-xs text-red-500">{errors.description.message as string}</p>}
@@ -313,17 +310,17 @@ const CreatePost = () => {
 
                         {/* Price & Area */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">Đặc điểm bất động sản</h2>
+                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.property_specs')}</h2>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label>Giá (VNĐ) *</Label>
+                                    <Label>{t('create_post.price')}</Label>
                                     <Controller
                                         control={control}
                                         name="price"
                                         rules={{
-                                            required: 'Giá là bắt buộc',
-                                            min: { value: 0, message: 'Giá phải lớn hơn 0' }
+                                            required: t('create_post.req_price'),
+                                            min: { value: 0, message: t('create_post.err_price_min') }
                                         }}
                                         render={({ field: { onChange, value, ...rest } }) => (
                                             <Input
@@ -347,13 +344,13 @@ const CreatePost = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Diện tích (m²) *</Label>
+                                    <Label>{t('create_post.area')}</Label>
                                     <Input
                                         type="number"
                                         placeholder="80"
                                         {...register('area', {
-                                            required: 'Diện tích là bắt buộc',
-                                            min: { value: 0, message: 'Diện tích phải lớn hơn 0' }
+                                            required: t('create_post.req_area'),
+                                            min: { value: 0, message: t('create_post.err_area_min') }
                                         })}
                                     />
                                     {errors.area && <p className="text-xs text-red-500">{errors.area.message as string}</p>}
@@ -363,88 +360,90 @@ const CreatePost = () => {
                             {/* Additional Info (Conditional based purely on property type logic, but usually always relevant for houses/apartments) */}
                             <div className="grid gap-4 md:grid-cols-4">
                                 <div className="space-y-2">
-                                    <Label>Phòng ngủ</Label>
+                                    <Label>{t('create_post.bedrooms')}</Label>
                                     <Input type="number" placeholder="2" {...register('bedrooms')} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Phòng tắm</Label>
+                                    <Label>{t('create_post.bathrooms')}</Label>
                                     <Input type="number" placeholder="2" {...register('bathrooms')} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Tầng số</Label>
+                                    <Label>{t('create_post.floor')}</Label>
                                     <Input type="number" placeholder="5" {...register('floor')} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Tổng số tầng</Label>
+                                    <Label>{t('create_post.total_floors')}</Label>
                                     <Input type="number" placeholder="20" {...register('totalFloors')} />
                                 </div>
                             </div>
 
                             <div className="space-y-2">
-                                <Label>Nội thất</Label>
+                                <Label>{t('create_post.furniture')}</Label>
                                 <select
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     {...register('furniture')}
                                 >
-                                    <option value="">Chọn tình trạng</option>
-                                    <option value="FULL">Đầy đủ</option>
-                                    <option value="BASIC">Cơ bản</option>
-                                    <option value="NONE">Không nội thất</option>
+                                    <option value="">{t('create_post.select_furniture')}</option>
+                                    <option value="FULL">{t('create_post.fully_furnished')}</option>
+                                    <option value="BASIC">{t('create_post.basic_furnished')}</option>
+                                    <option value="NONE">{t('create_post.unfurnished')}</option>
                                 </select>
                             </div>
                         </div>
 
                         {/* Location */}
                         <div className="space-y-2">
-                            <Label>Thành phố *</Label>
-                            <select
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                {...register('city', { required: 'Vui lòng chọn thành phố' })}
-                            >
-                                <option value="">Chọn thành phố</option>
-                                {cities.map((city) => (
-                                    <option key={city} value={city}>{city}</option>
+                            <Label>{t('create_post.city')}</Label>
+                            <Input
+                                list="city-list"
+                                placeholder={t('create_post.select_city')}
+                                {...register('city', { required: t('create_post.req_city') })}
+                                autoComplete="off"
+                            />
+                            <datalist id="city-list">
+                                {(i18n.language === 'en' ? CITIES_EN : CITIES_VI).map((city) => (
+                                    <option key={city} value={city} />
                                 ))}
-                            </select>
+                            </datalist>
                             {errors.city && <p className="text-xs text-red-500">{errors.city.message as string}</p>}
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-2">
-                                <Label>Quận/Huyện *</Label>
+                                <Label>{t('create_post.district')}</Label>
                                 <Input
-                                    placeholder="Quận 1"
-                                    {...register('district', { required: 'Vui lòng nhập quận/huyện' })}
+                                    placeholder={t('create_post.district_placeholder')}
+                                    {...register('district', { required: t('create_post.req_district') })}
                                 />
                                 {errors.district && <p className="text-xs text-red-500">{errors.district.message as string}</p>}
                             </div>
                             <div className="space-y-2">
-                                <Label>Phường/Xã</Label>
+                                <Label>{t('create_post.ward')}</Label>
                                 <Input
-                                    placeholder="Phường Bến Nghé"
+                                    placeholder={t('create_post.ward_placeholder')}
                                     {...register('ward')}
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Tên đường / Số nhà *</Label>
+                            <Label>{t('create_post.street')}</Label>
                             <Input
-                                placeholder="Số 123, Đường Nguyễn Huệ"
-                                {...register('street', { required: 'Vui lòng nhập tên đường' })}
+                                placeholder={t('create_post.street_placeholder')}
+                                {...register('street', { required: t('create_post.req_street') })}
                             />
                             {errors.street && <p className="text-xs text-red-500">{errors.street.message as string}</p>}
                         </div>
 
                         {/* Images (URL Input) */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">Hình ảnh BĐS</h2>
+                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.images')}</h2>
 
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
                                     <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                     <Input
-                                        placeholder="Nhập link ảnh (VD: https://cl.com/pic.jpg)"
+                                        placeholder={t('create_post.image_url_placeholder')}
                                         value={currentImageUrl}
                                         onChange={(e) => setCurrentImageUrl(e.target.value)}
                                         className="pl-9"
@@ -452,7 +451,7 @@ const CreatePost = () => {
                                 </div>
                                 <Button type="button" onClick={() => handleAddImage(currentImageUrl, setCurrentImageUrl, images, setImages)} variant="secondary">
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Thêm ảnh
+                                    {t('create_post.add_image')}
                                 </Button>
                             </div>
 
@@ -470,7 +469,7 @@ const CreatePost = () => {
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-xs text-gray-500">Tối đa 10 ảnh.</p>
+                            <p className="text-xs text-gray-500">{t('create_post.max_images')}</p>
                         </div>
 
                         {/* Redbook Images (Conditional for SALE) */}
@@ -478,15 +477,15 @@ const CreatePost = () => {
                             <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-100">
                                 <div className="flex items-center gap-2 mb-2">
                                     <FileText className="h-5 w-5 text-red-600" />
-                                    <h2 className="font-semibold text-red-800">Thông tin pháp lỹ (Sổ đỏ/Sổ hồng)</h2>
+                                    <h2 className="font-semibold text-red-800">{t('create_post.legal_info')}</h2>
                                 </div>
-                                <p className="text-sm text-red-600 mb-4">Cung cấp hình ảnh sổ đỏ giúp tin đăng uy tín hơn.</p>
+                                <p className="text-sm text-red-600 mb-4">{t('create_post.legal_info_sub')}</p>
 
                                 <div className="flex gap-2">
                                     <div className="relative flex-1">
                                         <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                                         <Input
-                                            placeholder="Nhập link ảnh sổ đỏ..."
+                                            placeholder={t('create_post.redbook_placeholder')}
                                             value={currentRedbookUrl}
                                             onChange={(e) => setCurrentRedbookUrl(e.target.value)}
                                             className="pl-9 bg-white"
@@ -494,7 +493,7 @@ const CreatePost = () => {
                                     </div>
                                     <Button type="button" onClick={() => handleAddImage(currentRedbookUrl, setCurrentRedbookUrl, redbookImages, setRedbookImages, 5)} variant="secondary" className="bg-white hover:bg-gray-50">
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Thêm ảnh
+                                        {t('create_post.add_image')}
                                     </Button>
                                 </div>
 
@@ -520,10 +519,10 @@ const CreatePost = () => {
                             <Button type="submit" size="lg" disabled={createMutation.isPending} className="flex-1 md:flex-none">
                                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <Upload className="mr-2 h-4 w-4" />
-                                Đăng tin
+                                {t('create_post.submit')}
                             </Button>
                             <Button type="button" variant="outline" size="lg" onClick={() => navigate(-1)} className="flex-1 md:flex-none">
-                                Hủy
+                                {t('create_post.cancel')}
                             </Button>
                         </div>
                     </form>

@@ -5,6 +5,7 @@ import { postService } from '../services/api';
 import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatVND } from '../utils/currencyUtils';
+import { getLocalizedCity, translateCityToVi } from '../utils/cityTranslations';
 
 // Helper to calculate percentage
 const getPercent = (value: number, min: number, max: number) => {
@@ -15,7 +16,7 @@ const MIN_PRICE = 0;
 const MAX_PRICE = 50 * 1000000000; // 50 Billion
 
 const Search = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const location = useLocation();
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -125,6 +126,8 @@ const Search = () => {
                 // Extract unique cities
                 const fetchedCities = Array.from(new Set(posts.map((p: any) => p.address?.city || p.city).filter(Boolean))) as string[];
                 const majorCities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
+                
+                // Keep Vietnamese standard internally for availableCities
                 const allCities = Array.from(new Set([...majorCities, ...fetchedCities]));
 
                 setAvailableCities(allCities);
@@ -236,7 +239,7 @@ const Search = () => {
 
         // Validate Area
         if (minArea && maxArea && Number(minArea) > Number(maxArea)) {
-            setAreaError('Diện tích tối thiểu không được lớn hơn tối đa');
+            setAreaError(t('search_page.area_error'));
             return;
         }
 
@@ -245,7 +248,13 @@ const Search = () => {
         // Ensure we use what's selected in the sidebar, rather than hardcoding /buy to SALE here
 
         if (city) {
-            result = result.filter(post => (post.address?.city === city) || (post.city === city));
+            const cityVi = translateCityToVi(city);
+            result = result.filter(post => 
+                (post.address?.city === city) || 
+                (post.city === city) ||
+                (post.address?.city === cityVi) ||
+                (post.city === cityVi)
+            );
         }
 
         // Filter by Area (Inputs)
@@ -318,12 +327,12 @@ const Search = () => {
                 {/* Sidebar */}
                 <aside className="sidebar">
                     <div className="filter-title">
-                        <span>Bộ lọc</span>
+                        <span>{t('search_page.filters')}</span>
                         <button
                             className="text-primary text-sm font-bold bg-transparent"
                             onClick={handleClearFilters}
                         >
-                            Xóa tất cả
+                            {t('search_page.clear_all')}
                         </button>
                     </div>
 
@@ -331,10 +340,10 @@ const Search = () => {
 
                     {/* Area Range (Inputs) */}
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Diện tích (m²)</label>
+                        <label className="font-bold mb-2 block text-sm">{t('search_page.area')}</label>
                         <div className="flex items-start gap-2 mb-4">
                             <div className="flex-1">
-                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối thiểu</span>
+                                <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.min')}</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -345,7 +354,7 @@ const Search = () => {
                                 />
                             </div>
                             <div className="flex-1">
-                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối đa</span>
+                                <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.max')}</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -360,7 +369,7 @@ const Search = () => {
                     </div>
 
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Khoảng giá (VNĐ)</label>
+                        <label className="font-bold mb-2 block text-sm">{t('search_page.price_range')}</label>
                         <div className="range-slider-container mb-6">
                             <div
                                 className="range-track"
@@ -401,7 +410,7 @@ const Search = () => {
                         {/* Price Inputs */}
                         <div className="flex items-start gap-2">
                             <div className="flex-1">
-                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối thiểu</span>
+                                <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.min')}</span>
                                 <input
                                     type="text"
                                     value={priceRange[0].toLocaleString('vi-VN')}
@@ -416,7 +425,7 @@ const Search = () => {
                                 <div className="text-xs text-blue-600 mt-1 font-medium">{formatPrice(priceRange[0])}</div>
                             </div>
                             <div className="flex-1">
-                                <span className="block text-gray-500 text-xs font-bold mb-1">Tối đa</span>
+                                <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.max')}</span>
                                 <input
                                     type="text"
                                     value={priceRange[1].toLocaleString('vi-VN')}
@@ -432,26 +441,28 @@ const Search = () => {
                             </div>
                         </div>
                     </div>
-
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Thành phố</label>
+                        <label className="font-bold mb-2 block text-sm">{t('search_page.city')}</label>
                         <div className="relative">
-                            <select
-                                className="filter-input appearance-none bg-white cursor-pointer"
+                            <input
+                                list="search-city-list"
+                                className="filter-input w-full bg-white border border-gray-300 rounded px-3 py-2 cursor-text"
+                                placeholder={t('search_page.all_cities')}
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
-                            >
-                                <option value="">Tất cả thành phố</option>
-                                {availableCities.map(c => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
-                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                                autoComplete="off"
+                            />
+                            <datalist id="search-city-list">
+                                {availableCities.map((c) => {
+                                    const localizedValue = getLocalizedCity(c, i18n.language);
+                                    return <option key={c} value={localizedValue} />;
+                                })}
+                            </datalist>
                         </div>
                     </div>
 
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Loại giao dịch</label>
+                        <label className="font-bold mb-2 block text-sm">{t('search_page.transaction_type')}</label>
                         <div className="checkbox-group">
                             {['SALE', 'RENT'].map(type => (
                                 <label key={type} className="checkbox-item">
@@ -460,14 +471,14 @@ const Search = () => {
                                         checked={transactionTypes.includes(type)}
                                         onChange={() => handleTransactionTypeChange(type)}
                                     />
-                                    {type === 'SALE' ? 'Mua bán' : 'Cho thuê'}
+                                    {type === 'SALE' ? t('search_page.sale') : t('search_page.rent')}
                                 </label>
                             ))}
                         </div>
                     </div>
 
                     <div className="filter-group">
-                        <label className="font-bold mb-2 block text-sm">Loại bất động sản</label>
+                        <label className="font-bold mb-2 block text-sm">{t('search_page.property_type')}</label>
                         <div className="checkbox-group">
                             {['APARTMENT', 'HOUSE', 'LAND', 'OFFICE', 'SHOPHOUSE'].map(type => (
                                 <label key={type} className="checkbox-item">
@@ -476,40 +487,40 @@ const Search = () => {
                                         checked={propertyTypes.includes(type)}
                                         onChange={() => handleTypeChange(type)}
                                     />
-                                    {PROPERTY_TYPE_LABELS[type] || type}
+                                    {t(`search_page.property_type_${type}`, { defaultValue: PROPERTY_TYPE_LABELS[type] || type })}
                                 </label>
                             ))}
                         </div>
                     </div>
 
                     <button className="btn btn-primary w-full mt-4" onClick={handleApplyFilters}>
-                        Áp dụng
+                        {t('search_page.apply')}
                     </button>
                 </aside>
 
                 {/* Main Content */}
                 <main className="main-content">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-bold mb-1">Tìm ngôi nhà mơ ước của bạn</h1>
+                        <h1 className="text-3xl font-bold mb-1">{t('search_page.title')}</h1>
                         <div className="results-header">
-                            <span className="results-count">Hiển thị {filteredListings.length} kết quả</span>
+                            <span className="results-count">{t('search_page.showing_results', { count: filteredListings.length })}</span>
                             <div className="flex items-center gap-4">
-                                <span className="text-sm font-semibold text-text-secondary">Sắp xếp:</span>
+                                <span className="text-sm font-semibold text-text-secondary">{t('search_page.sort_by')}</span>
                                 <select
                                     className="sort-select border-none bg-transparent font-bold text-primary pl-0 focus:ring-0 cursor-pointer"
                                     value={sortOption}
                                     onChange={handleSortChange}
                                 >
-                                    <option value="newest">Mới nhất</option>
-                                    <option value="price_asc">Giá (Thấp đến Cao)</option>
-                                    <option value="price_desc">Giá (Cao đến Thấp)</option>
+                                    <option value="newest">{t('search_page.newest')}</option>
+                                    <option value="price_asc">{t('search_page.price_asc')}</option>
+                                    <option value="price_desc">{t('search_page.price_desc')}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     {loading ? (
-                        <div className="text-center py-12">Đang tải danh sách...</div>
+                        <div className="text-center py-12">{t('search_page.loading')}</div>
                     ) : (
                         <>
                             <div className="listings-grid">
@@ -532,7 +543,7 @@ const Search = () => {
 
                             {filteredListings.length === 0 && (
                                 <div className="text-center py-12 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                                    Không tìm thấy bất động sản nào phù hợp.
+                                    {t('search_page.no_results')}
                                 </div>
                             )}
                         </>

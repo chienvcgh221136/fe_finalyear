@@ -1,0 +1,16 @@
+﻿
+> client@0.0.0 build
+> tsc -b && vite build
+
+src/components/modals/ChatViewerModal.tsx(2,37): error TS6133: 'ImageIcon' is declared but its value is never read.
+src/components/ProtectedRoute.tsx(4,51): error TS2503: Cannot find namespace 'JSX'.
+src/pages/admin/AdminPoints.tsx(4,46): error TS6133: 'Package' is declared but its value is never read.
+src/pages/admin/AdminPosts.tsx(12,11): error TS6133: 't' is declared but its value is never read.
+src/pages/admin/components/RewardsTab.tsx(4,40): error TS6133: 'Tag' is declared but its value is never read.
+src/pages/admin/components/RewardsTab.tsx(4,45): error TS6133: 'Layers' is declared but its value is never read.
+src/pages/admin/components/RewardsTab.tsx(4,53): error TS6133: 'Check' is declared but its value is never read.
+src/pages/RedeemPage.tsx(4,10): error TS6133: 'Gift' is declared but its value is never read.
+src/pages/RedeemPage.tsx(26,21): error TS6133: 'data' is declared but its value is never read.
+src/pages/RedeemPage.tsx(223,76): error TS6133: 'bg' is declared but its value is never read.
+src/pages/UserProfile.tsx(7,34): error TS6133: 'MapPin' is declared but its value is never read.
+src/pages/UserProfile.tsx(7,42): error TS6133: 'Clock' is declared but its value is never read.

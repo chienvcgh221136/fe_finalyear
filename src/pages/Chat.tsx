@@ -10,7 +10,7 @@ import LocalizedLink from '../components/common/LocalizedLink';
 import { useTranslation } from 'react-i18next';
 
 const Chat = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
@@ -293,7 +293,7 @@ const Chat = () => {
 
     const handleDeleteChat = async () => {
         if (!selectedRoomId) return;
-        if (window.confirm("Bạn có chắc chắn muốn xóa cuộc trò chuyện này? hành động này không thể hoàn tác.")) {
+        if (window.confirm(t('chat.confirm_delete_chat'))) {
             try {
                 await chatAPI.deleteChat(selectedRoomId);
                 queryClient.invalidateQueries({ queryKey: ['chats'] });
@@ -341,10 +341,10 @@ const Chat = () => {
         if (!other) return;
         const otherId = other._id || other.id;
 
-        if (window.confirm(`Bạn có chắc chắn muốn chặn người dùng ${other.name}? Họ sẽ không thể nhắn tin cho bạn.`)) {
+        if (window.confirm(t('chat.confirm_block_user', { name: other.name }))) {
             try {
                 await usersAPI.block(otherId);
-                alert("Đã chặn người dùng thành công");
+                alert(t('chat.block_success'));
                 // Refresh auth user to update blocked list
                 queryClient.invalidateQueries({ queryKey: ['chats'] });
                 window.location.reload(); // Simple way to refresh auth context for now
@@ -363,10 +363,10 @@ const Chat = () => {
         if (!other) return;
         const otherId = other._id || other.id;
 
-        if (window.confirm(`Bạn có chắc chắn muốn bỏ chặn người dùng ${other.name}?`)) {
+        if (window.confirm(t('chat.confirm_unblock_user', { name: other.name }))) {
             try {
                 await usersAPI.unblock(otherId);
-                alert("Đã bỏ chặn người dùng thành công");
+                alert(t('chat.unblock_success'));
                 window.location.reload();
             } catch (error) {
                 console.error("Unblock failed", error);
@@ -565,7 +565,7 @@ const Chat = () => {
                                     <button
                                         className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
                                         onClick={handleDeleteChat}
-                                        title="Xóa cuộc trò chuyện"
+                                        title={t('chat.delete_chat')}
                                     >
                                         <Trash2 size={20} />
                                     </button>
@@ -598,12 +598,12 @@ const Chat = () => {
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs text-blue-600 font-bold mb-0.5 uppercase tracking-wide">Đang trao đổi về</p>
+                                        <p className="text-xs text-blue-600 font-bold mb-0.5 uppercase tracking-wide">{t('chat.discussing')}</p>
                                         <h3 className="font-bold text-gray-900 truncate text-sm mb-0.5">{post.title}</h3>
                                         <p className="text-red-600 font-bold text-sm">
                                             {post.price >= 1000000000
-                                                ? `${(post.price / 1000000000).toLocaleString('vi-VN')} Tỷ`
-                                                : `${(post.price / 1000000).toLocaleString('vi-VN')} Triệu`}
+                                                ? `${(post.price / 1000000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} ${t('chat.billion')}`
+                                                : `${(post.price / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} ${t('chat.million')}`}
                                         </p>
                                     </div>
                                     <LocalizedLink
@@ -753,7 +753,7 @@ const Chat = () => {
                                 {isBlockedByMe() ? (
                                     <div className="flex items-center justify-center p-4 bg-gray-100 rounded-xl text-gray-500 gap-2">
                                         <Ban size={20} />
-                                        <span>Bạn đã chặn người dùng này. Bỏ chặn để gửi tin nhắn.</span>
+                                        <span>{t('chat.you_blocked_user')}</span>
                                         <button
                                             onClick={handleUnblockUser}
                                             className="ml-2 text-blue-600 hover:underline font-medium"
@@ -836,7 +836,7 @@ const Chat = () => {
                                                     )}
                                                 </div>
                                                 <h2 className="font-bold text-gray-900 text-lg text-center" style={{ wordBreak: 'break-word', maxWidth: '100%', lineHeight: '1.4' }}>{displayName}</h2>
-                                                <p className="text-gray-500 text-sm mb-4">Thành viên</p>
+                                                <p className="text-gray-500 text-sm mb-4">{t('chat.member')}</p>
 
                                                 <div className="flex gap-2 w-full">
                                                     <button
@@ -844,7 +844,7 @@ const Chat = () => {
                                                         className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
                                                     >
                                                         <User size={16} />
-                                                        Xem Trang
+                                                        {t('chat.view_profile')}
                                                     </button>
                                                     <button
                                                         onClick={openNicknameModal}
@@ -861,7 +861,7 @@ const Chat = () => {
                                                 <div className="mb-6">
                                                     <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
                                                         <Image size={16} className="text-blue-500" />
-                                                        Ảnh & Video ({images.length})
+                                                        {t('chat.media', { length: images.length })}
                                                     </h3>
                                                     {images.length > 0 ? (
                                                         <div className="grid grid-cols-3 gap-2">
@@ -882,7 +882,7 @@ const Chat = () => {
                                                         </div>
                                                     ) : (
                                                         <div className="text-center py-4 bg-gray-50 rounded-lg text-gray-400 text-xs">
-                                                            Chưa có hình ảnh nào
+                                                            {t('chat.no_media')}
                                                         </div>
                                                     )}
                                                 </div>
@@ -891,7 +891,7 @@ const Chat = () => {
                                                 <div>
                                                     <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
                                                         <Shield size={16} className="text-green-500" />
-                                                        Quyền riêng tư & Hỗ trợ
+                                                        {t('chat.privacy_support')}
                                                     </h3>
                                                     <div className="space-y-1">
                                                         <button
@@ -901,7 +901,7 @@ const Chat = () => {
                                                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-100 group-hover:text-red-500">
                                                                 <Shield size={16} />
                                                             </div>
-                                                            Báo xấu người dùng
+                                                            {t('chat.report_user')}
                                                         </button>
                                                         <button
                                                             onClick={handleBlockUser}
@@ -910,7 +910,7 @@ const Chat = () => {
                                                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                                                                 <Ban size={16} />
                                                             </div>
-                                                            Chặn người dùng
+                                                            {t('chat.block_user')}
                                                         </button>
                                                         <button
                                                             onClick={handleDeleteChat}
@@ -919,7 +919,7 @@ const Chat = () => {
                                                             <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                                                                 <Trash2 size={16} />
                                                             </div>
-                                                            Xóa cuộc trò chuyện
+                                                            {t('chat.delete_chat')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -956,8 +956,8 @@ const Chat = () => {
                         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md mb-6">
                             <MessageCircle size={48} className="text-blue-600" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Xin chào, {user?.name}!</h2>
-                        <p className="text-gray-500">Chọn một cuộc trò chuyện để bắt đầu nhắn tin</p>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('chat.welcome_msg', { name: user?.name || '' })}</h2>
+                        <p className="text-gray-500">{t('chat.select_chat')}</p>
                     </div>
                 )}
 
