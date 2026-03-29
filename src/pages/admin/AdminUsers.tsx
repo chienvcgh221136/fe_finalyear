@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersAPI } from '../../services/api';
 import type { User } from '../../types';
@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 
 const AdminUsers = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('All Roles'); // 'All Roles', 'ADMIN', 'USER'
@@ -24,10 +25,10 @@ const AdminUsers = () => {
         mutationFn: (userId: string) => usersAPI.ban(userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-            alert("Đã khóa tài khoản người dùng.");
+            alert(t('admin.common.update_success'));
         },
         onError: () => {
-            alert("Lỗi khi khóa tài khoản.");
+            alert(t('admin.common.error'));
         },
     });
 
@@ -35,10 +36,10 @@ const AdminUsers = () => {
         mutationFn: (userId: string) => usersAPI.unban(userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-            alert("Đã mở khóa tài khoản người dùng.");
+            alert(t('admin.common.update_success'));
         },
         onError: () => {
-            alert("Lỗi khi mở khóa tài khoản.");
+            alert(t('admin.common.error'));
         },
     });
 
@@ -46,10 +47,10 @@ const AdminUsers = () => {
         mutationFn: (userId: string) => usersAPI.delete(userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-            alert("Đã xóa tài khoản người dùng vĩnh viễn.");
+            alert(t('admin.common.update_success'));
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || "Lỗi khi xóa tài khoản.");
+            alert(err.response?.data?.message || t('admin.common.error'));
         },
     });
 
@@ -115,12 +116,12 @@ const AdminUsers = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Quản lý Người dùng</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Quản lý người dùng, vai trò và trạng thái bảo mật.</p>
+                    <h1 className="text-2xl font-bold text-slate-900">{t('admin.users.title')}</h1>
+                    <p className="text-slate-500 mt-1 text-sm">{t('admin.users.stat_active')}: {activeUsers}</p>
                 </div>
                 <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm shadow-blue-200">
                     <UserPlus size={18} />
-                    Thêm Người dùng
+                    {t('admin.users.btn_add')}
                 </button>
             </div>
 
@@ -128,10 +129,10 @@ const AdminUsers = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG NGƯỜI DÙNG</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.users.stat_total')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{totalUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +{usersThisMonth} trong tháng này
+                            <span>↗</span> +{usersThisMonth} {t('common.month').toLowerCase()}
                         </p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
@@ -141,10 +142,10 @@ const AdminUsers = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN HOẠT ĐỘNG</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.users.stat_active')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{activeUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-slate-500 mt-2">
-                            {(totalUsers > 0 ? (activeUsers / totalUsers * 100).toFixed(1) : 0)}% tổng số
+                            {(totalUsers > 0 ? (activeUsers / totalUsers * 100).toFixed(1) : 0)}% {t('admin.common.all').toLowerCase()}
                         </p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">
@@ -154,10 +155,10 @@ const AdminUsers = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">TÀI KHOẢN BỊ KHÓA</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('auth.password_strength.very_weak')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{bannedUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-slate-500 mt-2">
-                            {(totalUsers > 0 ? (bannedUsers / totalUsers * 100).toFixed(1) : 0)}% tổng số
+                            {(totalUsers > 0 ? (bannedUsers / totalUsers * 100).toFixed(1) : 0)}% {t('admin.common.all').toLowerCase()}
                         </p>
                     </div>
                     <div className="p-3 bg-red-50 text-red-500 rounded-lg">
@@ -174,7 +175,7 @@ const AdminUsers = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm theo tên hoặc email..."
+                            placeholder={t('admin.common.search')}
                             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,9 +189,9 @@ const AdminUsers = () => {
                                 value={roleFilter}
                                 onChange={(e) => setRoleFilter(e.target.value)}
                             >
-                                <option value="All Roles">Tất cả vai trò</option>
-                                <option value="ADMIN">Quản trị viên</option>
-                                <option value="USER">Người dùng</option>
+                                <option value="All Roles">{t('admin.users.table_role')}</option>
+                                <option value="ADMIN">ADMIN</option>
+                                <option value="USER">USER</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                         </div>
@@ -201,16 +202,16 @@ const AdminUsers = () => {
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
-                                <option value="Status">Trạng thái</option>
-                                <option value="Active">Hoạt động</option>
-                                <option value="Banned">Bị khóa</option>
+                                <option value="Status">{t('admin.common.status')}</option>
+                                <option value="Active">{t('stats.status_active')}</option>
+                                <option value="Banned">{t('auth.password_strength.very_weak')}</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                         </div>
                     </div>
 
                     <div className="hidden sm:block text-sm text-slate-500 font-medium ml-auto">
-                        Hiển thị <span className="text-slate-900 font-bold">{filteredUsers?.length}</span> trong số {totalUsers} người dùng
+                        {t('admin.common.showing_of', { count: filteredUsers?.length || 0, total: totalUsers })}
                     </div>
                 </div>
 
@@ -219,11 +220,11 @@ const AdminUsers = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">NGƯỜI DÙNG</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.users.title')}</th>
                                 <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">EMAIL</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">VAI TRÒ</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">TRẠNG THÁI</th>
-                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">HÀNH ĐỘNG</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.users.table_role')}</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">{t('admin.common.status')}</th>
+                                <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t('admin.common.action')}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
@@ -261,7 +262,7 @@ const AdminUsers = () => {
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${user.isBanned ? 'bg-red-500' : 'bg-green-500'}`}></div>
                                                 <span className={`text-sm font-medium ${user.isBanned ? 'text-red-500' : 'text-slate-600'}`}>
-                                                    {user.isBanned ? 'Bị khóa' : 'Hoạt động'}
+                                                    {user.isBanned ? t('auth.password_strength.very_weak') : t('stats.status_active')}
                                                 </span>
                                             </div>
                                         </td>
@@ -277,11 +278,11 @@ const AdminUsers = () => {
                                                     >
                                                         {user.isBanned ? (
                                                             <>
-                                                                <ShieldCheck size={14} /> Mở khóa
+                                                                <ShieldCheck size={14} /> {t('admin.users.unban', 'Mở khóa')}
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Ban size={14} /> Khóa
+                                                                <Ban size={14} /> {t('auth.password_strength.very_weak')}
                                                             </>
                                                         )}
                                                     </button>
@@ -302,7 +303,7 @@ const AdminUsers = () => {
                                     <td colSpan={5} className="py-12 text-center text-slate-500">
                                         <div className="flex flex-col items-center justify-center">
                                             <Filter className="h-10 w-10 text-slate-300 mb-3" />
-                                            <p>Không tìm thấy người dùng nào phù hợp với bộ lọc.</p>
+                                            <p>{t('admin.common.no_data')}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -313,11 +314,11 @@ const AdminUsers = () => {
                 {/* Pagination (Mock UI) */}
                 <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-between items-center">
                     <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        Trang trước
+                        {t('admin.common.prev')}
                     </button>
-                    <span className="text-sm text-slate-500">Trang 1 / 1</span>
+                    <span className="text-sm text-slate-500">{t('admin.common.page_of', { page: 1, total: 1 })}</span>
                     <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        Trang sau
+                        {t('admin.common.next')}
                     </button>
                 </div>
             </div>
@@ -330,9 +331,9 @@ const AdminUsers = () => {
                             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
                                 <AlertTriangle className="h-8 w-8 text-red-600" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận khóa tài khoản</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('admin.users.confirm_ban')}</h3>
                             <p className="text-sm text-gray-500 mb-6">
-                                Bạn có chắc chắn muốn khóa tài khoản này? Người dùng sẽ không thể đăng nhập sau khi bị khóa.
+                                {t('admin.users.confirm_ban')}
                             </p>
 
                             <div className="flex gap-3 justify-center">
@@ -340,13 +341,13 @@ const AdminUsers = () => {
                                     onClick={() => setConfirmModal({ open: false, userId: null })}
                                     className="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-colors text-sm"
                                 >
-                                    Hủy bỏ
+                                    {t('admin.common.cancel')}
                                 </button>
                                 <button
                                     onClick={handleConfirmBan}
                                     className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm shadow-sm shadow-red-200"
                                 >
-                                    Khóa ngay
+                                    {t('auth.password_strength.very_weak')}
                                 </button>
                             </div>
                         </div>
@@ -362,9 +363,9 @@ const AdminUsers = () => {
                             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 mb-4">
                                 <Trash2 className="h-8 w-8 text-red-600" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Xác nhận xóa tài khoản</h3>
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('admin.common.confirm')}</h3>
                             <p className="text-sm text-gray-500 mb-6">
-                                Hành động này <strong className="text-red-600">không thể hoàn tác</strong>. Tất cả dữ liệu của người dùng, bao gồm tin đăng và lịch hẹn, sẽ bị xóa vĩnh viễn.
+                                {t('admin.common.confirm')}
                             </p>
 
                             <div className="flex gap-3 justify-center">
@@ -372,13 +373,13 @@ const AdminUsers = () => {
                                     onClick={() => setDeleteConfirmModal({ open: false, userId: null })}
                                     className="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 font-medium hover:bg-gray-200 transition-colors text-sm"
                                 >
-                                    Hủy bỏ
+                                    {t('admin.common.cancel')}
                                 </button>
                                 <button
                                     onClick={handleConfirmDelete}
                                     className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm shadow-sm shadow-red-200"
                                 >
-                                    Xóa vĩnh viễn
+                                    {t('admin.common.delete')}
                                 </button>
                             </div>
                         </div>

@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationAPI, usersAPI } from '../../services/api';
 import { Bell, Trash2, Edit2, Send, Users, Check, Search } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { parseNotificationMessage } from '../../utils/notificationParser';
 
 interface NotificationFormData {
     recipientId: string;
@@ -13,6 +15,7 @@ interface NotificationFormData {
 }
 
 const AdminNotifications = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -94,7 +97,7 @@ const AdminNotifications = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa thông báo này?')) {
+        if (window.confirm(t('admin.common.confirm'))) {
             deleteMutation.mutate(id);
         }
     };
@@ -104,7 +107,7 @@ const AdminNotifications = () => {
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                     <Bell className="text-blue-600" />
-                    Quản lý thông báo hệ thống
+                    {t('admin.notifications.title')}
                 </h1>
                 <button
                     onClick={() => {
@@ -115,7 +118,7 @@ const AdminNotifications = () => {
                     className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
                 >
                     <Send size={18} />
-                    Gửi thông báo mới
+                    {t('admin.notifications.btn_add')}
                 </button>
             </div>
 
@@ -124,23 +127,23 @@ const AdminNotifications = () => {
                 <table className="w-full text-left text-sm">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th className="px-6 py-4 font-medium text-gray-500">Nội dung</th>
-                            <th className="px-6 py-4 font-medium text-gray-500">Người nhận</th>
-                            <th className="px-6 py-4 font-medium text-gray-500">Loại</th>
-                            <th className="px-6 py-4 font-medium text-gray-500">Thời gian</th>
-                            <th className="px-6 py-4 font-medium text-gray-500 text-right">Hành động</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">{t('admin.notifications.table_content')}</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">{t('admin.notifications.table_recipient')}</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">{t('admin.common.type')}</th>
+                            <th className="px-6 py-4 font-medium text-gray-500">{t('admin.common.created_at')}</th>
+                            <th className="px-6 py-4 font-medium text-gray-500 text-right">{t('admin.common.action')}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {isLoading ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">Đang tải...</td></tr>
+                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">{t('admin.common.loading')}</td></tr>
                         ) : notifications.length === 0 ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">Chưa có thông báo nào</td></tr>
+                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">{t('admin.common.no_data')}</td></tr>
                         ) : (
                             notifications.map((n: any) => (
                                 <tr key={n._id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 font-medium text-gray-900 max-w-md truncate" title={n.message}>
-                                        {n.message}
+                                        {parseNotificationMessage(n.message, t)}
                                     </td>
                                     <td className="px-6 py-4 text-gray-600">
                                         {n.recipientId ? (
@@ -152,7 +155,7 @@ const AdminNotifications = () => {
                                             </div>
                                         ) : (
                                             <span className="flex items-center gap-1 text-blue-600 font-medium">
-                                                <Users size={14} /> Tất cả
+                                                <Users size={14} /> {t('admin.common.all')}
                                             </span>
                                         )}
                                     </td>
@@ -169,14 +172,14 @@ const AdminNotifications = () => {
                                             <button
                                                 onClick={() => handleEdit(n)}
                                                 className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                                                title="Sửa nội dung"
+                                                title={t('admin.common.edit')}
                                             >
                                                 <Edit2 size={18} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(n._id)}
                                                 className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                                                title="Xóa"
+                                                title={t('admin.common.delete')}
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -195,7 +198,7 @@ const AdminNotifications = () => {
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900">
-                                {editingId ? 'Chỉnh sửa thông báo' : 'Gửi thông báo mới'}
+                                {editingId ? t('admin.common.update_success') : t('admin.notifications.btn_add')}
                             </h2>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">×</button>
                         </div>
@@ -205,7 +208,7 @@ const AdminNotifications = () => {
                                 <div className="space-y-4">
                                     {/* Target Type Selection */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Đối tượng nhận</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.notifications.table_recipient')}</label>
                                         <select
                                             {...register('recipientType')}
                                             className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
@@ -214,22 +217,22 @@ const AdminNotifications = () => {
                                                 // Reset other fields if needed or handle logic
                                             }}
                                         >
-                                            <option value="INDIVIDUAL">Cá nhân</option>
-                                            <option value="ALL">Tất cả người dùng</option>
-                                            <option value="ROLE">Theo vai trò</option>
+                                            <option value="INDIVIDUAL">{t('admin.users.role_user')}</option>
+                                            <option value="ALL">{t('admin.common.all')}</option>
+                                            <option value="ROLE">{t('admin.users.title')}</option>
                                         </select>
                                     </div>
 
                                     {/* Sub-selection based on Type */}
                                     {watch('recipientType') === 'ROLE' && (
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Chọn vai trò</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.common.filter')}</label>
                                             <select
                                                 {...register('targetGroup')}
                                                 className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                             >
-                                                <option value="ADMIN">Quản trị viên (Admin)</option>
-                                                <option value="USER">Người dùng thường (User)</option>
+                                                <option value="ADMIN">{t('admin.users.role_admin')}</option>
+                                                <option value="USER">{t('admin.users.role_user')}</option>
                                             </select>
                                         </div>
                                     )}
@@ -237,14 +240,14 @@ const AdminNotifications = () => {
                                     {/* Individual Selection (Existing logic) */}
                                     {watch('recipientType') === 'INDIVIDUAL' && (
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Người nhận cụ thể</label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.notifications.table_recipient')}</label>
 
                                             {/* Search Input */}
                                             <div className="relative mb-2">
                                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                                 <input
                                                     type="text"
-                                                    placeholder="Tìm kiếm người dùng..."
+                                                    placeholder={t('admin.common.search')}
                                                     value={searchQuery}
                                                     onChange={(e) => setSearchQuery(e.target.value)}
                                                     className="w-full pl-9 pr-4 py-2 text-sm border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
@@ -255,7 +258,7 @@ const AdminNotifications = () => {
                                                 {...register('recipientId')}
                                                 className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500 max-h-40 overflow-y-auto"
                                             >
-                                                <optgroup label={searchQuery ? "Kết quả tìm kiếm" : "Chọn người dùng"}>
+                                                <optgroup label={searchQuery ? t('admin.notifications.search_results') : t('admin.notifications.select_user')}>
                                                     {filteredUsers.map((u: any) => (
                                                         <option key={u._id} value={u._id}>
                                                             {u.name} ({u.email})
@@ -269,12 +272,12 @@ const AdminNotifications = () => {
                             )}
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nội dung thông báo</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.notifications.table_content')}</label>
                                 <textarea
                                     {...register('message', { required: true })}
                                     rows={4}
                                     className="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Nhập nội dung thông báo..."
+                                    placeholder={t('admin.notifications.table_content')}
                                 />
                             </div>
 
@@ -284,7 +287,7 @@ const AdminNotifications = () => {
                                     onClick={() => setIsModalOpen(false)}
                                     className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg font-medium"
                                 >
-                                    Hủy
+                                    {t('admin.common.cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -292,11 +295,11 @@ const AdminNotifications = () => {
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center gap-2"
                                 >
                                     {(updateMutation.isPending || createMutation.isPending) ? (
-                                        'Đang xử lý...'
+                                        t('admin.common.loading')
                                     ) : (
                                         <>
                                             <Check size={18} />
-                                            {editingId ? 'Cập nhật' : 'Gửi ngay'}
+                                            {editingId ? t('admin.common.confirm') : t('admin.notifications.btn_add')}
                                         </>
                                     )}
                                 </button>

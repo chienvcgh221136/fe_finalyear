@@ -195,12 +195,12 @@ const UserProfile = () => {
                                 </button>
                                 {isOwner ? (
                                     <LocalizedLink to="/profile" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
-                                        <Edit size={16} /> {t('user_profile.btn_edit_profile', 'Chỉnh sửa hồ sơ')}
+                                        <Edit size={16} /> {t('user_profile.btn_edit_profile')}
                                     </LocalizedLink>
                                 ) : (
                                     <LocalizedLink to="/chat" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
                                         <MessageSquare size={16} />
-                                        {t('user_profile.btn_message', 'Nhắn tin')}
+                                        {t('user_profile.btn_message')}
                                     </LocalizedLink>
                                 )}
                             </div>
@@ -279,12 +279,12 @@ const UserProfile = () => {
                                                             </div>
                                                         )}
                                                         <div className="absolute top-2 left-2 px-2 py-0.5 bg-white/90 backdrop-blur-sm rounded text-[10px] font-bold text-gray-900 border border-gray-100">
-                                                            {post.transactionType === 'RENT' ? t('common.rent', 'Cho thuê') : t('common.buy', 'Bán')}
+                                                            {post.transactionType === 'RENT' ? t('common.rent') : t('common.buy')}
                                                         </div>
                                                         {post.status === 'SOLD' && (
                                                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
                                                                 <span className="text-white font-black text-sm border-2 border-white px-2 py-1 rounded transform -rotate-12 uppercase tracking-widest leading-none">
-                                                                    {t('common.sold', 'Đã bán')}
+                                                                    {t('common.sold')}
                                                                 </span>
                                                             </div>
                                                         )}

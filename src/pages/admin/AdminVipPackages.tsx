@@ -49,10 +49,10 @@ const AdminVipPackages = () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'vip-packages'] });
             setShowModal(false);
             resetForm();
-            alert("Tạo gói thành công!");
+            alert(t('admin.common.update_success'));
         },
         onError: (error: any) => {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+            alert(error.response?.data?.message || t('admin.common.error'));
         }
     });
 
@@ -62,10 +62,10 @@ const AdminVipPackages = () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'vip-packages'] });
             setShowModal(false);
             resetForm();
-            alert("Cập nhật thành công!");
+            alert(t('admin.common.update_success'));
         },
         onError: (error: any) => {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+            alert(error.response?.data?.message || t('admin.common.error'));
         }
     });
 
@@ -75,7 +75,7 @@ const AdminVipPackages = () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'vip-packages'] });
         },
         onError: (error: any) => {
-            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+            alert(error.response?.data?.message || t('admin.common.error'));
         }
     });
 
@@ -121,7 +121,7 @@ const AdminVipPackages = () => {
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa/hủy kích hoạt gói này?')) {
+        if (window.confirm(t('admin.common.confirm'))) {
             deleteMutation.mutate(id);
         }
     };
@@ -139,14 +139,14 @@ const AdminVipPackages = () => {
             {/* Header */}
             <div className="flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Quản lý Gói VIP</h1>
-                    <p className="text-gray-500">Quản lý các gói dịch vụ và theo dõi đăng ký của người dùng.</p>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('admin.vip.title')}</h1>
+                    <p className="text-gray-500">{t('admin.vip.tab_config')}</p>
                 </div>
                 <button
                     onClick={() => { resetForm(); setShowModal(true); }}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
                 >
-                    <Plus size={18} /> Tạo gói mới
+                    <Plus size={18} /> {t('admin.vip.btn_add')}
                 </button>
             </div>
 
@@ -155,7 +155,7 @@ const AdminVipPackages = () => {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Người dùng VIP</p>
+                            <p className="text-sm font-medium text-gray-500">{t('admin.vip.stat_count')}</p>
                             <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.activeVipUsers || 0}</h3>
                         </div>
                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
@@ -167,9 +167,9 @@ const AdminVipPackages = () => {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Doanh thu tháng</p>
+                            <p className="text-sm font-medium text-gray-500">{t('admin.vip.stat_revenue')}</p>
                             <h3 className="text-3xl font-bold text-gray-900 mt-1">
-                                {formatVNDRaw(stats.monthlyRevenue || 0)} đ
+                                {formatVNDRaw(stats.monthlyRevenue || 0)} {t('admin.vip.currency_symbol', 'đ')}
                             </h3>
                         </div>
                         <div className="p-2 bg-green-50 text-green-600 rounded-lg">
@@ -181,8 +181,8 @@ const AdminVipPackages = () => {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <p className="text-sm font-medium text-gray-500">Gói phổ biến nhất</p>
-                            <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.topPackage || 'Chưa có'}</h3>
+                            <p className="text-sm font-medium text-gray-500">{t('admin.vip.stat_top')}</p>
+                            <h3 className="text-3xl font-bold text-gray-900 mt-1">{stats.topPackage || t('admin.common.no_data')}</h3>
                         </div>
                         <div className="p-2 bg-yellow-50 text-yellow-600 rounded-lg">
                             <Star size={20} />
@@ -201,7 +201,7 @@ const AdminVipPackages = () => {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <Box size={18} /> Cấu hình Gói
+                        <Box size={18} /> {t('admin.vip.tab_config')}
                     </button>
                     <button
                         onClick={() => setActiveTab('users')}
@@ -210,7 +210,7 @@ const AdminVipPackages = () => {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                             }`}
                     >
-                        <Users size={18} /> Quản lý Người dùng
+                        <Users size={18} /> {t('admin.users.title')}
                     </button>
                 </div>
             </div>
@@ -234,25 +234,25 @@ const AdminVipPackages = () => {
 
                                 <div className="space-y-3 mb-6">
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Thời hạn</span>
+                                        <span className="text-gray-500">{t('admin.vip.table_duration')}</span>
                                         <span className="font-medium text-gray-900">{pkg.durationDays} {t('common.days')}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Điểm ưu tiên</span>
+                                        <span className="text-gray-500">{t('admin.vip.table_priority')}</span>
                                         <span className="font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded">{pkg.priorityScore} / 100</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Xem SĐT (Ngày)</span>
-                                        <span className="font-medium text-blue-600">{pkg.limitViewPhone || 0} lượt</span>
+                                        <span className="text-gray-500">{t('admin.vip.table_view_phone')}</span>
+                                        <span className="font-medium text-blue-600">{pkg.limitViewPhone || 0} {t('stats.view_count').toLowerCase()}</span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                        <span className="text-gray-500">Giới hạn tin VIP/ngày</span>
-                                        <span className="font-bold text-amber-600">{pkg.postLimit || 0} tin</span>
+                                        <span className="text-gray-500">{t('admin.vip.table_post_limit')}</span>
+                                        <span className="font-bold text-amber-600">{pkg.postLimit || 0} {t('admin.posts.title').toLowerCase()}</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase">Quyền lợi</p>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase">{t('admin.vip.table_perks')}</p>
                                     <div className="flex flex-wrap gap-2">
                                         {pkg.perks?.map((perk: string, idx: number) => (
                                             <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-md border border-gray-200">
@@ -264,7 +264,7 @@ const AdminVipPackages = () => {
 
                                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
                                     <button onClick={() => handleDelete(pkg._id)} className="text-red-500 text-sm hover:underline">
-                                        {pkg.isActive ? 'Hủy kích hoạt' : 'Kích hoạt'}
+                                        {pkg.isActive ? t('admin.reports.dismiss') : t('stats.status_active')}
                                     </button>
                                 </div>
                             </div>
@@ -274,10 +274,10 @@ const AdminVipPackages = () => {
             ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                        <h3 className="font-bold text-gray-700">Theo dõi người dùng VIP ({vipUsers.length})</h3>
+                        <h3 className="font-bold text-gray-700">{t('admin.vip.tab_users')} ({vipUsers.length})</h3>
                         <div className="flex gap-2">
                             <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                <Filter size={16} /> Lọc
+                                <Filter size={16} /> {t('admin.common.filter')}
                             </button>
 
                         </div>
@@ -286,10 +286,10 @@ const AdminVipPackages = () => {
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-50 text-gray-500 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-4 font-medium">Người dùng</th>
-                                    <th className="px-6 py-4 font-medium">Gói hiện tại</th>
-                                    <th className="px-6 py-4 font-medium">Trạng thái</th>
-                                    <th className="px-6 py-4 font-medium">Hết hạn ngày</th>
+                                    <th className="px-6 py-4 font-medium">{t('admin.users.title')}</th>
+                                    <th className="px-6 py-4 font-medium">{t('admin.vip.table_name')}</th>
+                                    <th className="px-6 py-4 font-medium">{t('admin.common.status')}</th>
+                                    <th className="px-6 py-4 font-medium">{t('admin.vip.table_expired')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -310,11 +310,11 @@ const AdminVipPackages = () => {
                                         <td className="px-6 py-4">
                                             {user.vip?.isActive ? (
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Đang hoạt động
+                                                    {t('stats.status_active')}
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                    Đã hết hạn/Hủy
+                                                    {t('admin.reports.tab_dismissed')}
                                                 </span>
                                             )}
                                         </td>
@@ -326,7 +326,7 @@ const AdminVipPackages = () => {
                                 {vipUsers.length === 0 && (
                                     <tr>
                                         <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                                            Không có người dùng nào đang sử dụng gói VIP.
+                                            {t('admin.common.no_data')}
                                         </td>
                                     </tr>
                                 )}
@@ -342,7 +342,7 @@ const AdminVipPackages = () => {
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-gray-900">
-                                {editingPackage ? 'Chỉnh sửa Gói' : 'Tạo Gói Mới'}
+                                {editingPackage ? t('admin.vip.table_name') : t('admin.vip.btn_add')}
                             </h3>
                             <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
                                 <XCircle size={24} />
@@ -350,14 +350,14 @@ const AdminVipPackages = () => {
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tên Gói</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_name')}</label>
                                 <select
                                     required
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 >
-                                    <option value="" disabled>-- Chọn loại gói --</option>
+                                    <option value="" disabled>-- {t('admin.common.filter')} --</option>
                                     <option value="VIP Bronze">VIP Bronze</option>
                                     <option value="VIP Silver">VIP Silver</option>
                                     <option value="VIP Gold">VIP Gold</option>
@@ -365,7 +365,7 @@ const AdminVipPackages = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Giá (VNĐ)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.common.points')} ({t('admin.vip.package_price_unit', 'VNĐ')})</label>
                                     <input
                                         type="number"
                                         required
@@ -376,7 +376,7 @@ const AdminVipPackages = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Thời hạn (Ngày)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_duration')} ({t('common.days')})</label>
                                     <input
                                         type="number"
                                         required
@@ -388,7 +388,7 @@ const AdminVipPackages = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Điểm Ưu Tiên (0-100)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_priority')} (0-100)</label>
                                     <input
                                         type="number"
                                         required
@@ -400,7 +400,7 @@ const AdminVipPackages = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Xem SĐT (Lượt/Ngày)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_view_phone')} ({t('stats.view_count')})</label>
                                     <input
                                         type="number"
                                         required
@@ -414,7 +414,7 @@ const AdminVipPackages = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Giới hạn tin VIP/ngày</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_post_limit')}</label>
                                     <input
                                         type="number"
                                         required
@@ -422,23 +422,23 @@ const AdminVipPackages = () => {
                                         value={formData.postLimit}
                                         onChange={e => setFormData({ ...formData, postLimit: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                        placeholder="Ví dụ: 5"
+                                        placeholder={t('admin.vip.example_post_limit', 'Ví dụ: 5')}
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Quyền lợi (Phân cách bằng dấu phẩy)</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.vip.table_perks')}</label>
                                 <textarea
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                                    placeholder="Ví dụ: 5 Tin đăng nổi bật, Huy hiệu xác minh, Đẩy tin hàng tuần"
+                                    placeholder={t('admin.vip.perks_placeholder')}
                                     rows={3}
                                     value={formData.perks}
                                     onChange={e => setFormData({ ...formData, perks: e.target.value })}
                                 ></textarea>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">{t('admin.notifications.table_content')}</label>
                                 <textarea
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                     rows={2}
@@ -456,7 +456,7 @@ const AdminVipPackages = () => {
                                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                                 />
                                 <label htmlFor="isPopular" className="text-sm font-medium text-gray-700">
-                                    Đặt làm gói Phổ biến nhất (Most Popular)
+                                    {t('admin.vip.stat_top')}
                                 </label>
                             </div>
 
@@ -466,13 +466,13 @@ const AdminVipPackages = () => {
                                     onClick={() => setShowModal(false)}
                                     className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors"
                                 >
-                                    Hủy
+                                    {t('admin.common.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                                 >
-                                    {editingPackage ? 'Lưu Thay Đổi' : 'Tạo Gói'}
+                                    {editingPackage ? t('admin.common.confirm') : t('admin.vip.btn_add')}
                                 </button>
                             </div>
                         </form>

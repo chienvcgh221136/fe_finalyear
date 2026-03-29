@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationAPI } from '../../services/api';
-import { Bell, Heart, Calendar, MessageSquare, AlertTriangle, Info } from 'lucide-react';
+import { Bell, Heart, Calendar, MessageSquare, AlertTriangle, Info, Gift } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { vi, enUS } from 'date-fns/locale';
 import LocalizedLink from '../common/LocalizedLink';
 import { useTranslation } from 'react-i18next';
+import { parseNotificationMessage } from '../../utils/notificationParser';
 
 const NotificationDropdown = () => {
     const { t, i18n } = useTranslation();
@@ -58,7 +59,7 @@ const NotificationDropdown = () => {
     };
 
     const newsTypes = ['LEAD', 'APPOINTMENT', 'LIKE', 'REVIEW'];
-    const activityTypes = ['SYSTEM', 'REPORT'];
+    const activityTypes = ['SYSTEM', 'REPORT', 'POINT'];
 
     const displayedNotifications = notifications.filter((n: any) =>
         activeTab === 'NEWS' ? newsTypes.includes(n.type) : activityTypes.includes(n.type)
@@ -71,6 +72,7 @@ const NotificationDropdown = () => {
             case 'LEAD': return <Info className="text-green-500" size={18} />;
             case 'REVIEW': return <MessageSquare className="text-yellow-500" size={18} />;
             case 'REPORT': return <AlertTriangle className="text-orange-500" size={18} />;
+            case 'POINT': return <Gift className="text-purple-500" size={18} />;
             default: return <Bell className="text-gray-500" size={18} />;
         }
     };
@@ -82,6 +84,7 @@ const NotificationDropdown = () => {
             if (n.type === 'LEAD') return `/post/${n.relatedId}`; // Seller reviewing their post
             if (n.type === 'LIKE' || n.type === 'REVIEW') return `/post/${n.relatedId}`;
             if (n.type === 'REPORT') return `/post/${n.relatedId}`; // Or help center
+            if (n.type === 'POINT') return `/loyalty`;
         }
         return '#';
     };
@@ -154,7 +157,7 @@ const NotificationDropdown = () => {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className={`text-sm text-gray-900 ${!n.isRead ? 'font-semibold' : ''}`}>
-                                                {n.message}
+                                                {parseNotificationMessage(n.message, t)}
                                             </p>
                                             <p className="text-xs text-gray-500 mt-1">
                                                 {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true, locale: dateLocale })}

@@ -51,17 +51,23 @@ const Home = () => {
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className="mx-auto max-w-4xl text-center mb-16"
                     >
-                        <h1 className="text-5xl md:text-6xl lg:text-[72px] font-extrabold tracking-tight text-gray-900 mb-6 leading-[1.1]">
-                            <Trans i18nKey="home.hero.title">
-                                Tìm kiếm <span className="text-blue-600">Bất động sản</span><br />
-                                dễ dàng hơn bao giờ hết
-                            </Trans>
+                        <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 mb-8 leading-tight">
+                            <Trans
+                                i18nKey="home.hero.title"
+                                components={{
+                                    keyword: <span className="inline-block bg-blue-600 text-white px-8 py-2 rounded-3xl shadow-2xl shadow-blue-600/30 font-black my-3 transform -rotate-1" />,
+                                    br: <br />,
+                                    sub: <span className="text-slate-400 font-medium" />
+                                }}
+                            />
                         </h1>
-                        <p className="text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-medium">
-                            <Trans i18nKey="home.hero.subtitle">
-                                Hàng nghìn tin đăng mua bán, cho thuê nhà đất mỗi ngày. <br className="hidden md:block" />
-                                Kết nối trực tiếp với chủ nhà.
-                            </Trans>
+                        <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed font-medium mt-10">
+                            <Trans
+                                i18nKey="home.hero.subtitle"
+                                components={{
+                                    br: <br className="hidden md:block" />
+                                }}
+                            />
                         </p>
                     </motion.div>
 
@@ -205,9 +211,10 @@ const Home = () => {
 
                         <div className="relative z-10 max-w-3xl mx-auto">
                             <h2 className="mb-6 text-3xl font-extrabold md:text-5xl leading-tight">
-                                <Trans i18nKey="home.cta.title">
-                                    Bạn có bất động sản cần bán <br />hoặc cho thuê?
-                                </Trans>
+                                <Trans
+                                    i18nKey="home.cta.title"
+                                    components={{ br: <br /> }}
+                                />
                             </h2>
                             <p className="mb-10 text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
                                 {t('home.cta.description')}

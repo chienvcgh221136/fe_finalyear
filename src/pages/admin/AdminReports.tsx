@@ -28,36 +28,36 @@ const AdminReports = () => {
         mutationFn: reportsAPI.resolve,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            success("Đã giải quyết báo cáo");
+            success(t('admin.common.update_success'));
         },
-        onError: () => error("Có lỗi xảy ra khi giải quyết báo cáo")
+        onError: () => error(t('admin.common.error'))
     });
 
     const rejectMutation = useMutation({
         mutationFn: reportsAPI.reject,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            success("Đã từ chối báo cáo");
+            success(t('admin.common.update_success'));
         },
-        onError: () => error("Có lỗi xảy ra khi từ chối báo cáo")
+        onError: () => error(t('admin.common.error'))
     });
 
     const banMutation = useMutation({
         mutationFn: usersAPI.ban,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            success("Đã cấm người dùng thành công");
+            success(t('admin.common.update_success'));
         },
-        onError: () => error("Có lỗi xảy ra khi cấm người dùng")
+        onError: () => error(t('admin.common.error'))
     });
 
     const deleteReportMutation = useMutation({
         mutationFn: reportsAPI.delete,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'reports'] });
-            success("Đã xóa lịch sử báo cáo");
+            success(t('admin.common.update_success'));
         },
-        onError: () => error("Có lỗi xảy ra khi xóa báo cáo")
+        onError: () => error(t('admin.common.error'))
     });
 
     // Helper to get color/label for reason
@@ -104,8 +104,10 @@ const AdminReports = () => {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Báo cáo vi phạm</h1>
-                    <p className="text-gray-500">Xem xét và xử lý các báo cáo từ cộng đồng.</p>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">{t('admin.reports.title')}</h1>
+                    <p className="text-gray-500">{t('admin.reports.tab_pending')}</p>
+                </div>
                 </div>
             </div>
 
@@ -118,7 +120,7 @@ const AdminReports = () => {
                         }`}
                     onClick={() => setActiveTab('POST')}
                 >
-                    Báo cáo bài đăng
+                    {t('admin.posts.table_post')}
                 </button>
                 <button
                     className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'USER'
@@ -127,7 +129,7 @@ const AdminReports = () => {
                         }`}
                     onClick={() => setActiveTab('USER')}
                 >
-                    Báo cáo người dùng
+                    {t('admin.users.title')}
                 </button>
             </div>
 
@@ -139,7 +141,7 @@ const AdminReports = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm báo cáo..."
+                            placeholder={t('admin.common.search')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm outline-none"
@@ -154,22 +156,22 @@ const AdminReports = () => {
                             <tr className="bg-gray-50/50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500 font-semibold">
                                 {activeTab === 'POST' ? (
                                     <>
-                                        <th className="px-6 py-4">Bài đăng</th>
-                                        <th className="px-6 py-4">Người báo cáo</th>
-                                        <th className="px-6 py-4">Lý do</th>
-                                        <th className="px-6 py-4">Số lượng</th>
-                                        <th className="px-6 py-4 text-center">Trạng thái</th>
-                                        <th className="px-6 py-4 text-right">Thao tác</th>
+                                        <th className="px-6 py-4">{t('admin.posts.table_post')}</th>
+                                        <th className="px-6 py-4">{t('admin.reports.table_reporter')}</th>
+                                        <th className="px-6 py-4">{t('admin.reports.table_reason')}</th>
+                                        <th className="px-6 py-4">{t('stats.view_count')}</th>
+                                        <th className="px-6 py-4 text-center">{t('admin.common.status')}</th>
+                                        <th className="px-6 py-4 text-right">{t('admin.common.action')}</th>
                                     </>
                                 ) : (
                                     <>
-                                        <th className="px-6 py-4">Người bị báo cáo</th>
-                                        <th className="px-6 py-4">Người báo cáo</th>
-                                        <th className="px-6 py-4">Lý do</th>
-                                        <th className="px-6 py-4">Chi tiết</th>
-                                        <th className="px-6 py-4">Số lượng</th>
-                                        <th className="px-6 py-4 text-center">Trạng thái</th>
-                                        <th className="px-6 py-4 text-right">Thao tác</th>
+                                        <th className="px-6 py-4">{t('admin.users.title')}</th>
+                                        <th className="px-6 py-4">{t('admin.reports.table_reporter')}</th>
+                                        <th className="px-6 py-4">{t('admin.reports.table_reason')}</th>
+                                        <th className="px-6 py-4">{t('admin.notifications.table_content')}</th>
+                                        <th className="px-6 py-4">{t('stats.view_count')}</th>
+                                        <th className="px-6 py-4 text-center">{t('admin.common.status')}</th>
+                                        <th className="px-6 py-4 text-right">{t('admin.common.action')}</th>
                                     </>
                                 )}
                             </tr>
@@ -177,14 +179,14 @@ const AdminReports = () => {
                         <tbody className="divide-y divide-gray-100">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={activeTab === 'POST' ? 6 : 7} className="px-6 py-12 text-center text-gray-500">Đang tải báo cáo...</td>
+                                    <td colSpan={activeTab === 'POST' ? 6 : 7} className="px-6 py-12 text-center text-gray-500">{t('admin.common.loading')}</td>
                                 </tr>
                             ) : filteredReports?.length === 0 ? (
                                 <tr>
                                     <td colSpan={activeTab === 'POST' ? 6 : 7} className="px-6 py-12 text-center text-gray-500">
                                         <div className="flex flex-col items-center justify-center p-4">
                                             <CheckCircle className="text-green-500 mb-2" size={32} />
-                                            <p>Không có báo cáo chờ xử lý!</p>
+                                            <p>{t('admin.common.no_data')}</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -195,11 +197,13 @@ const AdminReports = () => {
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded bg-gray-200 shrink-0 overflow-hidden">
-                                                        <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 font-bold">P</div>
+                                                        <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400 font-bold">
+                                                            {t('admin.posts.table_post').charAt(0)}
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <LocalizedLink to={`/post/${report.postId?._id}`} target="_blank" className="font-bold text-gray-900 line-clamp-1 hover:text-blue-600">
-                                                            {report.postId?.title || t('admin.reports.post_not_exist', 'Bài đăng không tồn tại')}
+                                                            {report.postId?.title || t('admin.reports.post_not_exist')}
                                                         </LocalizedLink>
                                                         <p className="text-xs text-gray-400 font-mono mt-0.5">ID: #{report._id.slice(-6).toUpperCase()}</p>
                                                     </div>
@@ -213,7 +217,7 @@ const AdminReports = () => {
                                                     </div>
                                                     <div>
                                                         <LocalizedLink to={`/user/${report.targetUserId?._id}`} target="_blank" className="font-bold text-gray-900 hover:text-blue-600">
-                                                            {report.targetUserId?.name || t('admin.reports.user_not_exist', 'Người dùng không tồn tại')}
+                                                            {report.targetUserId?.name || t('admin.reports.user_not_exist')}
                                                         </LocalizedLink>
                                                         <p className="text-xs text-gray-500">{report.targetUserId?.email}</p>
                                                     </div>
@@ -223,7 +227,7 @@ const AdminReports = () => {
 
                                         <td className="px-6 py-4">
                                             <div>
-                                                <p className="font-medium text-gray-900">{report.reporterId?.name || 'Ẩn danh'}</p>
+                                                <p className="font-medium text-gray-900">{report.reporterId?.name || t('admin.common.anonymous')}</p>
                                                 <p className="text-xs text-gray-500">{report.reporterId?.email}</p>
                                             </div>
                                         </td>
@@ -246,7 +250,7 @@ const AdminReports = () => {
                                                         {report.description}
                                                     </p>
                                                 ) : (
-                                                    <span className="text-gray-400 text-sm italic">Không có mô tả</span>
+                                                    <span className="text-gray-400 text-sm italic">{t('admin.common.no_data')}</span>
                                                 )}
                                             </td>
                                         )}
@@ -268,7 +272,9 @@ const AdminReports = () => {
                                                     ></div>
                                                 </div>
                                                 {(activeTab === 'POST' ? report.postId?.userId?.violationCount : report.targetUserId?.violationCount) >= 5 && (
-                                                    <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded font-bold">WARNING</span>
+                                                    <span className="text-[10px] bg-red-100 text-red-600 px-1 rounded font-bold">
+                                                        {t('admin.common.warning').toUpperCase()}
+                                                    </span>
                                                 )}
                                             </div>
                                         </td>
@@ -278,13 +284,15 @@ const AdminReports = () => {
                                                 ${report.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
                                                     report.status === 'RESOLVED' ? 'bg-green-100 text-green-700' :
                                                         'bg-gray-100 text-gray-500'}`}>
-                                                {report.status === 'PENDING' ? 'Chờ xử lý' : report.status === 'RESOLVED' ? 'Đã giải quyết' : 'Đã từ chối'}
+                                                {report.status === 'PENDING' ? t('admin.reports.tab_pending') : report.status === 'RESOLVED' ? t('admin.reports.tab_resolved') : t('admin.reports.tab_dismissed')}
                                             </span>
                                             {/* Banned label */}
                                             {((activeTab === 'POST' && report.postId?.userId?.isBanned) ||
                                                 (activeTab === 'USER' && report.targetUserId?.isBanned)) && (
                                                     <div className="mt-1">
-                                                        <span className="text-[10px] bg-gray-800 text-white px-1.5 py-0.5 rounded">BANNED</span>
+                                                        <span className="text-[10px] bg-gray-800 text-white px-1.5 py-0.5 rounded">
+                                                            {t('admin.common.banned').toUpperCase()}
+                                                        </span>
                                                     </div>
                                                 )}
                                         </td>
@@ -305,14 +313,14 @@ const AdminReports = () => {
                                                     <>
                                                         <button
                                                             onClick={() => resolveMutation.mutate(report._id)}
-                                                            title="Giải quyết (Xác nhận vi phạm)"
+                                                            title={t('admin.reports.resolve')}
                                                             className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded"
                                                         >
                                                             <CheckCircle size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => rejectMutation.mutate(report._id)}
-                                                            title="Từ chối (Báo cáo sai)"
+                                                            title={t('admin.reports.dismiss')}
                                                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
                                                         >
                                                             <XCircle size={16} />
@@ -330,14 +338,16 @@ const AdminReports = () => {
                                                         return (
                                                             <button
                                                                 onClick={() => {
-                                                                    if (window.confirm(`Bạn có chắc chắn muốn cấm người dùng ${targetUser?.name}?`)) {
+                                                                    if (window.confirm(t('admin.common.confirm_ban'))) {
                                                                         banMutation.mutate(targetUser?._id);
                                                                     }
                                                                 }}
-                                                                title="Cấm người dùng"
+                                                                title={t('admin.common.ban')}
                                                                 className="p-1.5 text-white bg-red-600 hover:bg-red-700 rounded shadow-sm ml-2"
                                                             >
-                                                                <span className="text-xs font-bold px-1">BAN</span>
+                                                                <span className="text-xs font-bold px-1">
+                                                                    {t('admin.common.ban').toUpperCase()}
+                                                                </span>
                                                             </button>
                                                         );
                                                     }
@@ -348,11 +358,11 @@ const AdminReports = () => {
                                                 {(report.status === 'RESOLVED' || report.status === 'REJECTED') && (
                                                     <button
                                                         onClick={() => {
-                                                            if (window.confirm('Bạn có chắc chắn muốn xóa báo cáo này?')) {
+                                                            if (window.confirm(t('admin.common.confirm_delete'))) {
                                                                 deleteReportMutation.mutate(report._id);
                                                             }
                                                         }}
-                                                        title="Xóa báo cáo"
+                                                        title={t('admin.common.delete')}
                                                         className="p-1.5 text-red-600 hover:bg-red-50 rounded shadow-sm"
                                                     >
                                                         <Trash2 size={16} />
@@ -366,7 +376,7 @@ const AdminReports = () => {
                                                             setViewChatId(report.chatRoomId?._id || report.chatRoomId);
                                                             setViewChatTargetUser(report.targetUserId?.name || 'User');
                                                         }}
-                                                        title="Xem đoạn chat"
+                                                        title={t('sidebar.messages')}
                                                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded shadow-sm ml-2"
                                                     >
                                                         <MessageSquare size={16} />

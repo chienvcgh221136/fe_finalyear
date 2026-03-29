@@ -65,12 +65,12 @@ const VipManagement = () => {
     const formatPrice = (price: number) => {
         if (!price) return t('common.contact');
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
+            return `${(price / 1000000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
+            return `${(price / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 1 })} ${t('common.million')}`;
         }
-        return new Intl.NumberFormat('vi-VN').format(price) + ' ' + t('common.currency');
+        return new Intl.NumberFormat(i18n.language === 'vi' ? 'vi-VN' : 'en-US').format(price) + ' ' + t('common.currency');
     };
 
 
@@ -289,7 +289,7 @@ const VipManagement = () => {
                                             </td>
                                             <td className="p-4">
                                                 <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-md">
-                                                    ACTIVE
+                                                    {t('common.active')}
                                                 </span>
                                             </td>
                                             <td className="p-4">
@@ -297,7 +297,7 @@ const VipManagement = () => {
                                                     <div className="flex flex-col gap-1">
                                                         <div className="flex items-center gap-2 text-blue-600 font-bold text-sm">
                                                             <Crown size={16} className="fill-blue-600" />
-                                                            VIP ACTIVE
+                                                            {t('vip_management.vip_active_label')}
                                                         </div>
                                                         <span className="text-xs text-gray-500">
                                                             {post.vip?.vipType || myVip.vipType}

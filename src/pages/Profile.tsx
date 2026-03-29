@@ -238,14 +238,14 @@ const Profile = () => {
                             {/* Delete Button (Always visible for both parties to clear history) */}
                             <button
                                 onClick={() => {
-                                    if (window.confirm("Bạn có chắc muốn xóa lịch hẹn này không?")) {
+                                    if (window.confirm(t('profile.confirm_delete_appointment'))) {
                                         deleteMutation.mutate(ap._id);
                                     }
                                 }}
                                 className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Xóa lịch hẹn"
+                                title={t('common.delete')}
                             >
-                                <Trash2 size={16} /> Xóa
+                                <Trash2 size={16} /> {t('common.delete')}
                             </button>
 
                             {isSeller && ap.status === 'PENDING' && (
@@ -254,13 +254,13 @@ const Profile = () => {
                                         onClick={() => updateStatusMutation.mutate({ id: ap._id, status: 'REJECTED' })}
                                         className="px-3 py-1.5 border border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 transition-colors"
                                     >
-                                        Từ chối
+                                        {t('common.reject')}
                                     </button>
                                     <button
                                         onClick={() => updateStatusMutation.mutate({ id: ap._id, status: 'APPROVED' })}
                                         className="px-3 py-1.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200"
                                     >
-                                        Chấp nhận
+                                        {t('common.approve')}
                                     </button>
                                 </>
                             )}
@@ -430,13 +430,13 @@ const Profile = () => {
     const formatPrice = (price: number, transactionType?: string) => {
         if (!price) return t('common.contact');
         if (transactionType === 'RENT') {
-            return `${price.toLocaleString('vi-VN')} ${t('common.currency')}/${t('common.month')}`;
+            return `${price.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} ${t('common.currency')}/${t('common.month')}`;
         }
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
+            return `${(price / 1000000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
+            return `${(price / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 1 })} ${t('common.million')}`;
         }
         return formatVND(price);
     };

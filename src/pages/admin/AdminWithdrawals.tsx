@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { withdrawAPI } from '../../services/api';
 import { CheckCircle, XCircle, Clock, AlertCircle, Search, Filter, DollarSign, Wallet, ArrowUpRight } from 'lucide-react';
 import { formatVND } from '../../utils/currencyUtils';
 
 const AdminWithdrawals = () => {
+    const { t } = useTranslation();
     const queryClient = useQueryClient();
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [selectedRequest, setSelectedRequest] = useState<any>(null);
@@ -28,10 +30,10 @@ const AdminWithdrawals = () => {
             setSelectedRequest(null);
             setActionType(null);
             setActionNote('');
-            alert('Cập nhật trạng thái thành công!');
+            alert(t('admin.common.update_success'));
         },
         onError: (err: any) => {
-            alert(err.response?.data?.message || 'Có lỗi xảy ra');
+            alert(err.response?.data?.message || t('admin.common.error'));
         }
     });
 
@@ -61,10 +63,10 @@ const AdminWithdrawals = () => {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'PENDING': return <span className="px-3 py-1.5 rounded-lg bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200 inline-flex items-center gap-1.5 shadow-sm"><Clock size={14} /> CHỜ DUYỆT</span>;
-            case 'APPROVED': return <span className="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200 inline-flex items-center gap-1.5 shadow-sm"><CheckCircle size={14} /> ĐÃ DUYỆT</span>;
-            case 'REJECTED': return <span className="px-3 py-1.5 rounded-lg bg-red-100 text-red-800 text-xs font-bold border border-red-200 inline-flex items-center gap-1.5 shadow-sm"><XCircle size={14} /> TỪ CHỐI</span>;
-            case 'PAID': return <span className="px-3 py-1.5 rounded-lg bg-green-100 text-green-800 text-xs font-bold border border-green-200 inline-flex items-center gap-1.5 shadow-sm"><DollarSign size={14} /> ĐÃ THANH TOÁN</span>;
+            case 'PENDING': return <span className="px-3 py-1.5 rounded-lg bg-yellow-100 text-yellow-800 text-xs font-bold border border-yellow-200 inline-flex items-center gap-1.5 shadow-sm"><Clock size={14} /> {t('admin.reports.tab_pending').toUpperCase()}</span>;
+            case 'APPROVED': return <span className="px-3 py-1.5 rounded-lg bg-blue-100 text-blue-800 text-xs font-bold border border-blue-200 inline-flex items-center gap-1.5 shadow-sm"><CheckCircle size={14} /> {t('admin.reports.tab_resolved').toUpperCase()}</span>;
+            case 'REJECTED': return <span className="px-3 py-1.5 rounded-lg bg-red-100 text-red-800 text-xs font-bold border border-red-200 inline-flex items-center gap-1.5 shadow-sm"><XCircle size={14} /> {t('admin.reports.tab_dismissed').toUpperCase()}</span>;
+            case 'PAID': return <span className="px-3 py-1.5 rounded-lg bg-green-100 text-green-800 text-xs font-bold border border-green-200 inline-flex items-center gap-1.5 shadow-sm"><DollarSign size={14} /> {t('admin.withdrawals.status_paid').toUpperCase()}</span>;
             default: return status;
         }
     };
@@ -107,15 +109,15 @@ const AdminWithdrawals = () => {
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-1">
-                        Quản lý Rút tiền
+                        {t('admin.withdrawals.title')}
                     </h1>
-                    <p className="text-gray-500 text-sm">Xử lý các yêu cầu thanh toán chờ duyệt từ người dùng</p>
+                    <p className="text-gray-500 text-sm">{t('admin.withdrawals.tab_pending')}</p>
                 </div>
                 <button
                     onClick={() => queryClient.invalidateQueries({ queryKey: ['admin_withdrawals'] })}
                     className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all font-bold shadow-md shadow-blue-500/20 text-sm flex items-center gap-2"
                 >
-                    <Clock size={16} /> Làm mới
+                    <Clock size={16} /> {t('admin.common.refresh')}
                 </button>
             </div>
 
@@ -123,11 +125,11 @@ const AdminWithdrawals = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
                     <div>
-                        <p className="text-gray-500 font-medium text-sm mb-1">Tổng tiền chờ duyệt</p>
+                        <p className="text-gray-500 font-medium text-sm mb-1">{t('admin.withdrawals.stat_pending')}</p>
                         <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{formatCurrency(stats.pendingAmount)}</h3>
                         <div className="flex items-center gap-1">
                             <div className={`text-xs font-bold flex items-center gap-1 ${stats.pendingAmount > 0 ? 'text-orange-500' : 'text-gray-400'}`}>
-                                <AlertCircle size={12} /> {stats.pendingAmount > 0 ? 'Cần xử lý ngay' : 'Không có yêu cầu'}
+                                <AlertCircle size={12} /> {stats.pendingAmount > 0 ? t('admin.common.warning') : t('admin.common.no_data')}
                             </div>
                         </div>
                     </div>
@@ -138,11 +140,11 @@ const AdminWithdrawals = () => {
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
                     <div>
-                        <p className="text-gray-500 font-medium text-sm mb-1">Yêu cầu rút tiền (7 ngày)</p>
-                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{stats.lastSevenDaysCount} <span className="text-sm font-semibold text-gray-500">Yêu cầu</span></h3>
+                        <p className="text-gray-500 font-medium text-sm mb-1">{t('admin.withdrawals.title')} (7 {t('common.days').toLowerCase()})</p>
+                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{stats.lastSevenDaysCount} <span className="text-sm font-semibold text-gray-500">{t('admin.common.all')}</span></h3>
                         <p className={`${stats.requestsGrowth >= 0 ? 'text-green-500' : 'text-red-500'} text-xs font-bold flex items-center gap-1`}>
                             {stats.requestsGrowth >= 0 ? <ArrowUpRight size={12} /> : <ArrowUpRight size={12} className="rotate-90" />}
-                            {Math.abs(stats.requestsGrowth).toFixed(0)}% so với tuần trước
+                            {Math.abs(stats.requestsGrowth).toFixed(0)}% {t('admin.common.all').toLowerCase()}
                         </p>
                     </div>
                     <div className="p-3 bg-yellow-50 rounded-xl text-yellow-600">
@@ -152,9 +154,9 @@ const AdminWithdrawals = () => {
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between">
                     <div>
-                        <p className="text-gray-500 font-medium text-sm mb-1">Thời gian xử lý TB</p>
-                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{stats.avgTime.toFixed(1)} <span className="text-sm font-semibold text-gray-500">giờ</span></h3>
-                        <p className="text-green-500 text-xs font-bold">Hiệu suất xử lý</p>
+                        <p className="text-gray-500 font-medium text-sm mb-1">{t('admin.vip.table_duration')}</p>
+                        <h3 className="text-3xl font-extrabold text-gray-900 mb-1">{stats.avgTime.toFixed(1)} <span className="text-sm font-semibold text-gray-500">{t('common.hours')}</span></h3>
+                        <p className="text-green-500 text-xs font-bold">{t('admin.common.update_success')}</p>
                     </div>
                     <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
                         <CheckCircle size={24} />
@@ -168,7 +170,7 @@ const AdminWithdrawals = () => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
-                        placeholder="Tìm kiếm ID, Ngân hàng hoặc Số tiền..."
+                        placeholder={t('admin.common.search')}
                         className="w-full pl-10 pr-4 py-2.5 bg-transparent outline-none text-sm font-medium text-gray-700"
                     />
                 </div>
@@ -178,14 +180,14 @@ const AdminWithdrawals = () => {
                         onChange={(e) => setStatusFilter(e.target.value)}
                         className="bg-gray-50 border border-gray-200 text-gray-700 text-xs font-bold rounded-lg px-4 py-2.5 outline-none hover:bg-gray-100 transition-colors cursor-pointer appearance-none"
                     >
-                        <option value="ALL">7 ngày qua</option>
-                        <option value="PENDING">Chờ duyệt</option>
-                        <option value="APPROVED">Đã duyệt</option>
-                        <option value="PAID">Đã thanh toán</option>
-                        <option value="REJECTED">Từ chối</option>
+                        <option value="ALL">7 {t('common.days').toLowerCase()}</option>
+                        <option value="PENDING">{t('admin.reports.tab_pending')}</option>
+                        <option value="APPROVED">{t('admin.reports.tab_resolved')}</option>
+                        <option value="PAID">{t('admin.withdrawals.status_paid')}</option>
+                        <option value="REJECTED">{t('admin.reports.tab_dismissed')}</option>
                     </select>
                     <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-                        <Filter size={14} /> Lọc
+                        <Filter size={14} /> {t('admin.common.filter')}
                     </button>
                 </div>
             </div>
@@ -193,25 +195,25 @@ const AdminWithdrawals = () => {
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {isLoading ? (
-                    <div className="p-8 text-center text-gray-500">Đang tải dữ liệu...</div>
+                    <div className="p-8 text-center text-gray-500">{t('admin.common.loading')}</div>
                 ) : requests?.length === 0 ? (
                     <div className="p-20 text-center text-gray-400 flex flex-col items-center">
                         <div className="bg-gray-50 p-4 rounded-full mb-4">
                             <Search size={32} className="opacity-50" />
                         </div>
-                        Không tìm thấy yêu cầu rút tiền nào
+                        {t('admin.common.no_data')}
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Người dùng</th>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Số tiền (VNĐ)</th>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Thông tin ngân hàng</th>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Ngày yêu cầu</th>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider text-right">Hành động</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">{t('admin.users.title')}</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">{t('admin.common.points')} (VNĐ)</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">{t('admin.withdrawals.table_bank')}</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">{t('admin.common.created_at')}</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider">{t('admin.common.status')}</th>
+                                    <th className="px-6 py-4 text-xs font-extrabold text-gray-500 uppercase tracking-wider text-right">{t('admin.common.action')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -258,13 +260,13 @@ const AdminWithdrawals = () => {
                                                             onClick={() => handleAction(req, 'APPROVE')}
                                                             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"
                                                         >
-                                                            <CheckCircle size={14} /> Duyệt
+                                                            <CheckCircle size={14} /> {t('admin.reports.resolve')}
                                                         </button>
                                                         <button
                                                             onClick={() => handleAction(req, 'REJECT')}
                                                             className="px-4 py-2 bg-white border border-gray-200 text-red-500 hover:bg-red-50 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
                                                         >
-                                                            Từ chối
+                                                            {t('admin.reports.dismiss')}
                                                         </button>
                                                     </>
                                                 )}
@@ -273,7 +275,7 @@ const AdminWithdrawals = () => {
                                                         onClick={() => handleAction(req, 'PAID')}
                                                         className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"
                                                     >
-                                                        <DollarSign size={14} /> Đã CK
+                                                        <DollarSign size={14} /> {t('admin.withdrawals.status_paid')}
                                                     </button>
                                                 )}
                                                 <button className="p-2 text-gray-400 hover:text-gray-600">
@@ -305,12 +307,12 @@ const AdminWithdrawals = () => {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-xl font-bold text-gray-900">
-                                    {actionType === 'REJECT' && 'Từ chối yêu cầu'}
-                                    {actionType === 'APPROVE' && 'Duyệt yêu cầu'}
-                                    {actionType === 'PAID' && 'Xác nhận đã thanh toán'}
+                                    {actionType === 'REJECT' && t('admin.common.confirm')}
+                                    {actionType === 'APPROVE' && t('admin.reports.resolve')}
+                                    {actionType === 'PAID' && t('admin.withdrawals.status_paid')}
                                 </h3>
                                 <p className="text-sm text-gray-500">
-                                    {actionType === 'REJECT' ? 'Hành động này sẽ hoàn tiền lại cho người dùng.' : 'Tiếp tục với bước tiếp theo.'}
+                                    {actionType === 'REJECT' ? t('admin.common.confirm') : t('admin.common.update_success')}
                                 </p>
                             </div>
                             <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600">
@@ -340,17 +342,17 @@ const AdminWithdrawals = () => {
                             </div>
 
                             <p className="text-sm text-gray-600 mb-2">
-                                Vui lòng nhập lý do hoặc ghi chú cho hành động này. Ghi chú này sẽ được gửi đến email và thông báo của người dùng.
+                                {t('admin.notifications.title')}
                             </p>
 
                             <div className="mb-6">
                                 <label className="block text-sm font-bold text-gray-800 mb-2 flex justify-between">
-                                    Ghi chú Admin (Lý do)
-                                    <span className="text-xs font-normal text-gray-400">{actionNote.length} / 500 ký tự</span>
+                                    {t('admin.notifications.table_content')}
+                                    <span className="text-xs font-normal text-gray-400">{actionNote.length} / 500 {t('admin.common.characters').toLowerCase()}</span>
                                 </label>
                                 <textarea
                                     className="w-full border border-gray-300 rounded-xl p-4 text-sm focus:ring-2 focus:ring-blue-100 focus:border-blue-500 outline-none shadow-sm min-h-[120px]"
-                                    placeholder={actionType === 'REJECT' ? "Ví dụ: Thông tin ngân hàng không chính xác hoặc số dư không đủ..." : "Thêm ghi chú..."}
+                                    placeholder={t('admin.common.search')}
                                     value={actionNote}
                                     onChange={(e) => setActionNote(e.target.value)}
                                     maxLength={500}
@@ -361,7 +363,7 @@ const AdminWithdrawals = () => {
                                 <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl flex gap-3 text-orange-800 text-sm mb-6">
                                     <AlertCircle size={20} className="shrink-0 text-orange-600" />
                                     <p className="font-medium">
-                                        Từ chối yêu cầu này sẽ hoàn lại số tiền vào ví khả dụng của người dùng. Hành động này không thể hoàn tác.
+                                        {t('admin.common.confirm')}
                                     </p>
                                 </div>
                             )}
@@ -371,7 +373,7 @@ const AdminWithdrawals = () => {
                                     onClick={() => setSelectedRequest(null)}
                                     className="flex-1 py-3 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
                                 >
-                                    {actionType === 'REJECT' ? 'Giữ trạng thái chờ' : 'Hủy'}
+                                    {t('admin.common.cancel')}
                                 </button>
                                 <button
                                     onClick={confirmAction}
@@ -380,9 +382,9 @@ const AdminWithdrawals = () => {
                                             'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
                                         }`}
                                 >
-                                    {actionType === 'REJECT' && 'Từ chối yêu cầu'}
-                                    {actionType === 'APPROVE' && 'Duyệt & Thanh toán'}
-                                    {actionType === 'PAID' && 'Xác nhận đã CK'}
+                                    {actionType === 'REJECT' && t('admin.common.confirm')}
+                                    {actionType === 'APPROVE' && t('admin.reports.resolve')}
+                                    {actionType === 'PAID' && t('admin.withdrawals.status_paid')}
                                 </button>
                             </div>
                         </div>

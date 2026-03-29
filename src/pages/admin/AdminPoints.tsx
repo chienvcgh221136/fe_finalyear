@@ -1,11 +1,13 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { pointsAPI } from '../../services/api';
-import { Coins, ArrowUpRight, ArrowDownLeft, Package, Users, History } from 'lucide-react';
+import { Coins, ArrowUpRight, ArrowDownLeft, Users, History } from 'lucide-react';
 import UserBalancesTable from './components/UserBalancesTable';
 import PointTransactionsTable from './components/PointTransactionsTable';
 
 const AdminPoints = () => {
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'users' | 'history'>('users');
 
     // Fetch stats
@@ -17,19 +19,19 @@ const AdminPoints = () => {
 
     const stats = [
         {
-            label: 'Tổng điểm hệ thống',
+            label: t('admin.points.stat_total_system'),
             value: statsData?.totalAvailable || 0,
             icon: Coins,
             color: 'bg-yellow-50 text-yellow-600',
         },
         {
-            label: 'Tổng điểm đã cấp',
+            label: t('admin.points.stat_total_distributed'),
             value: statsData?.totalDistributed || 0,
             icon: ArrowDownLeft,
             color: 'bg-green-50 text-green-600',
         },
         {
-            label: 'Tổng điểm đã đổi',
+            label: t('admin.points.stat_total_redeemed'),
             value: statsData?.totalRedeemed || 0,
             icon: ArrowUpRight,
             color: 'bg-red-50 text-red-600',
@@ -39,8 +41,8 @@ const AdminPoints = () => {
     return (
         <div className="space-y-8">
             <div>
-                <h1 className="text-2xl font-bold text-gray-900">Quản lý điểm thưởng</h1>
-                <p className="text-gray-500">Quản lý các gói dịch vụ và theo dõi điểm của người dùng.</p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('admin.points.title')}</h1>
+                <p className="text-gray-500">{t('admin.points.subtitle')}</p>
             </div>
 
             {/* Stats Grid */}
@@ -73,7 +75,7 @@ const AdminPoints = () => {
                         `}
                     >
                         <Users size={18} />
-                        Quản lý Người dùng
+                        {t('admin.users.title')}
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
@@ -85,7 +87,7 @@ const AdminPoints = () => {
                         `}
                     >
                         <History size={18} />
-                        Lịch sử Giao dịch
+                        {t('admin.points.tab_history')}
                     </button>
                 </nav>
             </div>

@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { appointmentAPI } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 interface ScheduleModalProps {
     isOpen: boolean;
@@ -20,6 +21,7 @@ const HOURS = [
 ];
 
 const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPrice, postAddress }: ScheduleModalProps) => {
+    const { t, i18n } = useTranslation();
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState('');
     const [note, setNote] = useState('');
@@ -53,7 +55,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
 
     const handleSubmit = async () => {
         if (!selectedDate || !selectedTime) {
-            error("Vui lòng chọn ngày và giờ xem nhà.");
+            error(t('notifications.schedule_modal.error_select_datetime'));
             return;
         }
 
@@ -68,12 +70,12 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                 note
             });
 
-            success("Đã gửi yêu cầu đặt lịch xem nhà thành công! Người bán sẽ xác nhận sớm.");
+            success(t('notifications.schedule_modal.success_booking'));
             queryClient.invalidateQueries({ queryKey: ['appointments', 'me'] });
             onClose();
         } catch (err: any) {
             console.error("Booking error:", err);
-            error(err.response?.data?.message || "Có lỗi xảy ra khi đặt lịch.");
+            error(err.response?.data?.message || t('notifications.schedule_modal.error_booking'));
         } finally {
             setLoading(false);
         }
@@ -87,7 +89,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
 
                 {/* Left Side: Property Summary */}
                 <div className="w-full md:w-[35%] bg-gray-50 p-6 md:p-8 border-r border-gray-100 flex flex-col">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Thông tin bất động sản</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">{t('notifications.schedule_modal.title')}</h3>
 
                     <div className="rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-200 aspect-video bg-gray-200">
                         <img src={postImage} alt={postTitle} className="w-full h-full object-cover" />
@@ -96,10 +98,10 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                     <div className="space-y-1 mb-6">
                         <p className="text-blue-600 font-bold text-xl">
                             {postPrice >= 1000000000
-                                ? `${(postPrice / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} Tỷ`
+                                ? `${(postPrice / 1000000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 2 })} ${t('common.billion')}`
                                 : postPrice >= 1000000
-                                    ? `${(postPrice / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} Triệu`
-                                    : `${postPrice.toLocaleString('vi-VN')} đ`
+                                    ? `${(postPrice / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 1 })} ${t('common.million')}`
+                                    : `${postPrice.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} ${t('common.currency')}`
                             }
                         </p>
                         <h4 className="font-bold text-gray-900 text-lg line-clamp-2">{postTitle}</h4>
@@ -113,7 +115,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                 {/* Right Side: Schedule Form */}
                 <div className="flex-1 p-6 md:p-8 overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-900">Đặt lịch xem nhà</h2>
+                        <h2 className="text-2xl font-bold text-gray-900">{t('notifications.schedule_modal.modal_header')}</h2>
                         <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                             <X size={24} />
                         </button>
@@ -122,9 +124,9 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                     {/* Date Selection */}
                     <div className="mb-8">
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-bold text-gray-800">Chọn ngày</h4>
+                            <h4 className="font-bold text-gray-800">{t('notifications.schedule_modal.select_day')}</h4>
                             <span className="text-sm font-medium text-gray-500">
-                                {selectedDate.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                                {selectedDate.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { month: 'long', year: 'numeric' })}
                             </span>
                         </div>
 
@@ -146,7 +148,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                                                 }`}
                                         >
                                             <span className="text-xs font-medium opacity-80 uppercase">
-                                                {date.toLocaleDateString('vi-VN', { weekday: 'short' })}
+                                                {date.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'short' })}
                                             </span>
                                             <span className="text-lg font-bold">
                                                 {date.getDate()}
@@ -164,7 +166,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
 
                     {/* Time Selection */}
                     <div className="mb-8">
-                        <h4 className="font-bold text-gray-800 mb-4">Chọn giờ</h4>
+                        <h4 className="font-bold text-gray-800 mb-4">{t('notifications.schedule_modal.select_time')}</h4>
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                             {HOURS.map((time) => (
                                 <button
@@ -183,11 +185,11 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
 
                     {/* Additional Notes */}
                     <div className="mb-8">
-                        <h4 className="font-bold text-gray-800 mb-2">Ghi chú thêm (Tùy chọn)</h4>
+                        <h4 className="font-bold text-gray-800 mb-2">{t('notifications.schedule_modal.additional_notes')}</h4>
                         <textarea
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
-                            placeholder="Ví dụ: Tôi muốn xem nhà vào buổi sáng, vui lòng xác nhận trước..."
+                            placeholder={t('notifications.schedule_modal.notes_placeholder')}
                             className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none min-h-[100px] text-sm text-gray-700 placeholder:text-gray-400"
                         />
                     </div>
@@ -198,7 +200,7 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                             onClick={onClose}
                             className="px-6 py-3 font-bold text-gray-500 hover:text-gray-800 transition-colors"
                         >
-                            Hủy
+                            {t('notifications.schedule_modal.cancel')}
                         </button>
                         <button
                             onClick={handleSubmit}
@@ -206,12 +208,12 @@ const ScheduleModal = ({ isOpen, onClose, postId, postTitle, postImage, postPric
                             className={`px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 ${loading ? 'opacity-70 cursor-not-allowed' : ''
                                 }`}
                         >
-                            {loading ? 'Đang gửi...' : 'Xác nhận đặt lịch'}
+                            {loading ? t('notifications.schedule_modal.sending') : t('notifications.schedule_modal.confirm')}
                         </button>
                     </div>
 
                     <p className="text-xs text-gray-400 text-center mt-6">
-                        Bằng việc đặt lịch, bạn đồng ý với <span className="underline cursor-pointer">Điều khoản dịch vụ</span> và <span className="underline cursor-pointer">Chính sách bảo mật</span> của chúng tôi.
+                        {t('notifications.schedule_modal.terms_note')}
                     </p>
                 </div>
             </div>

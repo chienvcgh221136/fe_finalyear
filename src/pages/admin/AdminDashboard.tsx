@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import LocalizedLink from '../../components/common/LocalizedLink';
 
 const AdminDashboard = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     // Fetch pending posts
     const { data: pendingPosts } = useQuery({
         queryKey: ['admin', 'pending-posts'],
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{t('admin.dashboard.pending_posts')}</span>
-                                            <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString('vi-VN') : t('admin.dashboard.just_now')}</span>
+                                            <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : t('admin.dashboard.just_now')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500 truncate">{u.email}</p>
                                     </div>
                                     <div className="text-xs text-gray-400 font-medium">
-                                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : t('admin.dashboard.just_now')}
+                                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : t('admin.dashboard.just_now')}
                                     </div>
                                 </div>
                             ))}

@@ -119,14 +119,14 @@ export function SearchBar() {
                         onClick={() => setType('SALE')}
                         className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'SALE' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
                     >
-                        Mua bán
+                        {t('search.tab_buy')}
                     </button>
                     <button
                         type="button"
                         onClick={() => setType('RENT')}
                         className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'RENT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
                     >
-                        Cho thuê
+                        {t('search.tab_rent')}
                     </button>
                 </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { X, Check, Lock, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AdjustPointsModalProps {
     isOpen: boolean;
@@ -9,13 +10,15 @@ interface AdjustPointsModalProps {
     isLoading: boolean;
 }
 
-const QUICK_REASONS = [
-    { label: 'Profile', text: 'Thưởng cập nhật hồ sơ cá nhân đầy đủ + ảnh đại diện', amount: '500' },
-    { label: 'Đền bù', text: 'Đền bù do gặp sự cố kỹ thuật hệ thống.', amount: '1000' },
-    { label: 'Tích cực', text: 'Khen thưởng thành viên hoạt động tích cực.', amount: '2000' },
-];
-
 const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, onConfirm, user, isLoading }) => {
+    const { t } = useTranslation();
+
+    const QUICK_REASONS = useMemo(() => [
+        { label: t('admin.points.adjustment_reasons.profile'), text: "admin.points.adjustment_reasons.profile", amount: '500' },
+        { label: t('admin.points.adjustment_reasons.compensation'), text: "admin.points.adjustment_reasons.compensation", amount: '1000' },
+        { label: t('admin.points.adjustment_reasons.active_user'), text: "admin.points.adjustment_reasons.active_user", amount: '2000' },
+    ], [t]);
+
     // 1. State definitions
     const [amount, setAmount] = useState<string>('');
     const [description, setDescription] = useState('');
@@ -33,36 +36,36 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
         if (!user) return;
         setPenaltyLevel(level);
         let deductAmount = 0;
-        let reasonText = "";
+        let reasonKey = "";
         const currentPoints = user.points || 0;
 
         switch (level) {
             case 1:
                 deductAmount = 0;
-                reasonText = "Cảnh cáo lần 1: Nhắc nhở vi phạm.";
+                reasonKey = "admin.points.adjustment_reasons.violation_warning";
                 break;
             case 2:
                 deductAmount = Math.ceil(currentPoints * 0.15);
-                reasonText = "Cảnh cáo lần 2: Trừ 15% tổng điểm.";
+                reasonKey = "admin.points.adjustment_reasons.violation_deduct_15";
                 break;
             case 3:
                 deductAmount = Math.ceil(currentPoints * 0.30);
-                reasonText = "Cảnh cáo lần 3: Trừ 30% tổng điểm.";
+                reasonKey = "admin.points.adjustment_reasons.violation_deduct_30";
                 break;
             case 4:
                 deductAmount = Math.ceil(currentPoints * 0.50);
-                reasonText = "Cảnh cáo lần 4: Trừ 50% tổng điểm.";
+                reasonKey = "admin.points.adjustment_reasons.violation_deduct_50";
                 break;
             case 5:
                 deductAmount = currentPoints;
-                reasonText = "Cảnh cáo lần 5: Trừ 100% điểm và khóa tài khoản vĩnh viễn.";
+                reasonKey = "admin.points.adjustment_reasons.violation_ban";
                 break;
             default:
                 break;
         }
 
         setAmount(deductAmount.toString());
-        setDescription(reasonText);
+        setDescription(reasonKey);
     }, [user]);
 
     // 3. Mode Toggle Logic
@@ -109,7 +112,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             {type === 'add' ? <Sparkles size={22} /> : <Lock size={22} />}
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-gray-900 leading-tight">Điều chỉnh điểm</h3>
+                            <h3 className="text-lg font-black text-gray-900 leading-tight">{t('admin.points.adjust_title')}</h3>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5 opacity-60">Admin Controller</p>
                         </div>
                     </div>
@@ -132,16 +135,16 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             <div className="flex-1">
                                 <div className="font-black text-gray-900 text-lg line-clamp-1">{user.name}</div>
                                 <div className="text-sm text-gray-400 font-bold mt-0.5">
-                                    Số dư: <span className="text-indigo-600 font-black">{(user.points || 0).toLocaleString()}</span> PTS
+                                    {t('admin.points.balance')}: <span className="text-indigo-600 font-black">{(user.points || 0).toLocaleString()}</span> PTS
                                 </div>
                                 <div className="flex gap-2 mt-2.5">
                                     <span className={`text-[9px] px-2.5 py-1 rounded-lg font-black uppercase tracking-wider shadow-sm border
                                         ${hasUnhandledViolations ? 'bg-red-500 text-white border-red-400' : 'bg-gray-100 text-gray-400 border-gray-200'}
                                     `}>
-                                        Vi phạm: {user.violationCount || 0}
+                                        {t('admin.reports.table_bad_post')}: {user.violationCount || 0}
                                     </span>
                                     <span className="text-[9px] px-2.5 py-1 bg-green-500 text-white rounded-lg font-black uppercase tracking-wider shadow-sm border border-green-400">
-                                        Đã xử lý: {user.handledViolations || 0}
+                                        {t('admin.points.handled')}: {user.handledViolations || 0}
                                     </span>
                                 </div>
                             </div>
@@ -161,7 +164,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                                             : 'text-gray-400 hover:text-gray-600'
                                             }`}
                                     >
-                                        TĂNG THƯỞNG (+)
+                                        {t('admin.points.mode_add')}
                                     </button>
                                     <button
                                         type="button"
@@ -174,7 +177,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                                                 : 'text-gray-400 hover:text-gray-600'
                                             }`}
                                     >
-                                        GIẢM PHẠT (-)
+                                        {t('admin.points.mode_subtract')}
                                     </button>
                                 </div>
                             </div>
@@ -203,14 +206,10 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                                     {penaltyLevel && (
                                         <div className="p-4 bg-white rounded-2xl border border-red-100 shadow-sm">
                                             <p className="text-[11px] text-red-600 font-black flex items-center gap-2 uppercase italic mb-1">
-                                                <span>⚠️ Hình phạt L{penaltyLevel}:</span>
+                                                <span>⚠️ {t('admin.points.penalty_level')}:</span>
                                             </p>
                                             <p className="text-[11px] text-gray-500 font-bold leading-relaxed">
-                                                {penaltyLevel === 1 && "Gửi cảnh báo nhắc nhở chính thức cho người dùng."}
-                                                {penaltyLevel === 2 && "Tái phạm lần 2: Tự động khấu trừ 15% tổng số điểm thưởng."}
-                                                {penaltyLevel === 3 && "Vi phạm lần 3: Tự động khấu trừ 30% tổng số điểm thưởng."}
-                                                {penaltyLevel === 4 && "Vi phạm nghiêm trọng: Tự động khấu trừ 50% tổng số điểm."}
-                                                {penaltyLevel === 5 && "Mức phạt tối đa: Tịch thu toàn bộ điểm & Khóa tài khoản."}
+                                                {t(`admin.points.adjustment_reasons.violation_desc_${penaltyLevel}`)}
                                             </p>
                                         </div>
                                     )}
@@ -260,13 +259,13 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                                 </div>
 
                                 <div className="space-y-3">
-                                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Mô tả lý do</label>
+                                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">{t('admin.common.description')}</label>
                                     <textarea
                                         required
-                                        value={description}
+                                        value={description.includes('.') ? t(description) : description}
                                         onChange={(e) => setDescription(e.target.value)}
                                         className="w-full px-6 py-4 bg-gray-50 border-2 border-gray-100 rounded-[20px] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 outline-none transition-all min-h-[120px] text-sm font-bold resize-none leading-relaxed text-gray-700"
-                                        placeholder="Nhập chi tiết lý do điều chỉnh..."
+                                        placeholder={t('admin.points.desc_placeholder')}
                                     />
                                 </div>
                             </div>
@@ -280,7 +279,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             onClick={onClose}
                             className="flex-1 py-4 text-gray-400 font-black text-[11px] hover:bg-gray-50 rounded-[20px] transition-all active:scale-95 uppercase tracking-widest border border-transparent hover:border-gray-100"
                         >
-                            Hủy bỏ
+                            {t('admin.common.cancel')}
                         </button>
                         <button
                             type="submit"
@@ -294,7 +293,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             ) : (
                                 <div className="flex items-center justify-center gap-2">
                                     <Check size={18} strokeWidth={4} />
-                                    <span>{type === 'add' ? 'XÁC NHẬN CỘNG' : 'THỰC THI PHẠT'}</span>
+                                    <span>{type === 'add' ? t('admin.points.confirm_add') : t('admin.points.confirm_subtract')}</span>
                                 </div>
                             )}
                         </button>

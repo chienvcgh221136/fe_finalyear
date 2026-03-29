@@ -24,7 +24,7 @@ export default {
         "text-muted": "#666666",
       },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
       },
       borderRadius: {
         'xl': '12px',

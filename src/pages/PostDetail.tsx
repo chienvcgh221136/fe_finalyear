@@ -22,7 +22,7 @@ import Map, { Marker, NavigationControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const PostDetail = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const { id } = useParams();
     const { user } = useAuth();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -112,12 +112,12 @@ const PostDetail = () => {
     const formatPrice = (price: number) => {
         if (!price) return t('common.contact');
         if (price >= 1000000000) {
-            return `${(price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
+            return `${(price / 1000000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 2 })} ${t('common.billion')}`;
         }
         if (price >= 1000000) {
-            return `${(price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} ${t('common.million')}`;
+            return `${(price / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 1 })} ${t('common.million')}`;
         }
-        return `${price.toLocaleString('vi-VN')} đ`;
+        return `${price.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} ${t('common.currency')}`;
     };
 
     // Spec Item Component
@@ -197,7 +197,7 @@ const PostDetail = () => {
                                         </span>
                                         {post.transactionType === 'SALE' && post.area && (
                                             <span className="text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded text-sm">
-                                                ~ {(post.price / post.area / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} {t('common.million_square_meter')}
+                                                ~ {(post.price / post.area / 1000000).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { maximumFractionDigits: 1 })} {t('common.million_square_meter')}
                                             </span>
                                         )}
                                     </div>

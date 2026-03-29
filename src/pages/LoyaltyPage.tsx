@@ -30,8 +30,27 @@ const LoyaltyPage = () => {
 
     const useItemMutation = useMutation({
         mutationFn: pointService.useItem,
-        onSuccess: (data) => {
-            success(data.message);
+        onSuccess: (data, variables) => {
+            const { itemKey, quantity } = variables;
+            let successMessage = data.message;
+            
+            if (itemKey === 'ITEM_POST_PUSH') {
+                successMessage = t('loyalty.use_modal.use_success_push', { count: quantity, defaultValue: successMessage });
+            } else if (itemKey === 'LEAD_CREDIT') {
+                successMessage = t('loyalty.use_modal.use_success_lead', { count: quantity, defaultValue: successMessage });
+            } else if (itemKey.includes('VIP')) {
+                let vipType = '';
+                if (itemKey.includes('BRONZE')) vipType = 'VIP Bronze';
+                if (itemKey.includes('SILVER')) vipType = 'VIP Silver';
+                if (itemKey.includes('GOLD')) vipType = 'VIP Gold';
+                
+                const dateMatch = data.message.match(/đến ([\d/]+)\./);
+                const date = dateMatch ? dateMatch[1] : '';
+                
+                successMessage = t('loyalty.use_modal.use_success_vip', { type: vipType, date, defaultValue: successMessage });
+            }
+
+            success(successMessage);
             queryClient.invalidateQueries({ queryKey: ['myPoints'] });
             queryClient.invalidateQueries({ queryKey: ['vip', 'me'] }); // Refetch VIP data for VIP Management
             setSelectedItem(null);

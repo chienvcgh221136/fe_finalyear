@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { parseNotificationMessage } from '../utils/notificationParser';
 import { useAuth } from '../context/AuthContext';
 import { walletAPI, withdrawAPI } from '../services/api';
 import type { Wallet, Transaction } from '../types';
@@ -255,7 +256,9 @@ const WalletPage = () => {
                                         <td className={`px-6 py-4 font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
                                             {tx.type === 'TOPUP' || tx.type === 'REFUND' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600">{tx.description}</td>
+                                        <td className="px-6 py-4 text-gray-600">
+                                            {parseNotificationMessage(tx.description, t)}
+                                        </td>
                                         <td className="px-6 py-4 text-gray-500 font-medium">{formatDate(tx.createdAt)}</td>
                                     </tr>
                                 ))}
@@ -282,14 +285,14 @@ const WalletPage = () => {
                             {!showQR ? (
                                 <form onSubmit={handleTopup} className="p-6">
                                     <div className="mb-6">
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Số tiền muốn nạp ({t('common.currency')})</label>
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">{t('wallet.topup_amount_label')}</label>
                                         <div className="relative">
                                             <input
                                                 type="number"
                                                 value={amount}
                                                 onChange={(e) => setAmount(e.target.value)}
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold text-lg text-gray-900"
-                                                placeholder="VD: 500000"
+                                                placeholder={t('wallet.topup_amount_placeholder')}
                                                 min="10000"
                                                 autoFocus
                                             />
@@ -396,7 +399,7 @@ const WalletPage = () => {
                     <div className="bg-white rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
                         {/* Header */}
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white z-10">
-                            <h3 className="text-xl font-extrabold text-gray-900">Rút tiền</h3>
+                            <h3 className="text-xl font-extrabold text-gray-900">{t('wallet.withdraw_modal_title')}</h3>
                             <button onClick={() => setIsWithdrawModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <X size={24} />
                             </button>
@@ -489,14 +492,14 @@ const WalletPage = () => {
                                                         )}
                                                     </div>
                                                     <div className="col-span-2 md:col-span-1">
-                                                        <label className="block text-xs font-bold text-gray-500 mb-1">Số tài khoản</label>
+                                                        <label className="block text-xs font-bold text-gray-500 mb-1">{t('wallet.withdraw_account_no')}</label>
                                                         <input
                                                             type="text"
                                                             required
                                                             value={bankDetails.accountNumber}
                                                             onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
                                                             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-mono font-semibold focus:ring-2 focus:ring-blue-500 outline-none"
-                                                            placeholder="0000 0000 0000"
+                                                            placeholder={t('wallet.withdraw_account_no_placeholder')}
                                                         />
                                                     </div>
                                                     <div className="col-span-2 md:col-span-1">
@@ -507,7 +510,7 @@ const WalletPage = () => {
                                                             value={bankDetails.accountHolder}
                                                             onChange={(e) => setBankDetails({ ...bankDetails, accountHolder: e.target.value })}
                                                             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                                                            placeholder="NGUYEN VAN A"
+                                                            placeholder={t('wallet.withdraw_account_holder_placeholder')}
                                                         />
                                                     </div>
                                                 </div>

@@ -3,22 +3,22 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { postsAPI } from '../services/api';
 import { useForm, Controller } from 'react-hook-form';
-import { Loader2, Upload, X, Plus, Link as LinkIcon, FileText } from 'lucide-react';
+import { Loader2, Upload, X, Plus, Link as LinkIcon, FileText, Info, Tag, MapPin, Image as ImageIcon } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 import { CITIES_VI, CITIES_EN, getLocalizedCity, translateCityToVi } from '../utils/cityTranslations';
 
-// Using standard HTML elements with Tailwind
+// Using standard HTML elements with Tailwind for clear form inputs
 const Input = ({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
+    <input className={`flex h-12 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400 ${className || ''}`} {...props} />
 );
 
 const Textarea = ({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-    <textarea className={`flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
+    <textarea className={`flex min-h-[120px] w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-900 shadow-sm transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400 ${className || ''}`} {...props} />
 );
 
 const Label = ({ className, children, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) => (
-    <label className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`} {...props}>
+    <label className={`mb-2 block text-sm font-semibold text-gray-800 peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className || ''}`} {...props}>
         {children}
     </label>
 );
@@ -132,6 +132,14 @@ const CreatePost = () => {
             setTimeout(() => setErrorMsg(''), 3000);
             return;
         }
+        
+        // Require Cloudinary URLs
+        if (!url.toLowerCase().includes('cloudinary.com')) {
+            setErrorMsg(t('common.cloudinary_required'));
+            setTimeout(() => setErrorMsg(''), 3000);
+            return;
+        }
+
         if (list.length >= limit) {
             setErrorMsg(t('create_post.error_max_limit', { limit }));
             return;
@@ -224,18 +232,23 @@ const CreatePost = () => {
 
             <div className="container max-w-3xl mx-auto px-4">
                 <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8">
-                    <h1 className="mb-6 text-2xl font-bold text-gray-900">{t('create_post.title')}</h1>
+                    <h1 className="mb-8 text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 drop-shadow-sm">{t('create_post.title')}</h1>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
                         {/* Basic Info */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.basic_info')}</h2>
+                            <div className="flex items-center gap-3 border-b border-gray-100 pb-3 mb-2">
+                                <div className="bg-blue-100 p-2 rounded-xl text-blue-600 shadow-sm border border-blue-200">
+                                    <Info className="w-5 h-5" />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-800">{t('create_post.basic_info')}</h2>
+                            </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label>{t('create_post.transaction_type')}</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400"
                                         {...register('transactionType', { required: t('create_post.req_transaction_type') })}
                                     >
                                         <option value="">{t('create_post.select_type')}</option>
@@ -248,7 +261,7 @@ const CreatePost = () => {
                                 <div className="space-y-2">
                                     <Label>{t('create_post.property_type')}</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400"
                                         {...register('propertyType', { required: t('create_post.req_property_type') })}
                                     >
                                         <option value="">{t('create_post.select_type')}</option>
@@ -264,7 +277,7 @@ const CreatePost = () => {
                                 <div className="space-y-2">
                                     <Label>{t('create_post.apartment_type')}</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="flex h-12 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400"
                                         {...register('apartmentType')}
                                     >
                                         <option value="">{t('create_post.select_apartment_type')}</option>
@@ -310,7 +323,12 @@ const CreatePost = () => {
 
                         {/* Price & Area */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.property_specs')}</h2>
+                            <div className="flex items-center gap-3 border-b border-gray-100 pb-3 mb-2">
+                                <div className="bg-emerald-100 p-2 rounded-xl text-emerald-600 shadow-sm border border-emerald-200">
+                                    <Tag className="w-5 h-5" />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-800">{t('create_post.property_specs')}</h2>
+                            </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
@@ -357,87 +375,113 @@ const CreatePost = () => {
                                 </div>
                             </div>
 
-                            {/* Additional Info (Conditional based purely on property type logic, but usually always relevant for houses/apartments) */}
-                            <div className="grid gap-4 md:grid-cols-4">
-                                <div className="space-y-2">
-                                    <Label>{t('create_post.bedrooms')}</Label>
-                                    <Input type="number" placeholder="2" {...register('bedrooms')} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>{t('create_post.bathrooms')}</Label>
-                                    <Input type="number" placeholder="2" {...register('bathrooms')} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>{t('create_post.floor')}</Label>
-                                    <Input type="number" placeholder="5" {...register('floor')} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>{t('create_post.total_floors')}</Label>
-                                    <Input type="number" placeholder="20" {...register('totalFloors')} />
-                                </div>
-                            </div>
+                            {/* Additional Info (Conditional based purely on property type logic) */}
+                            {watch('propertyType') !== 'LAND' && (
+                                <>
+                                    <div className={`grid gap-4 ${watch('propertyType') === 'OFFICE' ? 'md:grid-cols-2' : 'md:grid-cols-4'}`}>
+                                        {watch('propertyType') !== 'OFFICE' && (
+                                            <>
+                                                <div className="space-y-2">
+                                                    <Label>{t('create_post.bedrooms')}</Label>
+                                                    <Input type="number" min="0" placeholder="2" {...register('bedrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                                    {errors.bedrooms && <p className="text-xs text-red-500">{errors.bedrooms.message as string}</p>}
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>{t('create_post.bathrooms')}</Label>
+                                                    <Input type="number" min="0" placeholder="2" {...register('bathrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                                    {errors.bathrooms && <p className="text-xs text-red-500">{errors.bathrooms.message as string}</p>}
+                                                </div>
+                                            </>
+                                        )}
+                                        <div className="space-y-2">
+                                            <Label>{t('create_post.floor')}</Label>
+                                            <Input type="number" min="0" placeholder="5" {...register('floor', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                            {errors.floor && <p className="text-xs text-red-500">{errors.floor.message as string}</p>}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>{t('create_post.total_floors')}</Label>
+                                            <Input type="number" min="0" placeholder="20" {...register('totalFloors', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                            {errors.totalFloors && <p className="text-xs text-red-500">{errors.totalFloors.message as string}</p>}
+                                        </div>
+                                    </div>
 
-                            <div className="space-y-2">
-                                <Label>{t('create_post.furniture')}</Label>
-                                <select
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    {...register('furniture')}
-                                >
-                                    <option value="">{t('create_post.select_furniture')}</option>
-                                    <option value="FULL">{t('create_post.fully_furnished')}</option>
-                                    <option value="BASIC">{t('create_post.basic_furnished')}</option>
-                                    <option value="NONE">{t('create_post.unfurnished')}</option>
-                                </select>
-                            </div>
+                                    <div className="space-y-2">
+                                        <Label>{t('create_post.furniture')}</Label>
+                                        <select
+                                            className="flex h-12 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-base text-gray-900 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 hover:border-gray-400"
+                                            {...register('furniture')}
+                                        >
+                                            <option value="">{t('create_post.select_furniture')}</option>
+                                            <option value="FULL">{t('create_post.fully_furnished')}</option>
+                                            <option value="BASIC">{t('create_post.basic_furnished')}</option>
+                                            <option value="NONE">{t('create_post.unfurnished')}</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Location */}
-                        <div className="space-y-2">
-                            <Label>{t('create_post.city')}</Label>
-                            <Input
-                                list="city-list"
-                                placeholder={t('create_post.select_city')}
-                                {...register('city', { required: t('create_post.req_city') })}
-                                autoComplete="off"
-                            />
-                            <datalist id="city-list">
-                                {(i18n.language === 'en' ? CITIES_EN : CITIES_VI).map((city) => (
-                                    <option key={city} value={city} />
-                                ))}
-                            </datalist>
-                            {errors.city && <p className="text-xs text-red-500">{errors.city.message as string}</p>}
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>{t('create_post.district')}</Label>
-                                <Input
-                                    placeholder={t('create_post.district_placeholder')}
-                                    {...register('district', { required: t('create_post.req_district') })}
-                                />
-                                {errors.district && <p className="text-xs text-red-500">{errors.district.message as string}</p>}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 border-b border-gray-100 pb-3 mb-2">
+                                <div className="bg-orange-100 p-2 rounded-xl text-orange-600 shadow-sm border border-orange-200">
+                                    <MapPin className="w-5 h-5" />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-800">{t('create_post.location', { defaultValue: 'Vị trí & Địa chỉ' })}</h2>
                             </div>
-                            <div className="space-y-2">
-                                <Label>{t('create_post.ward')}</Label>
-                                <Input
-                                    placeholder={t('create_post.ward_placeholder')}
-                                    {...register('ward')}
-                                />
-                            </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            <Label>{t('create_post.street')}</Label>
-                            <Input
-                                placeholder={t('create_post.street_placeholder')}
-                                {...register('street', { required: t('create_post.req_street') })}
-                            />
-                            {errors.street && <p className="text-xs text-red-500">{errors.street.message as string}</p>}
+                            <div className="space-y-2">
+                                <Label>{t('create_post.city')}</Label>
+                                <Input
+                                    list="city-list"
+                                    placeholder={t('create_post.select_city')}
+                                    {...register('city', { required: t('create_post.req_city') })}
+                                    autoComplete="off"
+                                />
+                                <datalist id="city-list">
+                                    {(i18n.language === 'en' ? CITIES_EN : CITIES_VI).map((city) => (
+                                        <option key={city} value={city} />
+                                    ))}
+                                </datalist>
+                                {errors.city && <p className="text-xs text-red-500">{errors.city.message as string}</p>}
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-2">
+                                    <Label>{t('create_post.district')}</Label>
+                                    <Input
+                                        placeholder={t('create_post.district_placeholder')}
+                                        {...register('district', { required: t('create_post.req_district') })}
+                                    />
+                                    {errors.district && <p className="text-xs text-red-500">{errors.district.message as string}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{t('create_post.ward')}</Label>
+                                    <Input
+                                        placeholder={t('create_post.ward_placeholder')}
+                                        {...register('ward')}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>{t('create_post.street')}</Label>
+                                <Input
+                                    placeholder={t('create_post.street_placeholder')}
+                                    {...register('street', { required: t('create_post.req_street') })}
+                                />
+                                {errors.street && <p className="text-xs text-red-500">{errors.street.message as string}</p>}
+                            </div>
                         </div>
 
                         {/* Images (URL Input) */}
                         <div className="space-y-4">
-                            <h2 className="font-semibold text-gray-900 border-b pb-2">{t('create_post.images')}</h2>
+                            <div className="flex items-center gap-3 border-b border-gray-100 pb-3 mb-2">
+                                <div className="bg-purple-100 p-2 rounded-xl text-purple-600 shadow-sm border border-purple-200">
+                                    <ImageIcon className="w-5 h-5" />
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-800">{t('create_post.images')}</h2>
+                            </div>
 
                             <div className="flex gap-2">
                                 <div className="relative flex-1">
@@ -446,7 +490,7 @@ const CreatePost = () => {
                                         placeholder={t('create_post.image_url_placeholder')}
                                         value={currentImageUrl}
                                         onChange={(e) => setCurrentImageUrl(e.target.value)}
-                                        className="pl-9"
+                                        className="pl-10"
                                     />
                                 </div>
                                 <Button type="button" onClick={() => handleAddImage(currentImageUrl, setCurrentImageUrl, images, setImages)} variant="secondary">
@@ -474,10 +518,12 @@ const CreatePost = () => {
 
                         {/* Redbook Images (Conditional for SALE) */}
                         {transactionType === 'SALE' && (
-                            <div className="space-y-4 bg-red-50 p-4 rounded-lg border border-red-100">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <FileText className="h-5 w-5 text-red-600" />
-                                    <h2 className="font-semibold text-red-800">{t('create_post.legal_info')}</h2>
+                            <div className="space-y-4 bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-sm mt-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="bg-rose-100 p-2.5 rounded-xl text-rose-600 shadow-sm border border-rose-200">
+                                        <FileText className="h-5 w-5" />
+                                    </div>
+                                    <h2 className="font-bold text-rose-800 text-lg">{t('create_post.legal_info')}</h2>
                                 </div>
                                 <p className="text-sm text-red-600 mb-4">{t('create_post.legal_info_sub')}</p>
 
@@ -488,7 +534,7 @@ const CreatePost = () => {
                                             placeholder={t('create_post.redbook_placeholder')}
                                             value={currentRedbookUrl}
                                             onChange={(e) => setCurrentRedbookUrl(e.target.value)}
-                                            className="pl-9 bg-white"
+                                            className="pl-10 bg-white"
                                         />
                                     </div>
                                     <Button type="button" onClick={() => handleAddImage(currentRedbookUrl, setCurrentRedbookUrl, redbookImages, setRedbookImages, 5)} variant="secondary" className="bg-white hover:bg-gray-50">
@@ -515,8 +561,8 @@ const CreatePost = () => {
                         )}
 
                         {/* Submit */}
-                        <div className="flex gap-3 pt-4">
-                            <Button type="submit" size="lg" disabled={createMutation.isPending} className="flex-1 md:flex-none">
+                        <div className="flex gap-4 pt-6 border-t border-gray-100 mt-8">
+                            <Button type="submit" size="lg" disabled={createMutation.isPending} className="flex-1 md:flex-none bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md">
                                 {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 <Upload className="mr-2 h-4 w-4" />
                                 {t('create_post.submit')}

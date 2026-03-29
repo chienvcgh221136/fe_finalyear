@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { pointService } from '../../../services/pointService';
 import { Search, ArrowUpDown } from 'lucide-react';
@@ -6,6 +7,7 @@ import AdjustPointsModal from '../../../components/modals/AdjustPointsModal';
 import { useToast } from '../../../context/ToastContext';
 
 const UserBalancesTable = () => {
+    const { t } = useTranslation();
     const { success, error } = useToast();
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
@@ -29,7 +31,7 @@ const UserBalancesTable = () => {
             queryClient.invalidateQueries({ queryKey: ['users-points'] });
         },
         onError: (err: any) => {
-            error(err.response?.data?.message || 'Có lỗi xảy ra');
+            error(err.response?.data?.message || t('admin.common.error'));
         }
     });
 
@@ -55,14 +57,14 @@ const UserBalancesTable = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
             {/* Header */}
             <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h2 className="text-xl font-bold text-gray-900">Số dư người dùng</h2>
+                <h2 className="text-xl font-bold text-gray-900">{t('admin.points.tab_users')}</h2>
 
                 <div className="flex gap-2">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
-                            placeholder="Tìm kiếm..."
+                            placeholder={t('admin.common.search')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-64"
@@ -74,7 +76,7 @@ const UserBalancesTable = () => {
                         className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 text-sm"
                     >
                         <ArrowUpDown size={16} />
-                        {sort === 'desc' ? 'Cao nhất' : 'Thấp nhất'}
+                        {sort === 'desc' ? t('admin.common.filter') : t('admin.common.filter')}
                     </button>
                 </div>
             </div>
@@ -84,12 +86,12 @@ const UserBalancesTable = () => {
                 <table className="w-full">
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Người dùng</th>
-                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Vi phạm</th>
-                            <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Số điểm</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.users.title')}</th>
+                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.reports.table_bad_post')}</th>
+                            <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.common.points')}</th>
 
-                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                            <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Hành động</th>
+                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.common.status')}</th>
+                            <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.common.action')}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -106,7 +108,7 @@ const UserBalancesTable = () => {
                         ) : users.length === 0 ? (
                             <tr>
                                 <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                    Không tìm thấy dữ liệu
+                                    {t('admin.common.no_data')}
                                 </td>
                             </tr>
                         ) : (
@@ -140,7 +142,7 @@ const UserBalancesTable = () => {
                                             ? 'bg-red-100 text-red-800'
                                             : 'bg-green-100 text-green-800'
                                             }`}>
-                                            {user.isBanned ? 'Bị khóa' : 'Hoạt động'}
+                                            {user.isBanned ? t('admin.users.status_banned') : t('stats.status_active')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
@@ -155,7 +157,7 @@ const UserBalancesTable = () => {
                                                 onClick={() => handleOpenAdjust(user)}
                                                 className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition text-xs font-bold font-medium"
                                             >
-                                                Điều chỉnh
+                                                {t('admin.common.points')}
                                             </button>
                                         </div>
                                     </td>
@@ -170,7 +172,7 @@ const UserBalancesTable = () => {
             {pagination && (
                 <div className="p-4 border-t border-gray-100 flex items-center justify-between">
                     <p className="text-sm text-gray-500">
-                        Hiển thị page {pagination.current} / {pagination.total}
+                        {t('admin.common.page_display')} {pagination.current} / {pagination.total}
                     </p>
                     <div className="flex gap-2">
                         <button
@@ -178,14 +180,14 @@ const UserBalancesTable = () => {
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             className="px-3 py-1 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                         >
-                            Trước
+                            {t('common.prev')}
                         </button>
                         <button
                             disabled={page >= pagination.total}
                             onClick={() => setPage(p => p + 1)}
                             className="px-3 py-1 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
                         >
-                            Sau
+                            {t('common.next')}
                         </button>
                     </div>
                 </div>

@@ -3,6 +3,7 @@ import { X, AlertTriangle } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { useToast } from '../../context/ToastContext';
 import { reportsAPI } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface ReportModalProps {
     isOpen: boolean;
@@ -12,16 +13,18 @@ interface ReportModalProps {
     chatRoomId?: string; // Optional if reporting from chat
 }
 
-const REASONS = [
-    { value: 'SCAM', label: 'Lừa đảo', sub: 'Tài khoản giả mạo hoặc hành vi lừa đảo' },
-    { value: 'WRONG_INFO', label: 'Sai thông tin', sub: 'Thông tin không khớp với thực tế' },
-    { value: 'DUPLICATE', label: 'Tin trùng lặp', sub: 'Bất động sản này được đăng nhiều lần' },
-    { value: 'SPAM', label: 'Nội dung không phù hợp', sub: 'Nội dung vi phạm quy tắc cộng đồng' },
-    { value: 'OTHER', label: 'Khác', sub: 'Lý do khác không có trong danh sách' },
+const getReasons = (t: any) => [
+    { value: 'SCAM', label: t('notifications.report_modal.reasons.SCAM.label'), sub: t('notifications.report_modal.reasons.SCAM.sub') },
+    { value: 'WRONG_INFO', label: t('notifications.report_modal.reasons.WRONG_INFO.label'), sub: t('notifications.report_modal.reasons.WRONG_INFO.sub') },
+    { value: 'DUPLICATE', label: t('notifications.report_modal.reasons.DUPLICATE.label'), sub: t('notifications.report_modal.reasons.DUPLICATE.sub') },
+    { value: 'SPAM', label: t('notifications.report_modal.reasons.SPAM.label'), sub: t('notifications.report_modal.reasons.SPAM.sub') },
+    { value: 'OTHER', label: t('notifications.report_modal.reasons.OTHER.label'), sub: t('notifications.report_modal.reasons.OTHER.sub') },
 ];
 
 const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: ReportModalProps) => {
+    const { t } = useTranslation();
     const { success: toastSuccess, error: toastError } = useToast();
+    const reasons = getReasons(t);
     const [reason, setReason] = useState<string>('');
     const [description, setDescription] = useState('');
 
@@ -36,13 +39,13 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
             throw new Error("Missing report target");
         },
         onSuccess: () => {
-            toastSuccess('Báo cáo thành công! Cảm ơn đóng góp của bạn.');
+            toastSuccess(t('notifications.report_modal.success_msg'));
             setReason('');
             setDescription('');
             onClose();
         },
         onError: (error: any) => {
-            toastError(error.response?.data?.message || 'Gửi báo cáo thất bại');
+            toastError(error.response?.data?.message || t('notifications.report_modal.error_msg'));
         }
     });
 
@@ -58,7 +61,7 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
                     <h3 className="font-bold text-gray-900 text-lg">
-                        {targetUserId ? 'Báo cáo người dùng' : 'Báo cáo tin đăng'}
+                        {targetUserId ? t('notifications.report_modal.title_user') : t('notifications.report_modal.title_post')}
                     </h3>
                     <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <X size={20} className="text-gray-500" />
@@ -68,9 +71,9 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
                 <div className="p-6 overflow-y-auto">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Lý do báo cáo</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('notifications.report_modal.reason_label')}</label>
                             <div className="space-y-2">
-                                {REASONS.map((r) => (
+                                {reasons.map((r) => (
                                     <label key={r.value} className="flex items-center gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-blue-200 hover:bg-blue-50 transition-all">
                                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${reason === r.value ? 'border-blue-600' : 'border-gray-300'}`}>
                                             {reason === r.value && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full" />}
@@ -93,12 +96,12 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Chi tiết thêm (tùy chọn)</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">{t('notifications.report_modal.details_label')}</label>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 className="w-full p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px] resize-none"
-                                placeholder="Mô tả chi tiết vấn đề..."
+                                placeholder={t('notifications.report_modal.details_placeholder')}
                             />
                         </div>
 
@@ -111,12 +114,12 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
                                 {mutation.isPending ? (
                                     <>
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        <span>Đang gửi...</span>
+                                        <span>{t('notifications.report_modal.btn_sending')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <AlertTriangle size={20} />
-                                        <span>Gửi báo cáo</span>
+                                        <span>{t('notifications.report_modal.btn_submit')}</span>
                                     </>
                                 )}
                             </button>
@@ -125,7 +128,7 @@ const ReportModal = ({ isOpen, onClose, postId, targetUserId, chatRoomId }: Repo
                                 onClick={onClose}
                                 className="w-full py-3 mt-3 text-gray-500 font-bold hover:bg-gray-50 rounded-xl transition-colors"
                             >
-                                Hủy bỏ
+                                {t('notifications.report_modal.btn_cancel')}
                             </button>
                         </div>
                     </div>
