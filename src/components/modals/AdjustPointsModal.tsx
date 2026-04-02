@@ -154,7 +154,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                         <div className="space-y-6">
                             {/* Type Toggle */}
                             <div className="space-y-3">
-                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Chế độ điều chỉnh</label>
+                                <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">{t('admin.points.adjust_title', 'Chế độ điều chỉnh')}</label>
                                 <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-100/80 rounded-[20px] border border-gray-200/50">
                                     <button
                                         type="button"
@@ -186,7 +186,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             {type === 'subtract' && hasUnhandledViolations && (
                                 <div className="space-y-4 animate-in fade-in zoom-in duration-500 bg-red-50/30 p-4 rounded-[24px] border border-red-100/50">
                                     <div className="flex justify-between items-center px-1">
-                                        <label className="block text-[11px] font-black text-red-400 uppercase tracking-[0.2em]">Cấp độ phạt</label>
+                                        <label className="block text-[11px] font-black text-red-400 uppercase tracking-[0.2em]">{t('admin.points.penalty_level', 'Cấp độ phạt')}</label>
                                         <span className="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black animate-pulse">AUTO-LEVEL</span>
                                     </div>
                                     <div className="grid grid-cols-5 gap-2.5">
@@ -219,7 +219,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             {/* Quick Selection (Add) */}
                             {type === 'add' && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-3 duration-500 bg-indigo-50/20 p-4 rounded-[24px] border border-indigo-100/50">
-                                    <label className="block text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-1">Gợi ý lý do nhanh</label>
+                                    <label className="block text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-1">{t('admin.points.quick_reason', 'Gợi ý lý do nhanh')}</label>
                                     <div className="grid grid-cols-3 gap-2.5">
                                         {QUICK_REASONS.map((reason) => (
                                             <button
@@ -243,7 +243,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             {/* Inputs */}
                             <div className="space-y-5">
                                 <div className="space-y-3">
-                                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Số điểm thay đổi</label>
+                                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">{t('admin.points.amount', 'Số điểm thay đổi')}</label>
                                     <div className="relative group">
                                         <input
                                             type="number"

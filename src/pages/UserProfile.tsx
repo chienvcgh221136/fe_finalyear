@@ -179,7 +179,6 @@ const UserProfile = () => {
                                     {user.isVerified && <ShieldCheck className="text-green-500 w-5 h-5" />}
                                 </h1>
                                 <div className="text-sm text-gray-500 space-y-1 mt-1">
-                                    <p>{t('user_profile.followers')} <span className="font-bold text-gray-900">0</span></p> {/* Placeholder for now */}
                                     <p className="flex items-center gap-1">
                                         <Calendar size={14} />
                                         {t('user_profile.joined')} <span className="text-gray-900 font-medium">{new Date(user.createdAt!).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>

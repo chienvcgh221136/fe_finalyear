@@ -767,7 +767,10 @@
             "table_joined": "Joined Date",
             "btn_add": "Add Member",
             "edit_user": "Edit User",
-            "confirm_ban": "Are you sure you want to ban this account?"
+            "confirm_ban": "Are you sure you want to ban this account?",
+            "role_user": "User",
+            "role_admin": "Admin",
+            "unban": "Unban"
         },
         "reports": {
             "title": "Report Management",
@@ -878,6 +881,8 @@
             "handled": "Handled",
             "mode_add": "ADD REWARD (+)",
             "mode_subtract": "ENFORCE PENALTY (-)",
+            "quick_reason": "Quick Reason Suggestions",
+            "amount": "Adjustment Amount",
             "penalty_level": "Penalty Level",
             "desc_placeholder": "Enter adjustment reason...",
             "confirm_add": "CONFIRM ADD",

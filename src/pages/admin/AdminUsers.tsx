@@ -278,7 +278,7 @@ const AdminUsers = () => {
                                                     >
                                                         {user.isBanned ? (
                                                             <>
-                                                                <ShieldCheck size={14} /> {t('admin.users.unban', 'Mở khóa')}
+                                                                <ShieldCheck size={14} /> {t('admin.users.unban')}
                                                             </>
                                                         ) : (
                                                             <>
@@ -290,7 +290,7 @@ const AdminUsers = () => {
                                                 <button
                                                     onClick={() => user._id && setDeleteConfirmModal({ open: true, userId: user._id })}
                                                     className="text-slate-400 hover:text-red-600 transition-colors"
-                                                    title="Xóa người dùng vĩnh viễn"
+                                                    title={t('admin.common.delete')}
                                                 >
                                                     <Trash2 size={18} />
                                                 </button>

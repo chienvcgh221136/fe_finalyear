@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, Send, X, Bot, Loader2, Sparkles, ExternalLink } from 'lucide-react';
+import { Send, X, Bot, Loader2, Sparkles, ExternalLink } from 'lucide-react';
 import { chatbotAPI } from '../../services/api';
 import ListingCard from '../ListingCard';
 import type { Post } from '../../types';
@@ -331,10 +331,7 @@ const Chatbot = () => {
                     onClick={() => setIsOpen(true)}
                     className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-2xl transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700"
                 >
-                    <div className="relative">
-                        <MessageSquare size={24} />
-                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-blue-600" />
-                    </div>
+                    <Bot size={32} />
                 </motion.button>
             )}
         </div>

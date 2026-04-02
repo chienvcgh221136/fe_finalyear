@@ -227,7 +227,7 @@ const AdminWithdrawals = () => {
                                                 <div>
                                                     <p className="font-bold text-sm text-gray-900 font-mono">#USR-{req.userId?._id?.slice(-5).toUpperCase()}</p>
                                                     <p className="text-xs text-gray-500 font-medium mt-0.5">{req.userId?.name}</p>
-                                                    <p className="text-[10px] text-blue-500 font-bold mt-1 uppercase">Đại lý Cấp 1</p>
+                                                    <p className="text-[10px] text-blue-500 font-bold mt-1 uppercase">{t('admin.users.role_user', 'Người dùng')}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -325,11 +325,11 @@ const AdminWithdrawals = () => {
                             <div className="bg-white p-4 rounded-xl border border-gray-200 mb-6 shadow-sm">
                                 <div className="flex justify-between items-start mb-2">
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Mã Yêu Cầu</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('admin.withdrawals.request_id', 'Mã Yêu Cầu')}</p>
                                         <p className="font-mono font-bold text-gray-900">#WR-{selectedRequest._id.slice(-5).toUpperCase()}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Số tiền</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('admin.common.amount', 'Số tiền')}</p>
                                         <p className="font-bold text-blue-600 text-lg">{formatCurrency(selectedRequest.amount)}</p>
                                     </div>
                                 </div>
@@ -337,7 +337,7 @@ const AdminWithdrawals = () => {
                                     <div className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold">
                                         {selectedRequest.userId?.name.charAt(0)}
                                     </div>
-                                    <span className="text-sm font-medium text-gray-700">{selectedRequest.userId?.name} • Đại lý Cấp 1</span>
+                                    <span className="text-sm font-medium text-gray-700">{selectedRequest.userId?.name} • {t('admin.users.role_user', 'Người dùng')}</span>
                                 </div>
                             </div>
 

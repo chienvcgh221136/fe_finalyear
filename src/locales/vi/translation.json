@@ -767,7 +767,10 @@
             "table_joined": "Ngày tham gia",
             "btn_add": "Thêm thành viên",
             "edit_user": "Sửa người dùng",
-            "confirm_ban": "Bạn có chắc chắn muốn khóa tài khoản này?"
+            "confirm_ban": "Bạn có chắc chắn muốn khóa tài khoản này?",
+            "role_user": "Người dùng",
+            "role_admin": "Quản trị viên",
+            "unban": "Mở khóa"
         },
         "notifications": {
             "title": "Thông báo hệ thống",
@@ -800,7 +803,7 @@
             "dismiss": "Bỏ qua",
             "post_not_exist": "Tin không tồn tại",
             "user_not_exist": "Người dùng không tồn tại",
-            "table_bad_post": "Tin vi phạm"
+            "table_bad_post": "Báo cáo xấu"
         },
         "vip": {
             "title": "Gói VIP & Dịch vụ",
@@ -879,6 +882,8 @@
             "handled": "Đã xử lý",
             "mode_add": "TĂNG THƯỞNG (+)",
             "mode_subtract": "GIẢM PHẠT (-)",
+            "quick_reason": "Gợi ý lý do nhanh",
+            "amount": "Số điểm thay đổi",
             "penalty_level": "Hình phạt",
             "desc_placeholder": "Nhập chi tiết lý do điều chỉnh...",
             "confirm_add": "XÁC NHẬN CỘNG",
