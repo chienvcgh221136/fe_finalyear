@@ -5,7 +5,7 @@ import { usersAPI } from '../../services/api';
 import type { User } from '../../types';
 import {
     Search, Filter, Ban,
-    UserPlus, Users, ShieldCheck, ChevronDown, AlertTriangle, Trash2
+    Users, ShieldCheck, ChevronDown, AlertTriangle, Trash2
 } from 'lucide-react';
 
 const AdminUsers = () => {
@@ -25,6 +25,7 @@ const AdminUsers = () => {
         mutationFn: (userId: string) => usersAPI.ban(userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+            queryClient.invalidateQueries({ queryKey: ['users-points'] });
             alert(t('admin.common.update_success'));
         },
         onError: () => {
@@ -36,6 +37,7 @@ const AdminUsers = () => {
         mutationFn: (userId: string) => usersAPI.unban(userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+            queryClient.invalidateQueries({ queryKey: ['users-points'] });
             alert(t('admin.common.update_success'));
         },
         onError: () => {
@@ -119,10 +121,6 @@ const AdminUsers = () => {
                     <h1 className="text-2xl font-bold text-slate-900">{t('admin.users.title')}</h1>
                     <p className="text-slate-500 mt-1 text-sm">{t('admin.users.stat_active')}: {activeUsers}</p>
                 </div>
-                <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm shadow-blue-200">
-                    <UserPlus size={18} />
-                    {t('admin.users.btn_add')}
-                </button>
             </div>
 
             {/* Stats Cards */}
@@ -155,7 +153,7 @@ const AdminUsers = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('auth.password_strength.very_weak')}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.common.banned')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{bannedUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-slate-500 mt-2">
                             {(totalUsers > 0 ? (bannedUsers / totalUsers * 100).toFixed(1) : 0)}% {t('admin.common.all').toLowerCase()}
@@ -203,8 +201,8 @@ const AdminUsers = () => {
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
                                 <option value="Status">{t('admin.common.status')}</option>
-                                <option value="Active">{t('stats.status_active')}</option>
-                                <option value="Banned">{t('auth.password_strength.very_weak')}</option>
+                                <option value="Active">{t('admin.common.status_active')}</option>
+                                <option value="Banned">{t('admin.common.banned')}</option>
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={14} />
                         </div>
@@ -262,7 +260,7 @@ const AdminUsers = () => {
                                             <div className="flex items-center gap-2">
                                                 <div className={`w-2 h-2 rounded-full ${user.isBanned ? 'bg-red-500' : 'bg-green-500'}`}></div>
                                                 <span className={`text-sm font-medium ${user.isBanned ? 'text-red-500' : 'text-slate-600'}`}>
-                                                    {user.isBanned ? t('auth.password_strength.very_weak') : t('stats.status_active')}
+                                                    {user.isBanned ? t('admin.common.banned') : t('admin.common.status_active')}
                                                 </span>
                                             </div>
                                         </td>
@@ -282,7 +280,7 @@ const AdminUsers = () => {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Ban size={14} /> {t('auth.password_strength.very_weak')}
+                                                                <Ban size={14} /> {t('admin.common.ban')}
                                                             </>
                                                         )}
                                                     </button>
@@ -347,7 +345,7 @@ const AdminUsers = () => {
                                     onClick={handleConfirmBan}
                                     className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors text-sm shadow-sm shadow-red-200"
                                 >
-                                    {t('auth.password_strength.very_weak')}
+                                    {t('admin.common.ban')}
                                 </button>
                             </div>
                         </div>

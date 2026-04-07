@@ -98,6 +98,7 @@
         "back": "Quay lại",
         "confirm": "Xác nhận",
         "search": "Tìm kiếm",
+        "price": "Giá",
         "approve": "Chấp nhận",
         "reject": "Từ chối",
         "active": "Hoạt động",
@@ -740,6 +741,7 @@
         "posts": {
             "title": "Quản lý Tin đăng",
             "all_posts": "Tất cả tin",
+            "approved_today": "Đã duyệt hôm nay",
             "pending_posts": "Chờ duyệt",
             "active_posts": "Đang hiển thị",
             "rejected_posts": "Bị từ chối",
@@ -770,7 +772,8 @@
             "confirm_ban": "Bạn có chắc chắn muốn khóa tài khoản này?",
             "role_user": "Người dùng",
             "role_admin": "Quản trị viên",
-            "unban": "Mở khóa"
+            "unban": "Mở khóa",
+            "status_banned": "Đã bị cấm"
         },
         "notifications": {
             "title": "Thông báo hệ thống",
@@ -853,7 +856,6 @@
             "confirm_title_paid": "Xác nhận đã thanh toán",
             "admin_note": "Ghi chú Admin (Lý do)"
         },
-
         "points": {
             "title": "Quản lý Điểm thưởng",
             "subtitle": "Quản lý số dư và lịch sử giao dịch điểm thưởng",

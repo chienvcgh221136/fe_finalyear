@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { filesAPI, chatAPI, usersAPI } from '../services/api';
@@ -659,58 +659,73 @@ const Chat = () => {
                                                     const isImage = msg.type === 'IMAGE' || (msg.content.startsWith('http') && (msg.content.includes('/uploads/') || msg.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)));
 
                                                     return (
-                                                        <div
-                                                            key={idx}
-                                                            ref={(el) => {
-                                                                if (msg._id) messageRefs.current[msg._id] = el;
-                                                            }}
-                                                            className={`flex flex-col mb-1 ${isMe ? 'items-end' : 'items-start'} ${isHighlighted ? 'bg-yellow-50/50 p-2 rounded -mx-2 transition-all duration-1000' : ''}`}
-                                                        >
-                                                            <div className={`max-w-[70%] rounded-2xl shadow-sm relative ${isHighlighted ? 'ring-2 ring-yellow-400 ring-offset-2' : ''} ${isImage
-                                                                ? `p-0 overflow-hidden ${isMe ? 'rounded-br-none' : 'rounded-bl-none'}`
-                                                                : `px-5 py-3 ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'}`
-                                                                }`}>
-                                                                {isImage ? (
-                                                                    <img
-                                                                        src={msg.content}
-                                                                        alt="Sent image"
-                                                                        className="max-w-full rounded-none max-h-60 object-cover cursor-pointer hover:opacity-95 transition-opacity block"
-                                                                        onClick={() => setViewingImage(msg.content)}
-                                                                    />
-                                                                ) : (
-                                                                    <p className="text-sm leading-relaxed">
-                                                                        {/* Highlight content search match only if this is the highlighted message for better UX */}
-                                                                        {isHighlighted && searchTerm ? highlightText(msg.content, searchTerm) : msg.content}
-                                                                    </p>
-                                                                )}
-
-                                                                <div className={`flex items-center gap-1 ${isImage
-                                                                    ? 'absolute bottom-2 right-2 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm text-white'
-                                                                    : `justify-end mt-1 ${isMe ? 'text-blue-100' : 'text-gray-400'}`
+                                                        <React.Fragment key={idx}>
+                                                            {(() => {
+                                                                const currentDate = new Date(msg.createdAt).toLocaleDateString('vi-VN');
+                                                                const prevDate = idx > 0 ? new Date(messages[idx - 1].createdAt).toLocaleDateString('vi-VN') : null;
+                                                                if (currentDate !== prevDate) {
+                                                                    return (
+                                                                        <div className="flex justify-center my-4">
+                                                                            <span className="px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest shadow-sm">
+                                                                                {currentDate}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                }
+                                                                return null;
+                                                            })()}
+                                                            <div
+                                                                ref={(el) => {
+                                                                    if (msg._id) messageRefs.current[msg._id] = el;
+                                                                }}
+                                                                className={`flex flex-col mb-1 ${isMe ? 'items-end' : 'items-start'} ${isHighlighted ? 'bg-yellow-50/50 p-2 rounded -mx-2 transition-all duration-1000' : ''}`}
+                                                            >
+                                                                <div className={`max-w-[70%] rounded-2xl shadow-sm relative ${isHighlighted ? 'ring-2 ring-yellow-400 ring-offset-2' : ''} ${isImage
+                                                                    ? `p-0 overflow-hidden ${isMe ? 'rounded-br-none' : 'rounded-bl-none'}`
+                                                                    : `px-5 py-3 ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none'}`
                                                                     }`}>
-                                                                    <p className="text-[10px]">
-                                                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                    </p>
-                                                                    {isMe && (
-                                                                        msg.isRead ? (
-                                                                            <CheckCheck size={12} className={isImage ? "text-white" : "text-blue-100"} />
-                                                                        ) : (
-                                                                            <Check size={12} className={isImage ? "text-white/70" : "text-blue-100"} />
-                                                                        )
+                                                                    {isImage ? (
+                                                                        <img
+                                                                            src={msg.content}
+                                                                            alt="Sent image"
+                                                                            className="max-w-full rounded-none max-h-60 object-cover cursor-pointer hover:opacity-95 transition-opacity block"
+                                                                            onClick={() => setViewingImage(msg.content)}
+                                                                        />
+                                                                    ) : (
+                                                                        <p className="text-sm leading-relaxed">
+                                                                            {/* Highlight content search match only if this is the highlighted message for better UX */}
+                                                                            {isHighlighted && searchTerm ? highlightText(msg.content, searchTerm) : msg.content}
+                                                                        </p>
                                                                     )}
+
+                                                                    <div className={`flex items-center gap-1 ${isImage
+                                                                        ? 'absolute bottom-2 right-2 bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm text-white'
+                                                                        : `justify-end mt-1 ${isMe ? 'text-blue-100' : 'text-gray-400'}`
+                                                                        }`}>
+                                                                        <p className="text-[10px]">
+                                                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                        </p>
+                                                                        {isMe && (
+                                                                            msg.isRead ? (
+                                                                                <CheckCheck size={12} className={isImage ? "text-white" : "text-blue-100"} />
+                                                                            ) : (
+                                                                                <Check size={12} className={isImage ? "text-white/70" : "text-blue-100"} />
+                                                                            )
+                                                                        )}
+                                                                    </div>
                                                                 </div>
+                                                                {isLastMyMsg && !isImage && (
+                                                                    <span className="text-[10px] text-gray-400 mt-1 mr-1">
+                                                                        {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
+                                                                    </span>
+                                                                )}
+                                                                {isLastMyMsg && isImage && (
+                                                                    <span className="text-[10px] text-gray-400 mt-1 mr-1">
+                                                                        {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            {isLastMyMsg && !isImage && (
-                                                                <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                    {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
-                                                                </span>
-                                                            )}
-                                                            {isLastMyMsg && isImage && (
-                                                                <span className="text-[10px] text-gray-400 mt-1 mr-1">
-                                                                    {msg.isRead ? t('chat.seen', 'Đã xem') : t('chat.sent', 'Đã gửi')}
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                        </React.Fragment>
                                                     );
                                                 })}
                                                 <div ref={messagesEndRef} />

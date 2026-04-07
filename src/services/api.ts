@@ -18,23 +18,27 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle errors (e.g., 401)
+// Response interceptor to handle errors (e.g., 401, 403)
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
         // Handle 401 Unauthorized globally
         if (error.response && error.response.status === 401) {
-            // Check if the original request was NOT for the initial profile check
             const originalRequestUrl = error.config?.url;
             if (originalRequestUrl && !originalRequestUrl.includes('/users/me')) {
-                // Prevent infinite redirect loops if we are already on login or register
                 if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-                    // Clear any stored data if needed (AuthContext usually handles this via checkAuth, but we can force redirect)
-                    // Using window.location for a hard redirect to ensure state is cleared
                     window.location.href = '/login';
                 }
             }
         }
+        
+        // Handle 403 Banned status globally
+        if (error.response && error.response.status === 403) {
+            if (error.response.data?.message === "Account is banned" || error.response.data?.message === "User is banned") {
+                window.dispatchEvent(new CustomEvent('user_banned'));
+            }
+        }
+        
         return Promise.reject(error);
     }
 );

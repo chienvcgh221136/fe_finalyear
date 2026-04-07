@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [isBannedModalOpen, setIsBannedModalOpen] = useState(false);
 
     const checkAuth = async () => {
         try {
@@ -28,7 +29,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const res = await usersAPI.getProfile();
             const userData = res.data.data || res.data;
             setUser(userData);
-        } catch (error) {
+        } catch {
             // Not authenticated
             setUser(null);
         } finally {
@@ -41,10 +42,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         checkAuth();
     }, []);
 
+    // Listen for global ban events
+    useEffect(() => {
+        const handleBannedEvent = () => setIsBannedModalOpen(true);
+        window.addEventListener('user_banned', handleBannedEvent);
+        
+        // Also check if user object already says they are banned directly
+        if (user?.isBanned) {
+            setIsBannedModalOpen(true);
+        }
 
+        return () => window.removeEventListener('user_banned', handleBannedEvent);
+    }, [user]);
 
-
-    const login = async (email: string, password: string) => {
+    const handleAcknowledgeBan = async () => {
+        setIsBannedModalOpen(false);
+        try {
+            await authService.logout();
+        } catch {
+            // Ignore error
+        }
+        setUser(null);
+        window.location.href = '/login'; // Hard redirect to clear all states
+    };    const login = async (email: string, password: string) => {
         try {
             const response = await authService.login({ email, password });
 
@@ -112,6 +132,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(updatedUser);
     };
 
+    // The Banned Modal UI
+    const BannedModal = isBannedModalOpen ? (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Tài khoản bị khóa</h3>
+                <p className="text-slate-500 mb-6 text-sm leading-relaxed">
+                    Tài khoản của bạn đã bị vô hiệu hóa do vi phạm chính sách của hệ thống. Bạn không thể tiếp tục truy cập các tính năng.
+                </p>
+                <button
+                    onClick={handleAcknowledgeBan}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm shadow-red-200"
+                >
+                    Đã hiểu & Đăng xuất
+                </button>
+            </div>
+        </div>
+    ) : null;
+
     return (
         <AuthContext.Provider
             value={{
@@ -129,6 +172,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         >
 
             {children}
+            {BannedModal}
         </AuthContext.Provider>
     );
 };

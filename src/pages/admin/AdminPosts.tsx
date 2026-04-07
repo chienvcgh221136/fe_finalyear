@@ -155,7 +155,7 @@ const AdminPosts = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-bold transition-colors shadow-sm shadow-blue-200"
                     >
                         <RefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
-                        {t('common.loading').replace('...', '')}
+                        {t('admin.common.refresh')}
                     </button>
                 </div>
             </div>
@@ -171,7 +171,7 @@ const AdminPosts = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm flex items-start justify-between">
                     <div>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.vip.stat_active')}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.posts.approved_today')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{stats?.approvedToday || 0}</p>
                     </div>
                     <div className="p-3 bg-green-50 text-green-600 rounded-lg">

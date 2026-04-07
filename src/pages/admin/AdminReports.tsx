@@ -332,7 +332,7 @@ const AdminReports = () => {
                                                 {/* Ban Button */}
                                                 {(() => {
                                                     const targetUser = activeTab === 'POST' ? report.postId?.userId : report.targetUserId;
-                                                    const shouldShowBan = activeTab === 'USER' || (targetUser?.violationCount >= 5);
+                                                    const shouldShowBan = (targetUser?.violationCount >= 5);
 
                                                     if (shouldShowBan && !targetUser?.isBanned) {
                                                         return (

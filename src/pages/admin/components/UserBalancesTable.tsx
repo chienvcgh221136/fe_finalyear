@@ -29,6 +29,8 @@ const UserBalancesTable = () => {
             setIsAdjustModalOpen(false);
             setSelectedUser(null);
             queryClient.invalidateQueries({ queryKey: ['users-points'] });
+            queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+
         },
         onError: (err: any) => {
             error(err.response?.data?.message || t('admin.common.error'));

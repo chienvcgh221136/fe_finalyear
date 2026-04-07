@@ -98,6 +98,7 @@
         "back": "Back",
         "confirm": "Confirm",
         "search": "Search",
+        "price": "Price",
         "approve": "Approve",
         "reject": "Reject",
         "active": "Active",
@@ -740,6 +741,7 @@
         "posts": {
             "title": "Post Management",
             "all_posts": "All Posts",
+            "approved_today": "Approved Today",
             "pending_posts": "Pending",
             "active_posts": "Active",
             "rejected_posts": "Rejected",
@@ -770,7 +772,8 @@
             "confirm_ban": "Are you sure you want to ban this account?",
             "role_user": "User",
             "role_admin": "Admin",
-            "unban": "Unban"
+            "unban": "Unban",
+            "status_banned": "Banned"
         },
         "reports": {
             "title": "Report Management",
