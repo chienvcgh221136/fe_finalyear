@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pointService } from '../services/pointService';
-import { Gift, Award, ArrowLeft, ShieldCheck, HelpCircle, Coins, Flame, ChevronRight, Zap } from 'lucide-react';
+import { Award, ArrowLeft, ShieldCheck, HelpCircle, Coins, Flame, ChevronRight, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useLocalizedPath } from '../utils/pathUtils';
 import { useTranslation } from 'react-i18next';
@@ -23,7 +23,7 @@ const RedeemPage = () => {
 
     const redeemMutation = useMutation({
         mutationFn: pointService.redeemReward,
-        onSuccess: (data) => {
+        onSuccess: () => {
             success(t('redeem.success_redeem'));
             queryClient.invalidateQueries({ queryKey: ['myPoints'] });
             setSelectedItem(null);
@@ -220,7 +220,7 @@ const RedeemPage = () => {
     );
 };
 
-const RewardCardBig = ({ title, subtitle, desc, points, icon: Icon, color, bg, iconBg, userPoints, onRedeem, t, i18n }: any) => {
+const RewardCardBig = ({ title, subtitle, desc, points, icon: Icon, color, iconBg, userPoints, onRedeem, t, i18n }: any) => {
     const canAfford = userPoints >= points;
 
     return (
