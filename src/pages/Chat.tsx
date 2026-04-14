@@ -197,16 +197,13 @@ const Chat = () => {
             const count = messages.length;
             const prevCount = prevMessageCountRef.current;
 
-            // Only act if we have messages
             if (count > 0) {
-                // If it's a fresh load (prevCount === 0), just scroll to bottom if allowed
-                // (Usually we want to start at bottom on load)
                 if (prevCount === 0) {
                     if (!highlightedMessageId) {
-                        scrollToBottom(false); // Instant scroll on load
+                        scrollToBottom(false);
                     }
                 }
-                // If new messages arrived (count > prevCount)
+
                 else if (count > prevCount) {
                     const lastMsg = messages[count - 1];
                     const myId = user?.id || user?._id;

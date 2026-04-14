@@ -306,6 +306,7 @@
         "property_type_APARTMENT": "Căn hộ / Chung cư",
         "property_type_LAND": "Đất nền",
         "property_type_OFFICE": "Văn phòng",
+        "property_type_ROOM": "Phòng trọ",
         "posted_by": "ĐĂNG BỞI",
         "unverified_user": "Người dùng chưa xác thực",
         "member_since": "Thành viên từ {{date}}",

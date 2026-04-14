@@ -306,6 +306,7 @@
         "property_type_APARTMENT": "Apartment",
         "property_type_LAND": "Land",
         "property_type_OFFICE": "Office",
+        "property_type_ROOM": "Room",
         "posted_by": "POSTED BY",
         "unverified_user": "Unverified user",
         "member_since": "Member since {{date}}",
