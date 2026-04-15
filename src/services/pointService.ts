@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/points';
+const API_URL = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/points` : 'http://localhost:3000/api/points';
 
 const getMyPoints = async () => {
     const response = await axios.get(`${API_URL}/me`, { withCredentials: true });
