@@ -16,6 +16,7 @@ interface NotificationFormData {
 
 const AdminNotifications = () => {
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);

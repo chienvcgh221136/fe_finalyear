@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import { postService } from '../services/api';
-import { ChevronDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatVND } from '../utils/currencyUtils';
 import { getLocalizedCity, translateCityToVi } from '../utils/cityTranslations';
