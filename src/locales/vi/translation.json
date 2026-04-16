@@ -277,7 +277,6 @@
         "safety_1": "Nên gặp trực tiếp để xem nhà và giấy tờ.",
         "safety_2": "Cẩn thận với các yêu cầu thanh toán/cọc trước.",
         "safety_3": "Sử dụng hợp đồng rõ ràng khi giao dịch.",
-        "share": "Chia sẻ",
         "schedule": "Đặt lịch",
         "save": "Lưu tin",
         "not_found": "Không tìm thấy tin đăng",
@@ -906,7 +905,8 @@
                 "violation_desc_2": "Tái phạm lần 2: Tự động khấu trừ 15% tổng số điểm thưởng.",
                 "violation_desc_3": "Vi phạm lần 3: Tự động khấu trừ 30% tổng số điểm thưởng.",
                 "violation_desc_4": "Vi phạm nghiêm trọng: Tự động khấu trừ 50% tổng số điểm.",
-                "violation_desc_5": "Mức phạt tối đa: Tịch thu toàn bộ điểm & Khóa tài khoản."
+                "violation_desc_5": "Mức phạt tối đa: Tịch thu toàn bộ điểm & Khóa tài khoản.",
+                "violation_default": "Khấu trừ điểm (Điều chỉnh bởi Admin)"
             },
             "actions": {
                 "DAILY_LOGIN": "Điểm danh hàng ngày",
@@ -1027,6 +1027,17 @@
                 }
             }
         }
+    },
+    "transactions": {
+        "withdraw_request": "Yêu cầu rút tiền: {{amount}} VNĐ",
+        "withdraw_refund": "Hoàn tiền do từ chối rút: {{amount}} VNĐ",
+        "admin_add": "Cộng tiền: {{amount}} VNĐ. Lý do: {{reason}}",
+        "admin_deduct": "Trừ tiền: {{amount}} VNĐ. Lý do: {{reason}}",
+        "refund_reject": "Từ chối rút tiền, hoàn lại: {{amount}} VNĐ",
+        "topup_desc": "Nạp tiền: {{amount}} VNĐ (Mã GD: {{ref}})",
+        "sepay_desc": "Nạp tự động: {{description}} (Mã: {{ref}})",
+        "vip_purchase": "Nâng cấp gói VIP: {{name}}",
+        "vip_upgrade": "Nâng cấp từ: {{old}} lên {{new}}"
     },
     "footer": {
         "description": "Giúp hàng triệu người tìm được ngôi nhà mơ ước từ năm 2010. Nền tảng giao dịch bất động sản tin cậy nhất.",
@@ -1199,7 +1210,6 @@
         "admin": "Quản trị viên",
         "followers": "Người theo dõi",
         "joined": "Đã tham gia:",
-        "share": "Chia sẻ",
         "btn_edit_profile": "Chỉnh sửa hồ sơ",
         "btn_message": "Nhắn tin",
         "all_posts": "Tất cả tin đăng ({{count}})",

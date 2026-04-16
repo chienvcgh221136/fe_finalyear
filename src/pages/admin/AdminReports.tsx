@@ -13,6 +13,8 @@ const AdminReports = () => {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'POST' | 'USER'>('POST');
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     // State for viewing chat
     const [viewChatId, setViewChatId] = useState<string | null>(null);
@@ -99,6 +101,9 @@ const AdminReports = () => {
         }
     });
 
+    const totalPages = Math.ceil((filteredReports?.length || 0) / ITEMS_PER_PAGE);
+    const currentReports = filteredReports?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -143,7 +148,10 @@ const AdminReports = () => {
                             type="text"
                             placeholder={t('admin.common.search')}
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setCurrentPage(1);
+                            }}
                             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm outline-none"
                         />
                     </div>
@@ -191,7 +199,7 @@ const AdminReports = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredReports?.map((report: any) => (
+                                currentReports?.map((report: any) => (
                                     <tr key={report._id} className="group hover:bg-slate-50 transition-colors">
                                         {activeTab === 'POST' ? (
                                             <td className="px-6 py-4">
@@ -390,6 +398,28 @@ const AdminReports = () => {
                         </tbody>
                     </table>
                 </div>
+                {/* Pagination UI */}
+                {filteredReports && filteredReports.length > ITEMS_PER_PAGE && (
+                    <div className="border-t border-gray-200 p-4 bg-gray-50 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                        </button>
+                        <span className="text-sm font-medium text-gray-600 px-4">
+                            {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Chat Viewer Modal */}

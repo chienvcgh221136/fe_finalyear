@@ -30,6 +30,8 @@ const WalletPage = () => {
     const [showQR, setShowQR] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [latestTxId, setLatestTxId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     // Withdraw State
     const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
@@ -244,7 +246,7 @@ const WalletPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {transactions?.map((tx) => (
+                                {transactions?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((tx) => (
                                     <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -264,6 +266,34 @@ const WalletPage = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {/* Pagination UI */}
+                {transactions && transactions.length > ITEMS_PER_PAGE && (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => {
+                                setCurrentPage(p => Math.max(1, p - 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                        </button>
+                        <span className="text-sm font-medium text-gray-600 px-4">
+                            {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {Math.ceil(transactions.length / ITEMS_PER_PAGE)}
+                        </span>
+                        <button
+                            onClick={() => {
+                                setCurrentPage(p => Math.min(Math.ceil(transactions.length / ITEMS_PER_PAGE), p + 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            disabled={currentPage === Math.ceil(transactions.length / ITEMS_PER_PAGE)}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                        </button>
                     </div>
                 )}
             </div>

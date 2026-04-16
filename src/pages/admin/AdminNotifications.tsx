@@ -16,9 +16,10 @@ interface NotificationFormData {
 
 const AdminNotifications = () => {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const { register, handleSubmit, reset, setValue, watch } = useForm<NotificationFormData>({
         defaultValues: {
@@ -54,6 +55,9 @@ const AdminNotifications = () => {
         u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const totalPages = Math.ceil((notifications?.length || 0) / ITEMS_PER_PAGE);
+    const currentNotifications = notifications?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     // Mutations
     const createMutation = useMutation({
@@ -140,7 +144,7 @@ const AdminNotifications = () => {
                         ) : notifications.length === 0 ? (
                             <tr><td colSpan={5} className="p-8 text-center text-gray-500">{t('admin.common.no_data')}</td></tr>
                         ) : (
-                            notifications.map((n: any) => (
+                            currentNotifications.map((n: any) => (
                                 <tr key={n._id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 font-medium text-gray-900 max-w-md truncate" title={n.message}>
                                         {parseNotificationMessage(n.message, t)}
@@ -191,6 +195,28 @@ const AdminNotifications = () => {
                     </tbody>
                 </table>
             </div>
+            {/* Pagination UI */}
+            {notifications && notifications.length > ITEMS_PER_PAGE && (
+                <div className="border-t border-gray-100 p-4 bg-white rounded-xl shadow-sm border mt-4 flex justify-center items-center gap-4">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all font-medium"
+                    >
+                        {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                    </button>
+                    <span className="text-sm font-medium text-gray-600 px-4">
+                        {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all font-medium"
+                    >
+                        {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                    </button>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (

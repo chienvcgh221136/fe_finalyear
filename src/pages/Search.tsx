@@ -21,6 +21,8 @@ const Search = () => {
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filteredListings, setFilteredListings] = useState<any[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 12;
 
     // Filters States
     const [city, setCity] = useState('');
@@ -122,11 +124,12 @@ const Search = () => {
                 }
 
                 setFilteredListings(initialFiltered);
+                setCurrentPage(1);
 
                 // Extract unique cities
                 const fetchedCities = Array.from(new Set(posts.map((p: any) => p.address?.city || p.city).filter(Boolean))) as string[];
                 const majorCities = ['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ'];
-                
+
                 // Keep Vietnamese standard internally for availableCities
                 const allCities = Array.from(new Set([...majorCities, ...fetchedCities]));
 
@@ -249,8 +252,8 @@ const Search = () => {
 
         if (city) {
             const cityVi = translateCityToVi(city);
-            result = result.filter(post => 
-                (post.address?.city === city) || 
+            result = result.filter(post =>
+                (post.address?.city === city) ||
                 (post.city === city) ||
                 (post.address?.city === cityVi) ||
                 (post.city === cityVi)
@@ -282,12 +285,14 @@ const Search = () => {
 
         const sortedResult = sortListings(result, sortOption);
         setFilteredListings(sortedResult);
+        setCurrentPage(1);
     };
 
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSort = e.target.value;
         setSortOption(newSort);
         setFilteredListings(prev => sortListings(prev, newSort));
+        setCurrentPage(1);
     };
 
     const handleClearFilters = () => {
@@ -307,6 +312,7 @@ const Search = () => {
             initialListings = initialListings.filter(p => initialT.includes(p.transactionType));
         }
         setFilteredListings(initialListings);
+        setCurrentPage(1);
         setAreaError('');
     };
 
@@ -524,20 +530,30 @@ const Search = () => {
                     ) : (
                         <>
                             <div className="listings-grid">
-                                {filteredListings.map((post) => (
+                                {filteredListings.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((post) => (
                                     <ListingCard key={post._id || post.id} post={post} />
                                 ))}
                             </div>
 
-                            {filteredListings.length > 0 && (
-                                <div className="pagination">
-                                    <button className="page-btn"><ChevronDown size={14} className="rotate-90" /></button>
-                                    <button className="page-btn active">1</button>
-                                    <button className="page-btn">2</button>
-                                    <button className="page-btn">3</button>
-                                    <button className="page-btn">...</button>
-                                    <button className="page-btn">12</button>
-                                    <button className="page-btn"><ChevronDown size={14} className="-rotate-90" /></button>
+                            {filteredListings.length > ITEMS_PER_PAGE && (
+                                <div className="border-t border-gray-100 p-4 mt-6 flex items-center justify-center gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="rounded-lg border border-gray-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-gray-50 font-medium"
+                                    >
+                                        {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                                    </button>
+                                    <span className="text-sm font-medium text-gray-600 px-4">
+                                        {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {Math.ceil(filteredListings.length / ITEMS_PER_PAGE)}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredListings.length / ITEMS_PER_PAGE), p + 1))}
+                                        disabled={currentPage === Math.ceil(filteredListings.length / ITEMS_PER_PAGE)}
+                                        className="rounded-lg border border-gray-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-gray-50 font-medium"
+                                    >
+                                        {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                                    </button>
                                 </div>
                             )}
 

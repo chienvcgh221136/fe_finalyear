@@ -4,7 +4,7 @@ import LocalizedLink from '../components/common/LocalizedLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersAPI, postsAPI, reviewsAPI, filesAPI } from '../services/api'; // Added filesAPI
 import type { Post, User, Review } from '../types';
-import { Edit, Calendar, Camera, Star, Share2, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
+import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
 import { useAuth } from '../context/AuthContext'; // Added useAuth
 import { useTranslation } from 'react-i18next';
 
@@ -189,9 +189,6 @@ const UserProfile = () => {
 
                             {/* Actions */}
                             <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
-                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-full font-bold text-gray-700 hover:bg-gray-50 transition-colors text-sm">
-                                    <Share2 size={16} /> {t('user_profile.share')}
-                                </button>
                                 {isOwner ? (
                                     <LocalizedLink to="/profile" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
                                         <Edit size={16} /> {t('user_profile.btn_edit_profile')}

@@ -248,7 +248,7 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
         const content = adminPrefixMatch[3].trim();
 
         // Recursively parse the content to handle translated sub-messages
-        const localizedContent = parseNotificationMessage(content, t);
+        let localizedContent = parseNotificationMessage(content, t);
 
         if (prefix === 'CẢNH BÁO VI PHẠM') {
             return t('notifications.patterns.admin_violation_prefix', { content: localizedContent });
@@ -258,9 +258,19 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
             if (pointSuffixMatch) {
                 const subContent = pointSuffixMatch[1].trim();
                 const amount = pointSuffixMatch[2];
-                const localizedSubContent = parseNotificationMessage(subContent, t);
+                let localizedSubContent = parseNotificationMessage(subContent, t);
+                
+                // If it's a raw translation key, translate it
+                if (localizedSubContent.startsWith('admin.points.adjustment_reasons.')) {
+                    localizedSubContent = t(localizedSubContent, { defaultValue: localizedSubContent });
+                }
+
                 const key = prefix === 'CỘNG ĐIỂM' ? 'notifications.patterns.admin_earn_detail' : 'notifications.patterns.admin_spend_detail';
                 return t(key, { content: localizedSubContent, amount });
+            }
+            
+            if (localizedContent.startsWith('admin.points.adjustment_reasons.')) {
+                localizedContent = t(localizedContent, { defaultValue: localizedContent });
             }
             return t('notifications.patterns.admin_earn_prefix', { content: localizedContent });
         }

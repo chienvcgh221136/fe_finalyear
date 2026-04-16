@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
-    MapPin, Share2, Heart, AlertCircle, ChevronRight,
+    MapPin, Heart, AlertCircle, ChevronRight,
     Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, Calendar
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
@@ -208,11 +208,6 @@ const PostDetail = () => {
                                 </div>
                             </div>
                             <div className="flex gap-3">
-                                <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 hover:text-blue-600 transition-all">
-                                    <Share2 size={18} />
-                                    <span className="text-sm">{t('post_detail.share')}</span>
-                                </button>
-
                                 {user?._id !== (typeof post.userId === 'object' ? (post.userId as any)._id : post.userId) && (
                                     <button
                                         onClick={() => setIsScheduleModalOpen(true)}

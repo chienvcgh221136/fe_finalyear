@@ -170,28 +170,26 @@ const UserBalancesTable = () => {
                 </table>
             </div>
 
-            {/* Pagination */}
-            {pagination && (
-                <div className="p-4 border-t border-gray-100 flex items-center justify-between">
-                    <p className="text-sm text-gray-500">
-                        {t('admin.common.page_display')} {pagination.current} / {pagination.total}
-                    </p>
-                    <div className="flex gap-2">
-                        <button
-                            disabled={page === 1}
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            className="px-3 py-1 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            {t('common.prev')}
-                        </button>
-                        <button
-                            disabled={page >= pagination.total}
-                            onClick={() => setPage(p => p + 1)}
-                            className="px-3 py-1 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            {t('common.next')}
-                        </button>
-                    </div>
+            {/* Pagination UI */}
+            {pagination && pagination.total > 1 && (
+                <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-center items-center gap-4">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                    >
+                        {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                    </button>
+                    <span className="text-sm font-medium text-gray-600 px-4">
+                        {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {pagination.current} / {pagination.total}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => Math.min(pagination.total, p + 1))}
+                        disabled={page >= pagination.total}
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                    >
+                        {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                    </button>
                 </div>
             )}
 

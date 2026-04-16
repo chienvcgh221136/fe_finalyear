@@ -14,6 +14,8 @@ const AdminUsers = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('All Roles'); // 'All Roles', 'ADMIN', 'USER'
     const [statusFilter, setStatusFilter] = useState('Status'); // 'Status', 'Active', 'Banned'
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const { data: users, isLoading } = useQuery({
         queryKey: ['admin', 'users'],
@@ -104,6 +106,9 @@ const AdminUsers = () => {
 
         return matchesSearch && matchesRole && matchesStatus;
     });
+
+    const totalPages = Math.ceil((filteredUsers?.length || 0) / ITEMS_PER_PAGE);
+    const currentUsers = filteredUsers?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     if (isLoading) {
         return (
@@ -226,8 +231,8 @@ const AdminUsers = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {filteredUsers && filteredUsers.length > 0 ? (
-                                filteredUsers.map((user) => (
+                            {currentUsers && currentUsers.length > 0 ? (
+                                currentUsers.map((user) => (
                                     <tr key={user._id} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3">
@@ -309,16 +314,28 @@ const AdminUsers = () => {
                         </tbody>
                     </table>
                 </div>
-                {/* Pagination (Mock UI) */}
-                <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-between items-center">
-                    <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        {t('admin.common.prev')}
-                    </button>
-                    <span className="text-sm text-slate-500">{t('admin.common.page_of', { page: 1, total: 1 })}</span>
-                    <button className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all" disabled>
-                        {t('admin.common.next')}
-                    </button>
-                </div>
+                {/* Pagination UI */}
+                {filteredUsers && filteredUsers.length > ITEMS_PER_PAGE && (
+                    <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                        </button>
+                        <span className="text-sm font-medium text-slate-600 px-4">
+                            {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Ban Confirmation Modal */}

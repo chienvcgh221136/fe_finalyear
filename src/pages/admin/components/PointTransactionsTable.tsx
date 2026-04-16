@@ -197,25 +197,25 @@ const PointTransactionsTable = () => {
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination UI */}
             {logsData?.pagination && logsData.pagination.total > 1 && (
-                <div className="border-t border-gray-100 p-4 flex items-center justify-center gap-2">
+                <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-center items-center gap-4">
                     <button
                         onClick={() => setPage(p => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className="rounded-lg border border-gray-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
                     >
-                        {t('admin.common.prev')}
+                        {t('admin.common.prev', { defaultValue: 'Trang trước' })}
                     </button>
-                    <span className="text-sm text-gray-600">
-                        {t('admin.common.page_display')} {page} / {logsData.pagination.total}
+                    <span className="text-sm font-medium text-gray-600 px-4">
+                        {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {page} / {logsData.pagination.total}
                     </span>
                     <button
                         onClick={() => setPage(p => Math.min(logsData.pagination.total, p + 1))}
                         disabled={page === logsData.pagination.total}
-                        className="rounded-lg border border-gray-200 px-3 py-1 text-sm disabled:opacity-50 hover:bg-gray-50"
+                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
                     >
-                        {t('admin.common.next')}
+                        {t('admin.common.next', { defaultValue: 'Trang sau' })}
                     </button>
                 </div>
             )}

@@ -12,6 +12,8 @@ const AdminWithdrawals = () => {
     const [selectedRequest, setSelectedRequest] = useState<any>(null);
     const [actionNote, setActionNote] = useState('');
     const [actionType, setActionType] = useState<'APPROVE' | 'REJECT' | 'PAID' | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const { data: requests, isLoading } = useQuery({
         queryKey: ['admin_withdrawals', statusFilter],
@@ -103,6 +105,9 @@ const AdminWithdrawals = () => {
 
         return { pendingAmount, pendingCount, avgTime, requestsGrowth, lastSevenDaysCount: thisWeekReqs.length };
     }, [requests]);
+
+    const totalPages = Math.ceil((requests?.length || 0) / ITEMS_PER_PAGE);
+    const currentRequests = requests?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen font-sans">
@@ -217,7 +222,7 @@ const AdminWithdrawals = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {requests.map((req: any) => (
+                                {currentRequests && currentRequests.map((req: any) => (
                                     <tr key={req._id} className="hover:bg-blue-50/30 transition-colors group">
                                         <td className="px-6 py-4 align-top">
                                             <div className="flex gap-3">
@@ -287,6 +292,28 @@ const AdminWithdrawals = () => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {/* Pagination UI */}
+                {requests && requests.length > ITEMS_PER_PAGE && (
+                    <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-center items-center gap-4">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.prev', { defaultValue: 'Trang trước' })}
+                        </button>
+                        <span className="text-sm font-medium text-gray-600 px-4">
+                            {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {totalPages}
+                        </span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        >
+                            {t('admin.common.next', { defaultValue: 'Trang sau' })}
+                        </button>
                     </div>
                 )}
             </div>

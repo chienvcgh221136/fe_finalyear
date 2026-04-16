@@ -277,7 +277,6 @@
         "safety_1": "Meet in person to see the house and papers.",
         "safety_2": "Be careful with payment requests/deposits beforehand.",
         "safety_3": "Use a clear contract when transacting.",
-        "share": "Share",
         "schedule": "Schedule",
         "save": "Save",
         "not_found": "Post not found",
@@ -906,7 +905,8 @@
                 "violation_desc_2": "2nd violation: Auto-deduct 15% of total reward points.",
                 "violation_desc_3": "3rd violation: Auto-deduct 30% of total reward points.",
                 "violation_desc_4": "Serious violation: Auto-deduct 50% of total points.",
-                "violation_desc_5": "Maximum penalty: Forfeit all points & Block account."
+                "violation_desc_5": "Maximum penalty: Forfeit all points & Block account.",
+                "violation_default": "Point Deduction (Manual Admin Adjustment)"
             },
             "actions": {
                 "DAILY_LOGIN": "Daily login",
@@ -1028,6 +1028,17 @@
                 }
             }
         }
+    },
+    "transactions": {
+        "withdraw_request": "Withdrawal request: {{amount}} VND",
+        "withdraw_refund": "Refund directly due to rejection: {{amount}} VND",
+        "admin_add": "Admin point add: {{amount}} VND. Reason: {{reason}}",
+        "admin_deduct": "Admin point deduction: {{amount}} VND. Reason: {{reason}}",
+        "refund_reject": "Refund from rejected request: {{amount}} VND",
+        "topup_desc": "Deposit: {{amount}} VND (Ref: {{ref}})",
+        "sepay_desc": "Auto Deposit: {{description}} (Ref: {{ref}})",
+        "vip_purchase": "VIP upgrade: {{name}}",
+        "vip_upgrade": "Upgraded from: {{old}} to {{new}}"
     },
     "footer": {
         "description": "Helping millions find their dream home since 2010. Most trusted real estate platform.",
@@ -1200,7 +1211,6 @@
         "admin": "Administrator",
         "followers": "Followers",
         "joined": "Joined:",
-        "share": "Share",
         "btn_edit_profile": "Edit Profile",
         "btn_message": "Message",
         "all_posts": "All posts ({{count}})",
