@@ -8,12 +8,16 @@ import { Search, Send, MessageCircle, Image as ImageIcon, X, Loader2, Check, Che
 import ReportModal from '../components/modals/ReportModal';
 import LocalizedLink from '../components/common/LocalizedLink';
 import { useTranslation } from 'react-i18next';
+import { io, Socket } from 'socket.io-client';
+
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const Chat = () => {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'all' | 'buying' | 'selling'>('all');
@@ -153,8 +157,66 @@ const Chat = () => {
         queryFn: () => chatAPI.getMessages(selectedRoomId!),
         select: (res) => res.data.data as MessageData,
         enabled: !!selectedRoomId,
-        refetchInterval: 3000,
+        // refetchInterval: 3000, // Removed for Socket.io real-time
     });
+
+    // Socket.io Initialization
+    useEffect(() => {
+        const newSocket = io(SOCKET_URL, {
+            withCredentials: true,
+            transports: ['websocket', 'polling']
+        });
+        setSocket(newSocket);
+
+        return () => {
+            newSocket.close();
+        };
+    }, []);
+
+    // Join Room and Listen for Messages
+    useEffect(() => {
+        if (socket && selectedRoomId) {
+            socket.emit("join_room", selectedRoomId);
+
+            const handleNewMessage = (data: { chatRoomId: string, newMessage: any }) => {
+                if (data.chatRoomId === selectedRoomId) {
+                    // Update the messages cache instantly
+                    queryClient.setQueryData(['messages', selectedRoomId], (old: any) => {
+                        if (!old || !old.data || !old.data.data) return old;
+                        
+                        const incomingMsg = data.newMessage;
+                        const messages = [...(old.data.data.messages || [])];
+                        
+                        // Check if we already have this message (by ID or optimistic temp ID)
+                        const isFromMe = String(incomingMsg.senderId) === String(user?.id || user?._id);
+                        if (isFromMe) {
+                            const tempIdx = messages.findIndex(m => m._id && String(m._id).startsWith('temp-') && m.content === incomingMsg.content);
+                            if (tempIdx > -1) {
+                                messages[tempIdx] = incomingMsg; // Replace temp with real
+                                return { ...old, data: { ...old.data, data: { ...old.data.data, messages } } };
+                            }
+                        }
+
+                        // If not a duplicate, append it
+                        if (!messages.find(m => m._id === incomingMsg._id)) {
+                            messages.push(incomingMsg);
+                        }
+
+                        return { ...old, data: { ...old.data, data: { ...old.data.data, messages } } };
+                    });
+                    
+                    // Also invalidate chats to updated last message in sidebar
+                    queryClient.invalidateQueries({ queryKey: ['chats'] });
+                }
+            };
+
+            socket.on("new_message", handleNewMessage);
+
+            return () => {
+                socket.off("new_message", handleNewMessage);
+            };
+        }
+    }, [socket, selectedRoomId, queryClient]);
 
     // Scroll Handler
     const handleScroll = () => {
@@ -236,6 +298,7 @@ const Chat = () => {
         mutationFn: (chatRoomId: string) => chatAPI.markAsRead(chatRoomId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['chats'] });
+            queryClient.invalidateQueries({ queryKey: ['messages', selectedRoomId] });
         },
     });
 
@@ -249,21 +312,70 @@ const Chat = () => {
                     && !m.isRead
             );
 
-            if (hasUnread) {
+            if (hasUnread && !markReadMutation.isPending) {
                 markReadMutation.mutate(selectedRoomId);
             }
         }
-    }, [messagesData, selectedRoomId, markReadMutation, user]);
+    }, [messagesData, selectedRoomId, user, markReadMutation]);
 
     // Send Message Mutation
     const sendMessageMutation = useMutation({
         mutationFn: ({ content, type }: { content: string, type: 'TEXT' | 'IMAGE' }) => chatAPI.sendMessage(selectedRoomId!, content, type),
-        onSuccess: () => {
+        onMutate: async (newMsg) => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: ['messages', selectedRoomId] });
+
+            // Snapshot the previous value
+            const previousData = queryClient.getQueryData(['messages', selectedRoomId]);
+
+            // Optimistically update to the new value
+            if (previousData) {
+                queryClient.setQueryData(['messages', selectedRoomId], (old: any) => {
+                    if (!old || !old.data || !old.data.data) return old;
+                    
+                    const tempId = 'temp-' + Date.now();
+                    const optimisticMsg = {
+                        _id: tempId,
+                        senderId: user?.id || user?._id,
+                        content: newMsg.content,
+                        type: newMsg.type,
+                        isRead: false,
+                        createdAt: new Date().toISOString(),
+                    };
+
+                    const newMessages = [...(old.data.data.messages || []), optimisticMsg];
+                    
+                    return {
+                        ...old,
+                        data: {
+                            ...old.data,
+                            data: {
+                                ...old.data.data,
+                                messages: newMessages
+                            }
+                        }
+                    };
+                });
+            }
+
+            // Clear input immediately for better UX
             setNewMessage('');
             setPreviewImage(null);
-            queryClient.invalidateQueries({ queryKey: ['messages', selectedRoomId] });
+
+            return { previousData };
+        },
+        onError: (err, newMsg, context) => {
+            // Rollback on error
+            if (context?.previousData) {
+                queryClient.setQueryData(['messages', selectedRoomId], context.previousData);
+            }
+            alert("Gửi tin nhắn thất bại. Vui lòng thử lại.");
+        },
+        onSettled: () => {
+            // Invalidate to sync with server eventually, but don't block
+            // We use shorter delay or just rely on socket
             queryClient.invalidateQueries({ queryKey: ['chats'] });
-            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            scrollToBottom();
         },
     });
 

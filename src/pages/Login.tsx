@@ -118,15 +118,14 @@ const Login = () => {
                     </div>
                 </div>
 
-                <div className="flex justify-center w-full">
+                <div className="flex justify-center w-full mt-2">
                     <GoogleLogin
                         onSuccess={handleGoogleLoginSuccess}
                         onError={() => error(t('auth.login_google_error'))}
                         theme="outline"
                         size="large"
-                        width="100%"
-                        text="continue_with"
                         shape="rectangular"
+                        text="continue_with"
                     />
                 </div>
 

@@ -23,11 +23,18 @@ const Footer = () => {
                                 {t('footer.description', 'Giúp hàng triệu người tìm được ngôi nhà mơ ước từ năm 2010. Nền tảng giao dịch bất động sản tin cậy nhất.')}
                             </p>
                             <div className="flex gap-4">
-                                {/* Placeholders for icons as simple links if needed, or stick to Lucide */}
-                                <Facebook size={20} color="var(--text-secondary)" />
-                                <Instagram size={20} color="var(--text-secondary)" />
-                                <Twitter size={20} color="var(--text-secondary)" />
-                                <Linkedin size={20} color="var(--text-secondary)" />
+                                <a href="https://www.facebook.com/pham.chien.746132" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
+                                    <Facebook size={20} color="var(--text-secondary)" />
+                                </a>
+                                <a href="https://www.instagram.com/cu_cieens/" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
+                                    <Instagram size={20} color="var(--text-secondary)" />
+                                </a>
+                                <a href="#" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
+                                    <Twitter size={20} color="var(--text-secondary)" />
+                                </a>
+                                <a href="https://www.linkedin.com/in/pham-chien-120411404/" target="_blank" rel="noopener noreferrer" className="transition-transform hover:scale-110">
+                                    <Linkedin size={20} color="var(--text-secondary)" />
+                                </a>
                             </div>
                         </div>
 

@@ -16,9 +16,10 @@ const UserBalancesTable = () => {
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
 
+    const ITEMS_PER_PAGE = 20;
     const { data, isLoading } = useQuery({
         queryKey: ['users-points', page, search, sort],
-        queryFn: () => pointService.getUsersWithPoints({ page, limit: 10, search, sort }),
+        queryFn: () => pointService.getUsersWithPoints({ page, limit: ITEMS_PER_PAGE, search, sort }),
         placeholderData: keepPreviousData
     });
 
@@ -89,6 +90,7 @@ const UserBalancesTable = () => {
                     <thead className="bg-gray-50 border-b border-gray-100">
                         <tr>
                             <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.users.title')}</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('auth.phone')}</th>
                             <th className="px-6 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.reports.table_bad_post')}</th>
                             <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('admin.common.points')}</th>
 
@@ -101,15 +103,16 @@ const UserBalancesTable = () => {
                             [...Array(5)].map((_, i) => (
                                 <tr key={i} className="animate-pulse">
                                     <td className="px-6 py-4"><div className="h-10 bg-gray-100 rounded-full w-10"></div></td>
-                                    <td className="px-6 py-4 text-right"><div className="h-4 bg-gray-100 rounded w-16 ml-auto"></div></td>
-                                    <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-24"></div></td>
-                                    <td className="px-6 py-4 text-center"><div className="h-6 bg-gray-100 rounded-full w-16 mx-auto"></div></td>
-                                    <td className="px-6 py-4 text-right"><div className="h-8 bg-gray-100 rounded w-20 ml-auto"></div></td>
+                                    <td className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-32"></div></td>
+                                    <td className="px-6 py-4 text-center"><div className="h-6 bg-gray-100 rounded-full w-6 mx-auto"></div></td>
+                                    <td className="px-6 py-4 text-right"><div className="h-4 bg-gray-100 rounded w-24 ml-auto"></div></td>
+                                    <td className="px-6 py-4 text-center"><div className="h-6 bg-gray-100 rounded-full w-20 mx-auto"></div></td>
+                                    <td className="px-6 py-4 text-right"><div className="h-8 bg-gray-100 rounded w-24 ml-auto"></div></td>
                                 </tr>
                             ))
                         ) : users.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                     {t('admin.common.no_data')}
                                 </td>
                             </tr>
@@ -127,6 +130,11 @@ const UserBalancesTable = () => {
                                                 <div className="font-semibold text-gray-900">{user.name}</div>
                                                 <div className="text-xs text-gray-500">{user.email}</div>
                                             </div>
+                                        </div>
+                                    </td>
+                                     <td className="px-6 py-4">
+                                        <div className="text-sm text-gray-600">
+                                            {user.phone || <span className="text-gray-400 italic font-light">{t('common.none', { defaultValue: 'chưa có' })}</span>}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
@@ -170,23 +178,29 @@ const UserBalancesTable = () => {
                 </table>
             </div>
 
-            {/* Pagination UI */}
-            {pagination && pagination.total > 1 && (
-                <div className="border-t border-gray-100 p-4 bg-gray-50 flex justify-center items-center gap-4">
+            {/* Pagination UI - Minimal Style */}
+            {pagination && (
+                <div className="border-t border-gray-100 p-6 flex justify-center items-center gap-8 bg-white">
                     <button
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        onClick={() => {
+                            setPage(p => Math.max(1, p - 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         disabled={page === 1}
-                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        className="text-sm font-medium transition-colors disabled:text-gray-300 text-blue-600 hover:text-blue-700"
                     >
                         {t('admin.common.prev', { defaultValue: 'Trang trước' })}
                     </button>
-                    <span className="text-sm font-medium text-gray-600 px-4">
+                    <span className="text-sm font-medium text-gray-500">
                         {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {pagination.current} / {pagination.total}
                     </span>
                     <button
-                        onClick={() => setPage(p => Math.min(pagination.total, p + 1))}
+                        onClick={() => {
+                            setPage(p => Math.min(pagination.total, p + 1));
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                         disabled={page >= pagination.total}
-                        className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-white hover:border-gray-300 disabled:opacity-50 transition-all font-medium"
+                        className="text-sm font-medium transition-colors disabled:text-gray-300 text-blue-600 hover:text-blue-700"
                     >
                         {t('admin.common.next', { defaultValue: 'Trang sau' })}
                     </button>

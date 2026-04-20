@@ -13,11 +13,18 @@ interface AdjustPointsModalProps {
 const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, onConfirm, user, isLoading }) => {
     const { t } = useTranslation();
 
-    const QUICK_REASONS = useMemo(() => [
-        { label: t('admin.points.adjustment_reasons.profile'), text: "admin.points.adjustment_reasons.profile", amount: '500' },
-        { label: t('admin.points.adjustment_reasons.compensation'), text: "admin.points.adjustment_reasons.compensation", amount: '1000' },
-        { label: t('admin.points.adjustment_reasons.active_user'), text: "admin.points.adjustment_reasons.active_user", amount: '2000' },
-    ], [t]);
+    const QUICK_REASONS = useMemo(() => {
+        const reasons = [
+            { label: t('admin.points.adjustment_reasons.profile'), text: "admin.points.adjustment_reasons.profile", amount: '500' },
+            { label: t('admin.points.adjustment_reasons.compensation'), text: "admin.points.adjustment_reasons.compensation", amount: '1000' },
+            { label: t('admin.points.adjustment_reasons.active_user'), text: "admin.points.adjustment_reasons.active_user", amount: '2000' },
+        ];
+
+        if (user?.isProfileRewardGiven) {
+            return reasons.filter(r => r.text !== "admin.points.adjustment_reasons.profile");
+        }
+        return reasons;
+    }, [t, user?.isProfileRewardGiven]);
 
     // 1. State definitions
     const [amount, setAmount] = useState<string>('');
@@ -220,13 +227,13 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                             {type === 'add' && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-3 duration-500 bg-indigo-50/20 p-4 rounded-[24px] border border-indigo-100/50">
                                     <label className="block text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] ml-1">{t('admin.points.quick_reason', 'Gợi ý lý do nhanh')}</label>
-                                    <div className="grid grid-cols-3 gap-2.5">
+                                    <div className="flex gap-3 overflow-x-auto pb-2 custom-scrollbar flex-nowrap -mx-1 px-1">
                                         {QUICK_REASONS.map((reason) => (
                                             <button
                                                 key={reason.label}
                                                 type="button"
                                                 onClick={() => handleQuickReasonClick(reason)}
-                                                className={`px-2 py-2.5 rounded-xl text-[10px] font-black border-2 transition-all active:scale-95 flex flex-col items-center gap-0.5 w-full
+                                                className={`px-4 py-2.5 rounded-xl text-[10px] font-black border-2 transition-all active:scale-95 flex flex-col items-center gap-0.5 min-w-[140px] shrink-0
                                                     ${description === reason.text
                                                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-600/20'
                                                         : 'bg-white text-gray-500 border-gray-100 hover:border-indigo-200 hover:text-indigo-600 shadow-sm'
@@ -304,6 +311,7 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 5px;
+                    height: 5px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
                     background: transparent;

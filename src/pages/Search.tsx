@@ -12,7 +12,7 @@ const getPercent = (value: number, min: number, max: number) => {
 };
 
 const MIN_PRICE = 0;
-const MAX_PRICE = 50 * 1000000000; // 50 Billion
+const MAX_PRICE = 1000 * 1000000000; // 1000 Billion
 
 const Search = () => {
     const { t, i18n } = useTranslation();

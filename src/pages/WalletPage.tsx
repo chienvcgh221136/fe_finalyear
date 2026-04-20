@@ -111,8 +111,6 @@ const WalletPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-
-
     const handleInitiateWithdraw = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -149,7 +147,7 @@ const WalletPage = () => {
 
     const formatDate = (dateStr: string) => new Date(dateStr).toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US');
 
-    const transferContent = `NAPTIEN ${user?._id} `;
+    const transferContent = `TOPUP ${user?._id} `;
     const qrUrl = `https://img.vietqr.io/image/${BANK_INFO.BANK_ID}-${BANK_INFO.ACCOUNT_NO}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=${encodeURIComponent(BANK_INFO.ACCOUNT_NAME)}`;
 
     if (loadingWallet) return <div className="p-8 text-center">{t('common.loading')}</div>;

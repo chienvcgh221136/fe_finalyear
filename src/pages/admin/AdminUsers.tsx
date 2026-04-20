@@ -15,7 +15,7 @@ const AdminUsers = () => {
     const [roleFilter, setRoleFilter] = useState('All Roles'); // 'All Roles', 'ADMIN', 'USER'
     const [statusFilter, setStatusFilter] = useState('Status'); // 'Status', 'Active', 'Banned'
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 20;
 
     const { data: users, isLoading } = useQuery({
         queryKey: ['admin', 'users'],
@@ -315,22 +315,29 @@ const AdminUsers = () => {
                     </table>
                 </div>
                 {/* Pagination UI */}
-                {filteredUsers && filteredUsers.length > ITEMS_PER_PAGE && (
-                    <div className="border-t border-slate-100 p-4 bg-slate-50 flex justify-center items-center gap-4">
+                {/* Pagination UI - Minimal Style */}
+                {filteredUsers && (
+                    <div className="border-t border-gray-100 p-6 flex justify-center items-center gap-8 bg-white">
                         <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            onClick={() => {
+                                setCurrentPage(p => Math.max(1, p - 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all font-medium"
+                            className="text-sm font-medium transition-colors disabled:text-gray-300 text-blue-600 hover:text-blue-700"
                         >
                             {t('admin.common.prev', { defaultValue: 'Trang trước' })}
                         </button>
-                        <span className="text-sm font-medium text-slate-600 px-4">
+                        <span className="text-sm font-medium text-gray-500">
                             {t('admin.common.page_display', { defaultValue: 'Hiển thị trang' })} {currentPage} / {totalPages}
                         </span>
                         <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            onClick={() => {
+                                setCurrentPage(p => Math.min(totalPages, p + 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-white hover:border-slate-300 disabled:opacity-50 transition-all font-medium"
+                            className="text-sm font-medium transition-colors disabled:text-gray-300 text-blue-600 hover:text-blue-700"
                         >
                             {t('admin.common.next', { defaultValue: 'Trang sau' })}
                         </button>

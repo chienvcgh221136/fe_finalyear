@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { postsAPI } from '../services/api';
+import { postsAPI, filesAPI } from '../services/api';
 import { useForm, Controller } from 'react-hook-form';
 import { Loader2, Upload, X, Plus, Link as LinkIcon, FileText, Info, Tag, MapPin, Image as ImageIcon } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -50,6 +50,8 @@ const CreatePost = () => {
     // Redbook Image URL Input State (Sổ đỏ)
     const [redbookImages, setRedbookImages] = useState<string[]>([]);
     const [currentRedbookUrl, setCurrentRedbookUrl] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingRedbook, setIsUploadingRedbook] = useState(false);
 
     const [successMsg, setSuccessMsg] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
@@ -150,6 +152,40 @@ const CreatePost = () => {
 
     const handleRemoveImage = (index: number, list: string[], setList: (l: string[]) => void) => {
         setList(list.filter((_, i) => i !== index));
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isRedbook = false) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check if limit reached
+        if (!isRedbook && images.length >= 10) {
+            setErrorMsg(t('create_post.error_max_limit', { limit: 10 }));
+            return;
+        }
+        if (isRedbook && redbookImages.length >= 5) {
+            setErrorMsg(t('create_post.error_max_limit', { limit: 5 }));
+            return;
+        }
+
+        if (isRedbook) setIsUploadingRedbook(true);
+        else setIsUploading(true);
+
+        try {
+            const res = await filesAPI.upload(file);
+            const url = res.data.url;
+            if (isRedbook) setRedbookImages([...redbookImages, url]);
+            else setImages([...images, url]);
+        } catch (err: any) {
+            console.error("Upload failed", err);
+            setErrorMsg(err.response?.data?.message || t('common.upload_failed', 'Tải ảnh thất bại'));
+            setTimeout(() => setErrorMsg(''), 3000);
+        } finally {
+            if (isRedbook) setIsUploadingRedbook(false);
+            else setIsUploading(false);
+            // Reset input so the same file can be uploaded again if needed
+            e.target.value = '';
+        }
     };
 
     const onSubmit = (data: any) => {
@@ -312,8 +348,6 @@ const CreatePost = () => {
                                     placeholder={t('create_post.description_placeholder')}
                                     rows={6}
                                     {...register('description', {
-                                        required: t('create_post.req_description'),
-                                        minLength: { value: 50, message: t('create_post.err_desc_min') },
                                         maxLength: { value: 5000, message: t('create_post.err_desc_max') }
                                     })}
                                 />
@@ -497,6 +531,30 @@ const CreatePost = () => {
                                     <Plus className="mr-2 h-4 w-4" />
                                     {t('create_post.add_image')}
                                 </Button>
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        id="property-image-upload"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={(e) => handleFileUpload(e)}
+                                        disabled={isUploading}
+                                    />
+                                    <Button
+                                        type="button"
+                                        onClick={() => document.getElementById('property-image-upload')?.click()}
+                                        variant="outline"
+                                        disabled={isUploading}
+                                        className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                                    >
+                                        {isUploading ? (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Upload className="mr-2 h-4 w-4" />
+                                        )}
+                                        {t('common.upload', 'Tải lên')}
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
@@ -541,6 +599,30 @@ const CreatePost = () => {
                                         <Plus className="mr-2 h-4 w-4" />
                                         {t('create_post.add_image')}
                                     </Button>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            id="redbook-image-upload"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={(e) => handleFileUpload(e, true)}
+                                            disabled={isUploadingRedbook}
+                                        />
+                                        <Button
+                                            type="button"
+                                            onClick={() => document.getElementById('redbook-image-upload')?.click()}
+                                            variant="outline"
+                                            disabled={isUploadingRedbook}
+                                            className="bg-white hover:bg-rose-50 border-rose-200 text-rose-600"
+                                        >
+                                            {isUploadingRedbook ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Upload className="mr-2 h-4 w-4" />
+                                            )}
+                                            {t('common.upload', 'Tải lên')}
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">

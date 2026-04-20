@@ -144,6 +144,7 @@
         "unread_messages": "Unread messages",
         "invalid_number": "Invalid number",
         "cloudinary_required": "Please use Cloudinary image links (must contain cloudinary.com)",
+        "view_details": "View Details",
         "status_list": {
             "PENDING": "Pending",
             "APPROVED": "Approved",
@@ -163,7 +164,8 @@
             "buy_house": "Buy House",
             "rent_apartment": "Rent Apartment",
             "land": "Land",
-            "office": "Office"
+            "office": "Office",
+            "shophouse": "Shophouse"
         },
         "vip_posts": {
             "label": "Featured Listings",
@@ -299,12 +301,17 @@
         "furniture": "Furniture",
         "legal_info": "Legal info",
         "utilities": "Utilities",
+        "legal_status_exists": "Available (Redbook/Pinkbook)",
+        "legal_status_none": "None / Updating",
+        "legal_private_notice": "Legal documents have been verified and secured by the system. Only the owner and administrators can view the details.",
+        "legal_verified_badge": "Verified",
         "safety_text": "To ensure a safe transaction, always check documents and meet the owner in person before making any deposit payments.",
         "view_guide": "View safety guide",
         "property_type_HOUSE": "House",
         "property_type_APARTMENT": "Apartment",
         "property_type_LAND": "Land",
         "property_type_OFFICE": "Office",
+        "property_type_SHOPHOUSE": "Shophouse",
         "property_type_ROOM": "Room",
         "posted_by": "POSTED BY",
         "unverified_user": "Unverified user",

@@ -7,7 +7,7 @@ import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
     MapPin, Heart, AlertCircle, ChevronRight,
-    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, Calendar
+    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, Calendar, ShieldCheck, Lock
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
 import AgentWidget from '../components/post/AgentWidget';
@@ -23,8 +23,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 const PostDetail = () => {
     const { t, i18n } = useTranslation();
+    const { user, isAdmin } = useAuth();
     const { id } = useParams();
-    const { user } = useAuth();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
     const { success, error, warning } = useToast();
@@ -263,12 +263,29 @@ const PostDetail = () => {
                         {/* Specs Grid */}
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                             <SpecItem icon={Maximize2} label={t('post_detail.area')} value={`${post.area} m²`} />
-                            <SpecItem icon={BedDouble} label={t('common.bedrooms')} value={`${post.bedrooms} ${t('post_detail.rooms')}`} />
-                            <SpecItem icon={Bath} label={t('common.bathrooms')} value={`${post.bathrooms || 2} ${t('post_detail.rooms')}`} />
+                            
+                            {post.propertyType !== 'OFFICE' && post.propertyType !== 'LAND' && (
+                                <>
+                                    <SpecItem 
+                                        icon={BedDouble} 
+                                        label={t('common.bedrooms')} 
+                                        value={`${post.bedrooms || 0} ${t('post_detail.rooms')}`} 
+                                    />
+                                    <SpecItem 
+                                        icon={Bath} 
+                                        label={t('common.bathrooms')} 
+                                        value={`${post.bathrooms || 0} ${t('post_detail.rooms')}`} 
+                                    />
+                                </>
+                            )}
+
                             <SpecItem icon={Compass} label={t('post_detail.direction')} value={post.direction || t('post_detail.southeast')} />
-                            <SpecItem icon={FileText} label={t('post_detail.legal')} value={t('post_detail.redbook')} />
+                            <SpecItem icon={FileText} label={t('post_detail.legal')} value={(post.redbookImages && post.redbookImages.length > 0) ? t('post_detail.legal_status_exists') : t('post_detail.legal_status_none')} />
                             <SpecItem icon={Home} label={t('post_detail.property_type')} value={t(`post_detail.property_type_${post.propertyType || post.type || 'HOUSE'}`)} />
-                            <SpecItem icon={FileText} label={t('post_detail.furniture')} value={post.furniture || t('common.none')} />
+                            
+                            {post.propertyType !== 'LAND' && (
+                                <SpecItem icon={FileText} label={t('post_detail.furniture')} value={post.furniture || t('common.none')} />
+                            )}
                         </div>
 
                         {/* Description */}
@@ -314,23 +331,36 @@ const PostDetail = () => {
                             </div>
                         </div>
 
-                        {/* Legal / Redbook Images */}
-                        {post.redbookImages && post.redbookImages.length > 0 && (
-                            <div className="mb-8">
-                                <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.legal_info')}</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {post.redbookImages.map((img: string, index: number) => (
-                                        <div key={index} className="rounded-xl overflow-hidden border border-gray-200 aspect-[3/4] bg-gray-100">
-                                            <img
-                                                src={img}
-                                                alt={`${t('post_detail.redbook')} ${index + 1}`}
-                                                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
-                                            />
-                                        </div>
-                                    ))}
+                        {/* Legal / Redbook Status */}
+                        <div className="mb-8">
+                            <h3 className="font-bold text-gray-900 text-xl mb-4">{t('post_detail.legal_info')}</h3>
+                            
+                            {post.redbookImages && post.redbookImages.length > 0 ? (
+                                <div className="bg-green-50 border border-green-100 rounded-2xl p-6 flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0">
+                                        <ShieldCheck size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-green-900">{t('post_detail.legal_verified_badge')}</h4>
+                                        <p className="text-green-700 text-sm leading-relaxed">
+                                            {t('post_detail.legal_private_notice')}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            ) : (
+                                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex items-center gap-4">
+                                    <div className="w-12 h-12 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center shrink-0">
+                                        <Lock size={24} />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-gray-900">{t('post_detail.legal_status_none')}</h4>
+                                        <p className="text-gray-500 text-sm">
+                                            {t('post_detail.legal_info_sub', { defaultValue: 'Cung cấp hình ảnh sổ đỏ giúp tin đăng uy tín hơn.' })}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
 
                         {/* Amenities / Features List */}
                         {post.utilities && post.utilities.length > 0 && (

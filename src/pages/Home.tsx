@@ -31,6 +31,7 @@ const Home = () => {
         { label: t('home.categories.rent_apartment'), icon: Building2, href: '/rent?transactionType=RENT&propertyType=APARTMENT', color: 'bg-orange-100 text-orange-600' },
         { label: t('home.categories.land'), icon: MapPin, href: '/buy?propertyType=LAND', color: 'bg-green-100 text-green-600' },
         { label: t('home.categories.office'), icon: Building2, href: '/rent?propertyType=OFFICE', color: 'bg-purple-100 text-purple-600' },
+        { label: t('home.categories.shophouse'), icon: Building2, href: '/buy?propertyType=SHOPHOUSE', color: 'bg-red-100 text-red-600' },
     ];
 
     return (

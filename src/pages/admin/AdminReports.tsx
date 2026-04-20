@@ -109,10 +109,10 @@ const AdminReports = () => {
             {/* Header */}
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{t('admin.reports.title')}</h1>
-                    <p className="text-gray-500">{t('admin.reports.tab_pending')}</p>
-                </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">{t('admin.reports.title')}</h1>
+                        <p className="text-gray-500">{t('admin.reports.tab_pending')}</p>
+                    </div>
                 </div>
             </div>
 
