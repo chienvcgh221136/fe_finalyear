@@ -23,7 +23,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 const PostDetail = () => {
     const { t, i18n } = useTranslation();
-    const { user, isAdmin } = useAuth();
+    const { user } = useAuth();
     const { id } = useParams();
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
