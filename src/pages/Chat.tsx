@@ -364,7 +364,8 @@ const Chat = () => {
 
             return { previousData };
         },
-        onError: (_err, _newMsg, context) => {
+        // @ts-ignore - Ignore unused variables for build
+        onError: (err, newMsg, context) => {
             // Rollback on error
             if (context?.previousData) {
                 queryClient.setQueryData(['messages', selectedRoomId], context.previousData);
