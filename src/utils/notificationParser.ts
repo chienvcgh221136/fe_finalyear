@@ -301,7 +301,7 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
     // 7. Appointments
     // Yêu cầu xem nhà mới từ User A cho bài đăng: "Title"
     const appointmentNew = message.match(/^\s*Yêu cầu xem nhà mới từ (.*) cho bài đăng: "(.*)"\s*$/);
-    if (appointmentNew) return t('notifications.patterns.appointment_new', { user: appointmentNew[1], post: appointmentNew[2] });
+    if (appointmentNew) return t('notifications.patterns.appointment_new', { name: appointmentNew[1], title: appointmentNew[2] });
 
     // Lịch hẹn xem nhà cho bài đăng "Title" đã được chấp nhận.
     const appointmentAccepted = message.match(/^\s*Lịch hẹn xem nhà cho bài đăng "(.*)" đã được chấp nhận\.?\s*$/);

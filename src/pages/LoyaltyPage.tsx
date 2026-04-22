@@ -88,7 +88,17 @@ const LoyaltyPage = () => {
     const { balance, history, inventory = {}, expiringSoon = { total: 0, batches: [] } } = pointData || { balance: 0, history: [], inventory: {}, expiringSoon: { total: 0, batches: [] } };
     const filteredHistory = (history || []).filter((log: any) => log.points > 0 || log.action === 'EXPIRED');
 
-    const formatAction = (action: string) => {
+    const formatAction = (log: any) => {
+        const { action, description } = log;
+
+        if (action === 'ADMIN_ADJUSTMENT' && description) {
+            // Check if description is a translation key
+            if (description.startsWith('admin.points.adjustment_reasons.')) {
+                return t(description);
+            }
+            return description;
+        }
+
         switch (action) {
             case 'POST_CREATED': return t('loyalty.action_post_created');
             case 'VIP_PURCHASE': return t('loyalty.action_vip_purchase');
@@ -100,6 +110,11 @@ const LoyaltyPage = () => {
             case 'REDEEM_ITEM_VIP_GOLD_7DAY': return t('loyalty.action_redeem_vip_gold');
             case 'EXPIRED': return t('loyalty.action_expired');
             case 'ADMIN_ADJUSTMENT': return t('loyalty.action_admin');
+            case 'TOPUP_REWARD': return t('loyalty.action_topup_reward');
+            case 'FIRST_TOPUP_BONUS': return t('loyalty.action_first_topup_bonus');
+            case 'POST_SOLD': return t('loyalty.action_post_sold');
+            case 'VIEW_MILESTONE': return t('loyalty.action_view_milestone');
+            case 'ADMIN_BONUS': return t('loyalty.action_admin_bonus');
             default: return action;
         }
     };
@@ -290,7 +305,7 @@ const LoyaltyPage = () => {
                                 {filteredHistory.length > 0 ? filteredHistory.map((log: any) => (
                                     <tr key={log._id} className="hover:bg-gray-50/80 transition duration-150 group">
                                         <td className="px-8 py-5 font-medium text-gray-900 group-hover:text-blue-600 transition">
-                                            {formatAction(log.action)}
+                                            {formatAction(log)}
                                         </td>
                                         <td className="px-8 py-5 text-gray-500">
                                             {new Date(log.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} <span className="text-gray-300 mx-2">|</span> {new Date(log.createdAt).toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}

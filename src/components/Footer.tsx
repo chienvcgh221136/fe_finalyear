@@ -1,9 +1,18 @@
 import LocalizedLink from './common/LocalizedLink';
 import { Facebook, Instagram, Twitter, Linkedin, Send, Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import HelpModal from './modals/HelpModal';
 
 const Footer = () => {
     const { t } = useTranslation();
+    const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [activeHelpTab, setActiveHelpTab] = useState('help_center');
+
+    const openHelp = (tab: string) => {
+        setActiveHelpTab(tab);
+        setIsHelpOpen(true);
+    };
 
     return (
         <footer className="footer">
@@ -50,15 +59,14 @@ const Footer = () => {
                             </div>
                         </div>
 
-                        {/* Column 3: Support */}
                         <div>
                             <h4 className="footer-heading">{t('footer.support', 'Hỗ trợ')}</h4>
                             <div className="footer-links">
-                                <LocalizedLink to="/help" className="footer-link">{t('footer.help_center', 'Trung tâm trợ giúp')}</LocalizedLink>
-                                <LocalizedLink to="/terms" className="footer-link">{t('auth.terms', 'Điều khoản dịch vụ')}</LocalizedLink>
-                                <LocalizedLink to="/privacy" className="footer-link">{t('auth.privacy_policy', 'Chính sách bảo mật')}</LocalizedLink>
-                                <LocalizedLink to="/cookie" className="footer-link">{t('footer.cookie_policy', 'Chính sách Cookie')}</LocalizedLink>
-                                <LocalizedLink to="/safety" className="footer-link">{t('footer.safety_tips', 'Mẹo an toàn')}</LocalizedLink>
+                                <button onClick={() => openHelp('help_center')} className="footer-link text-left">{t('footer.help_center', 'Trung tâm trợ giúp')}</button>
+                                <button onClick={() => openHelp('terms')} className="footer-link text-left">{t('auth.terms', 'Điều khoản dịch vụ')}</button>
+                                <button onClick={() => openHelp('privacy')} className="footer-link text-left">{t('auth.privacy_policy', 'Chính sách bảo mật')}</button>
+                                <button onClick={() => openHelp('cookie')} className="footer-link text-left">{t('footer.cookie_policy', 'Chính sách Cookie')}</button>
+                                <button onClick={() => openHelp('safety')} className="footer-link text-left">{t('footer.safety_tips', 'Mẹo an toàn')}</button>
                             </div>
                         </div>
 
@@ -85,6 +93,12 @@ const Footer = () => {
                     <p>&copy; 2026 EstateMarket Inc. All rights reserved.</p>
                 </div>
             </div>
+
+            <HelpModal 
+                isOpen={isHelpOpen} 
+                onClose={() => setIsHelpOpen(false)} 
+                initialTab={activeHelpTab}
+            />
         </footer>
     );
 };

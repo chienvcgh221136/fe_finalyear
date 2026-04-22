@@ -364,7 +364,7 @@ const Chat = () => {
 
             return { previousData };
         },
-        // @ts-ignore - Ignore unused variables for build
+        // @ts-expect-error - Ignore unused variables for build
         onError: (err, newMsg, context) => {
             // Rollback on error
             if (context?.previousData) {

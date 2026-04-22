@@ -8,11 +8,15 @@ const api = axios.create({
     withCredentials: true, // Important for cookies
 });
 
-// Request interceptor (no longer needs to add token manually)
+// Request interceptor
 api.interceptors.request.use(
     (config) => {
         const lang = localStorage.getItem('i18nextLng') || 'vi';
         config.headers['Accept-Language'] = lang;
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
         return config;
     },
     (error) => Promise.reject(error)

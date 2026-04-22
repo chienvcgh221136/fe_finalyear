@@ -62,6 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch {
             // Ignore error
         }
+        localStorage.removeItem('accessToken');
         setUser(null);
         window.location.href = '/login'; // Hard redirect to clear all states
     };    const login = async (email: string, password: string) => {
@@ -73,6 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const newUser = data.user || (data.id ? data : null);
 
             if (newUser) {
+                if (data.token || response.data.token) localStorage.setItem('accessToken', data.token || response.data.token);
                 setUser(newUser);
                 return { success: true };
             } else {
@@ -105,6 +107,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const newUser = data.user || (data.id ? data : null);
 
             if (newUser) {
+                if (data.token || response.data.token) localStorage.setItem('accessToken', data.token || response.data.token);
                 setUser(newUser);
                 return { success: true };
             } else {
@@ -124,6 +127,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } catch (error) {
             console.error("Logout error", error);
         }
+        localStorage.removeItem('accessToken');
         setUser(null);
         // We might want to clear local user state even if server fail
     };
