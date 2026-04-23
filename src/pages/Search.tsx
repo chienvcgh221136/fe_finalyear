@@ -5,7 +5,7 @@ import { postService } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { formatVND } from '../utils/currencyUtils';
 import { getLocalizedCity, translateCityToVi } from '../utils/cityTranslations';
-import { Search as SearchIcon, MapPin, SlidersHorizontal, X, ArrowLeft } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 
 // Helper to calculate percentage
 const getPercent = (value: number, min: number, max: number) => {
