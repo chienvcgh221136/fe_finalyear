@@ -195,6 +195,14 @@
         "tab_vip_packages": "VIP Packages",
         "tab_vip_management": "VIP Management",
         "tab_statistics": "Statistics",
+        "tab_wallet": "My Wallet",
+        "tab_posts": "My Posts",
+        "tab_favorites": "Saved Posts",
+        "tab_appointments": "Appointments",
+        "tab_vip": "VIP Packages",
+        "tab_vip-management": "VIP Management",
+        "tab_stats": "Statistics",
+        "account_menu": "Account Menu",
         "group_account": "Account",
         "group_activity": "Activity",
         "group_finance_vip": "Finance & VIP",
@@ -293,6 +301,7 @@
         "status_sold": "Sold",
         "login_to_save": "Please login to save listing",
         "saved": "Listing saved",
+        "unsave": "Unsave Listing",
         "unsaved": "Listing unsaved",
         "edit": "Edit Listing",
         "rooms": "rooms",
@@ -690,6 +699,55 @@
         "item_vip_gold_subtitle": "Gold VIP for 1 listing",
         "item_vip_gold_desc": "Upgrade listing to VIP Gold for 7 days for the highest efficiency."
     },
+    "chat": {
+        "title": "Messages",
+        "tab_all": "All",
+        "tab_buying": "Buying",
+        "tab_selling": "Selling",
+        "search_placeholder": "Search users or messages...",
+        "no_chats": "No conversations found",
+        "no_messages": "No messages yet. Start a conversation!",
+        "new_messages_badge": "New Messages",
+        "input_placeholder": "Type a message...",
+        "discussing": "Discussing about",
+        "billion": "Billion",
+        "million": "Million",
+        "view_tin": "View Post",
+        "active_now": "Active Now",
+        "delete_chat": "Delete Conversation",
+        "confirm_delete_chat": "Are you sure you want to delete this conversation? This action cannot be undone.",
+        "confirm_block_user": "Are you sure you want to block {{name}}? You will not be able to send or receive messages from this person.",
+        "block_success": "User blocked successfully.",
+        "confirm_unblock_user": "Are you sure you want to unblock {{name}}?",
+        "unblock_success": "User unblocked successfully.",
+        "you_blocked_user": "You have blocked this user.",
+        "unblock_btn": "Unblock",
+        "blocked_by_other": "You cannot communicate with this person.",
+        "details": "Details",
+        "member": "Member",
+        "view_profile": "View Profile",
+        "media": "Media ({{length}})",
+        "no_media": "No media shared yet",
+        "privacy_support": "Privacy & Support",
+        "report_user": "Report User",
+        "block_user": "Block User",
+        "seen": "Seen",
+        "sent": "Sent",
+        "welcome_msg": "Welcome, {{name}}!",
+        "select_chat": "Select a conversation to start messaging",
+        "set_nickname_title": "Set Nickname",
+        "nickname_desc": "Nicknames will only be visible to you in this conversation.",
+        "nickname_placeholder": "Enter nickname...",
+        "cancel": "Cancel",
+        "save": "Save",
+        "upload_failed": "Failed to upload image",
+        "delete_failed": "Delete failed",
+        "set_nickname_failed": "Failed to set nickname",
+        "block_failed": "Block failed",
+        "unblock_failed": "Unblock failed",
+        "conversation_info": "Conversation Info",
+        "send_failed": "Failed to send message. Please try again."
+    },
     "admin": {
         "title": "Administrator",
         "menu_overview": "Overview",
@@ -954,6 +1012,7 @@
         "mark_all_read": "Mark all as read",
         "tab_activity": "Activity",
         "tab_news": "System",
+        "no_notifications": "No notifications yet",
         "schedule_modal": {
             "title": "Schedule",
             "modal_header": "Schedule a viewing",
@@ -1017,6 +1076,40 @@
             "withdraw_autoreject_refund": "Withdrawal refund: {{amount}} VND (Processing timeout)",
             "withdraw_autoreject_user": "Request auto-rejected due to processing timeout (48h)."
         }
+    },
+    "report_modal": {
+        "title_post": "Report Post",
+        "title_user": "Report User",
+        "reason_label": "Reason for reporting",
+        "reasons": {
+            "SCAM": {
+                "label": "Scam",
+                "sub": "Post has signs of scam or fraud."
+            },
+            "WRONG_INFO": {
+                "label": "Wrong Information",
+                "sub": "Price, area, or location is incorrect."
+            },
+            "DUPLICATE": {
+                "label": "Duplicate Post",
+                "sub": "Multiple posts for the same property."
+            },
+            "SPAM": {
+                "label": "Spam/Advertising",
+                "sub": "Content is spam or misplaced advertising."
+            },
+            "OTHER": {
+                "label": "Other Reason",
+                "sub": "Other issues not listed above."
+            }
+        },
+        "details_label": "Additional details (optional)",
+        "details_placeholder": "Describe the specific issue you encountered...",
+        "btn_submit": "Submit Report",
+        "btn_cancel": "Cancel",
+        "btn_sending": "Sending...",
+        "success_msg": "Your report has been submitted. Thank you!",
+        "error_msg": "Failed to submit report. Please try again."
     },
     "transactions": {
         "withdraw_request": "Withdrawal request: {{amount}} VND",
@@ -1383,6 +1476,25 @@
             "violation_details_label": "Details:",
             "violation_manage_btn": "Manage Posts",
             "user_violation_btn": "View Policies"
+        },
+        "unban_notification": {
+            "subject": "🔓 Your account has been unblocked",
+            "header": "Account Unblock Notification",
+            "greeting": "Hello <strong>{{userName}}</strong>,",
+            "content": "We are sending this email to inform you that your account on EstateMarket has been unblocked and is now fully active again.",
+            "welcome_back": "Welcome back! Please strictly adhere to our community policies to build a safe environment.",
+            "login_now": "Log In Now",
+            "footer": "EstateMarket Administration Team"
+        },
+        "report_confirmation": {
+            "subject": "📢 Report Received Confirmation",
+            "header": "Thank You for Reporting",
+            "greeting": "Hello <strong>{{userName}}</strong>,",
+            "content": "We have received your report regarding {{type}}: <strong>\"{{targetName}}\"</strong>.",
+            "type_post": "post",
+            "type_user": "user account",
+            "reason_label": "Reason for report:",
+            "note": "Our administration team will review this report within the next 24-48 hours. We are committed to building a safe and transparent community."
         }
     }
 }

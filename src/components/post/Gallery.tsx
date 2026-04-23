@@ -17,7 +17,7 @@ const Gallery = ({ images }: GalleryProps) => {
     return (
         <div className="mb-4">
             {/* Main Image Stage */}
-            <div className="relative h-96 bg-gray-100 rounded-xl overflow-hidden mb-4 group border border-gray-100">
+            <div className="relative h-64 sm:h-80 md:h-96 bg-gray-100 rounded-xl overflow-hidden mb-4 group border border-gray-100">
                 <img
                     src={displayImages[activeImage]}
                     alt="Property View"

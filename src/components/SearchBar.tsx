@@ -151,7 +151,7 @@ export function SearchBar() {
                         {/* Suggestions Dropdown */}
                         {showSuggestions && suggestions.length > 0 && (
                             <div className="absolute left-0 right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="max-h-[400px] overflow-y-auto py-2">
+                                <div className="max-h-[60vh] md:max-h-[400px] overflow-y-auto py-2">
                                     {suggestions.map((post, index) => (
                                         <div
                                             key={post._id}

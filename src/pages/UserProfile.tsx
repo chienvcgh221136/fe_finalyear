@@ -99,9 +99,9 @@ const UserProfile = () => {
         <div className="min-h-screen bg-gray-50 pt-20 pb-10">
             <div className="w-full px-4 md:px-8">
                 {/* Profile Header Card */}
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6 border border-gray-100">
                     {/* Cover Image */}
-                    <div className="h-48 md:h-64 relative flex items-center justify-center overflow-hidden bg-gray-200 group">
+                    <div className="h-40 sm:h-48 md:h-64 relative flex items-center justify-center overflow-hidden bg-gray-200 group">
                         {/* Display Cover Image if exists, else Blue Gradient */}
                         {user.coverImage ? (
                             <img src={user.coverImage} alt="Cover" className="w-full h-full object-cover" />
@@ -136,10 +136,10 @@ const UserProfile = () => {
                     </div>
 
                     <div className="px-6 pb-6 relative">
-                        <div className="flex flex-col md:flex-row items-start md:items-end gap-4 -mt-8 md:-mt-4 px-2">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-12 sm:-mt-10 md:-mt-16 px-2">
                             {/* Avatar */}
-                            <div className="relative group">
-                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-md bg-white relative overflow-hidden">
+                            <div className="relative group shrink-0">
+                                <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg bg-white relative overflow-hidden">
                                     <img
                                         src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
                                         alt={user.name}
@@ -173,28 +173,27 @@ const UserProfile = () => {
                             </div>
 
                             {/* User Info */}
-                            <div className="flex-1 mb-2 md:mb-0 pt-2">
-                                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            <div className="flex-1 text-center sm:text-left min-w-0 pt-2">
+                                <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center justify-center sm:justify-start gap-2">
                                     {user.name}
-                                    {user.isVerified && <ShieldCheck className="text-green-500 w-5 h-5" />}
+                                    {user.isVerified && <ShieldCheck className="text-green-500 w-5 h-5 shrink-0" />}
                                 </h1>
-                                <div className="text-sm text-gray-500 space-y-1 mt-1">
+                                <div className="text-sm text-gray-500 space-y-1 mt-1 flex flex-col items-center sm:items-start">
                                     <p className="flex items-center gap-1">
-                                        <Calendar size={14} />
+                                        <Calendar size={14} className="shrink-0" />
                                         {t('user_profile.joined')} <span className="text-gray-900 font-medium">{new Date(user.createdAt!).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                                     </p>
-
                                 </div>
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+                            <div className="flex gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                 {isOwner ? (
-                                    <LocalizedLink to="/profile" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
+                                    <LocalizedLink to="/profile" className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-200/50">
                                         <Edit size={16} /> {t('user_profile.btn_edit_profile')}
                                     </LocalizedLink>
                                 ) : (
-                                    <LocalizedLink to="/chat" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition-colors text-sm shadow-sm shadow-blue-200">
+                                    <LocalizedLink to="/chat" className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-200/50">
                                         <MessageSquare size={16} />
                                         {t('user_profile.btn_message')}
                                     </LocalizedLink>
@@ -257,13 +256,13 @@ const UserProfile = () => {
                                     </div>
 
                                     {isPostsLoading ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {[1, 2, 3].map(i => (
                                                 <div key={i} className="h-64 bg-gray-100 rounded-lg animate-pulse" />
                                             ))}
                                         </div>
                                     ) : filteredPosts.length > 0 ? (
-                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                                             {filteredPosts.map(post => (
                                                 <LocalizedLink to={`/post/${post._id}`} key={post._id} className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                                                     <div className="relative h-40 overflow-hidden bg-gray-100">

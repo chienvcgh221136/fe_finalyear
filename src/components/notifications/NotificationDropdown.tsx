@@ -104,7 +104,7 @@ const NotificationDropdown = () => {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-full mt-2 w-80 md:w-96 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-in fade-in slide-in-from-top-2 duration-100 overflow-hidden">
+                <div className="fixed inset-x-4 top-16 md:absolute md:inset-auto md:right-0 md:top-full mt-2 md:w-96 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-in fade-in slide-in-from-top-2 duration-100 overflow-hidden">
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
                         <h3 className="font-bold text-gray-900">{t('notifications.title')}</h3>

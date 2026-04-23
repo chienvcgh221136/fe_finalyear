@@ -92,7 +92,7 @@ const MainLayout = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
-      <Chatbot />
+      {!isChatPage && <Chatbot />}
       {!shouldHideFooter && <Footer />}
     </div>
   );

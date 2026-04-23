@@ -370,7 +370,7 @@ const Chat = () => {
             if (context?.previousData) {
                 queryClient.setQueryData(['messages', selectedRoomId], context.previousData);
             }
-            alert("Gửi tin nhắn thất bại. Vui lòng thử lại.");
+            alert(t('chat.send_failed'));
         },
         onSettled: () => {
             // Invalidate to sync with server eventually, but don't block
@@ -391,7 +391,7 @@ const Chat = () => {
                 sendMessageMutation.mutate({ content: imageUrl, type: 'IMAGE' });
             } catch (error) {
                 console.error("Upload failed", error);
-                alert("Gửi ảnh thất bại");
+                alert(t('chat.upload_failed'));
             } finally {
                 setIsUploading(false);
             }
@@ -410,7 +410,7 @@ const Chat = () => {
                 setSelectedRoomId(null);
             } catch (error) {
                 console.error("Delete chat failed", error);
-                alert("Xóa thất bại");
+                alert(t('chat.delete_failed'));
             }
         }
     };
@@ -425,7 +425,7 @@ const Chat = () => {
             setNicknameInput('');
         } catch (error) {
             console.error("Set nickname failed", error);
-            alert("Đặt biệt danh thất bại");
+            alert(t('chat.set_nickname_failed'));
         }
     };
 
@@ -460,7 +460,7 @@ const Chat = () => {
                 window.location.reload(); // Simple way to refresh auth context for now
             } catch (error) {
                 console.error("Block failed", error);
-                alert("Chặn thất bại");
+                alert(t('chat.block_failed'));
             }
         }
     };
@@ -480,7 +480,7 @@ const Chat = () => {
                 window.location.reload();
             } catch (error) {
                 console.error("Unblock failed", error);
-                alert("Bỏ chặn thất bại");
+                alert(t('chat.unblock_failed'));
             }
         }
     };
@@ -510,9 +510,12 @@ const Chat = () => {
     return (
         <div className="flex bg-gray-50 h-[calc(100vh-74px)] relative">
             {/* Sidebar */}
-            <aside className={`w-full md:w-80 border-r border-gray-200 bg-white flex flex-col h-full ${selectedRoomId ? 'hidden md:flex' : 'flex'}`}>
-                <div className="p-4 border-b border-gray-200">
-                    <h1 className="text-xl font-bold text-gray-900 mb-4">{t('chat.title', 'Tin nhắn')}</h1>
+            <aside className={`w-full md:w-80 border-r border-gray-200 bg-white flex-col h-full transition-all duration-300 ${selectedRoomId ? 'hidden md:flex' : 'flex'}`}>
+                <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-xl font-bold text-gray-900">{t('chat.title', 'Tin nhắn')}</h1>
+                        {/* Optional: Add a 'New Chat' or 'Compose' button here if needed */}
+                    </div>
 
                     {/* Tabs */}
                     <div className="flex bg-gray-100 p-1 rounded-lg mb-4">
@@ -623,16 +626,15 @@ const Chat = () => {
             </aside>
 
             {/* Chat Area */}
-            <main className={`flex-1 h-full bg-white/50 relative ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
+            <main className={`flex-1 h-full bg-white/50 relative flex flex-row ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
                 {selectedRoomId ? (
                     <>
                         <div className="flex-1 flex flex-col min-w-0 h-full">
-                            {/* Header */}
-                            <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 md:px-6 shrink-0">
-                                <div className="flex items-center gap-3">
+                            <div className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-4 shrink-0 sticky top-0 z-20">
+                                <div className="flex items-center gap-2 md:gap-3 min-w-0">
                                     <button
                                         onClick={() => setSelectedRoomId(null)}
-                                        className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                        className="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full shrink-0"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
@@ -642,49 +644,43 @@ const Chat = () => {
                                         const other = getOtherParticipant(room) as any;
                                         return (
                                             <>
-                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border border-gray-100">
+                                                <div 
+                                                    className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border border-gray-100 shrink-0 cursor-pointer"
+                                                    onClick={() => navigate(`/user/${other?._id || other?.id}`)}
+                                                >
                                                     {other?.avatar ? (
                                                         <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
                                                     ) : (
                                                         other?.name?.charAt(0).toUpperCase()
                                                     )}
                                                 </div>
-                                                <div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <h2 className="font-bold text-gray-900">{getDisplayName(room, other)}</h2>
-                                                            <button
-                                                                onClick={openNicknameModal}
-                                                                className="text-gray-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-gray-100"
-                                                                title="Đổi biệt danh"
-                                                            >
-                                                                <Pencil size={14} />
-                                                            </button>
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                                            <p className="text-xs text-green-600 font-medium">{t('chat.active_now', 'Đang hoạt động')}</p>
-                                                        </div>
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-1">
+                                                        <h2 className="font-bold text-gray-900 truncate text-sm md:text-base">{getDisplayName(room, other)}</h2>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                        <p className="text-[10px] text-green-600 font-medium">{t('chat.active_now', 'Đang hoạt động')}</p>
                                                     </div>
                                                 </div>
                                             </>
                                         );
                                     })()}
                                 </div>
-                                <div className="flex items-center gap-3 text-gray-400">
+                                <div className="flex items-center gap-1 md:gap-2">
                                     <button
-                                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors"
+                                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-colors hidden sm:block"
                                         onClick={handleDeleteChat}
                                         title={t('chat.delete_chat')}
                                     >
                                         <Trash2 size={20} />
                                     </button>
                                     <button
-                                        className={`p-2 hover:bg-gray-100 rounded-full transition-colors ${isDetailsOpen ? 'text-blue-600 bg-blue-50' : 'text-gray-400'}`}
+                                        className={`p-2 rounded-full transition-colors ${isDetailsOpen ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:bg-gray-100'}`}
                                         onClick={() => setIsDetailsOpen(!isDetailsOpen)}
-                                        title="Thông tin hội thoại"
+                                        title={t('chat.conversation_info')}
                                     >
-                                        <MoreVertical size={20} />
+                                        <MoreVertical size={22} />
                                     </button>
                                 </div>
                             </div>
@@ -861,7 +857,7 @@ const Chat = () => {
                             </div>
 
                             {/* Input Area */}
-                            <div className="p-4 bg-white border-t border-gray-200">
+                            <div className="p-4 bg-white border-t border-gray-100 pb-safe pb-4">
                                 {/* Image Preview */}
                                 {previewImage && (
                                     <div className="mb-4 relative inline-block">
@@ -883,7 +879,7 @@ const Chat = () => {
                                             onClick={handleUnblockUser}
                                             className="ml-2 text-blue-600 hover:underline font-medium"
                                         >
-                                            Bỏ chặn
+                                            {t('chat.unblock_btn')}
                                         </button>
                                     </div>
                                 ) : (
@@ -893,7 +889,7 @@ const Chat = () => {
                                             return (
                                                 <div className="flex items-center justify-center p-4 bg-red-50 rounded-xl text-red-500 gap-2">
                                                     <Ban size={20} />
-                                                    <span>Bạn không thể liên lạc với người này.</span>
+                                                    <span>{t('chat.blocked_by_other')}</span>
                                                 </div>
                                             );
                                         }
@@ -935,124 +931,140 @@ const Chat = () => {
                             </div>
                         </div>
 
-                        {/* Right Sidebar - Details */}
+                        {/* Right Sidebar - Details (Mobile Drawer / Desktop Sidebar) */}
                         {isDetailsOpen && (
-                            <aside className="w-80 border-l border-gray-200 bg-white hidden xl:flex flex-col h-full overflow-y-auto animate-in slide-in-from-right duration-200 shrink-0">
-                                {roomsResponse && (() => {
-                                    const room = roomsResponse.find(r => r._id === selectedRoomId);
-                                    if (!room) return null;
-                                    const other = getOtherParticipant(room) as any;
-                                    const otherId = other?._id || other?.id;
-                                    const displayName = getDisplayName(room, other);
+                            <>
+                                {/* Overlay for mobile */}
+                                <div 
+                                    className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[40] lg:hidden transition-opacity duration-300"
+                                    onClick={() => setIsDetailsOpen(false)}
+                                />
+                                <aside className="fixed right-0 top-0 bottom-0 z-[50] w-[85%] max-w-[340px] lg:static lg:z-0 lg:w-80 border-l border-gray-200 bg-white flex flex-col h-full overflow-y-auto animate-in slide-in-from-right duration-300 shrink-0 shadow-2xl lg:shadow-none">
+                                    <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+                                        <h3 className="font-bold text-gray-900">{t('chat.details', 'Chi tiết')}</h3>
+                                        <button 
+                                            onClick={() => setIsDetailsOpen(false)}
+                                            className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                    {roomsResponse && (() => {
+                                        const room = roomsResponse.find(r => r._id === selectedRoomId);
+                                        if (!room) return null;
+                                        const other = getOtherParticipant(room) as any;
+                                        const otherId = other?._id || other?.id;
+                                        const displayName = getDisplayName(room, other);
 
-                                    // Filter images from messages
-                                    const images = messagesData?.messages?.filter(m =>
-                                        m.type === 'IMAGE' || (m.content.startsWith('http') && (m.content.includes('/uploads/') || m.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)))
-                                    ) || [];
+                                        // Filter images from messages
+                                        const images = messagesData?.messages?.filter(m =>
+                                            m.type === 'IMAGE' || (m.content.startsWith('http') && (m.content.includes('/uploads/') || m.content.match(/\.(jpg|jpeg|png|gif|webp)$/i)))
+                                        ) || [];
 
-                                    return (
-                                        <div className="flex flex-col h-full">
-                                            <div className="p-6 flex flex-col items-center border-b border-gray-100">
-                                                <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-3xl overflow-hidden border-2 border-white shadow-md mb-3">
-                                                    {other?.avatar ? (
-                                                        <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        other?.name?.charAt(0).toUpperCase()
-                                                    )}
-                                                </div>
-                                                <h2 className="font-bold text-gray-900 text-lg text-center" style={{ wordBreak: 'break-word', maxWidth: '100%', lineHeight: '1.4' }}>{displayName}</h2>
-                                                <p className="text-gray-500 text-sm mb-4">{t('chat.member')}</p>
+                                        return (
+                                            <div className="flex flex-col h-full">
+                                                <div className="p-6 flex flex-col items-center border-b border-gray-100">
+                                                    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-3xl overflow-hidden border-2 border-white shadow-md mb-3">
+                                                        {other?.avatar ? (
+                                                            <img src={other.avatar} alt={other.name} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            other?.name?.charAt(0).toUpperCase()
+                                                        )}
+                                                    </div>
+                                                    <h2 className="font-bold text-gray-900 text-lg text-center" style={{ wordBreak: 'break-word', maxWidth: '100%', lineHeight: '1.4' }}>{displayName}</h2>
+                                                    <p className="text-gray-500 text-sm mb-4">{t('chat.member')}</p>
 
-                                                <div className="flex gap-2 w-full">
-                                                    <button
-                                                        onClick={() => navigate(`/user/${otherId}`)}
-                                                        className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-                                                    >
-                                                        <User size={16} />
-                                                        {t('chat.view_profile')}
-                                                    </button>
-                                                    <button
-                                                        onClick={openNicknameModal}
-                                                        className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
-                                                        title="Đổi biệt danh"
-                                                    >
-                                                        <Pencil size={18} />
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div className="p-4 flex-1 overflow-y-auto">
-                                                {/* Media Section */}
-                                                <div className="mb-6">
-                                                    <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
-                                                        <Image size={16} className="text-blue-500" />
-                                                        {t('chat.media', { length: images.length })}
-                                                    </h3>
-                                                    {images.length > 0 ? (
-                                                        <div className="grid grid-cols-3 gap-2">
-                                                            {images.slice(0, 9).map((msg, idx) => (
-                                                                <div
-                                                                    key={msg._id || idx}
-                                                                    className="aspect-square rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
-                                                                    onClick={() => setViewingImage(msg.content)}
-                                                                >
-                                                                    <img src={msg.content} alt="media" className="w-full h-full object-cover" />
-                                                                </div>
-                                                            ))}
-                                                            {images.length > 9 && (
-                                                                <div className="aspect-square rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold cursor-pointer hover:bg-gray-200">
-                                                                    +{images.length - 9}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <div className="text-center py-4 bg-gray-50 rounded-lg text-gray-400 text-xs">
-                                                            {t('chat.no_media')}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Actions Section */}
-                                                <div>
-                                                    <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
-                                                        <Shield size={16} className="text-green-500" />
-                                                        {t('chat.privacy_support')}
-                                                    </h3>
-                                                    <div className="space-y-1">
+                                                    <div className="flex gap-2 w-full">
                                                         <button
-                                                            onClick={handleReportUser}
-                                                            className="w-full flex items-center gap-3 p-3 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl transition-colors text-sm font-medium"
+                                                            onClick={() => navigate(`/user/${otherId}`)}
+                                                            className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
                                                         >
-                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-100 group-hover:text-red-500">
-                                                                <Shield size={16} />
-                                                            </div>
-                                                            {t('chat.report_user')}
+                                                            <User size={16} />
+                                                            {t('chat.view_profile')}
                                                         </button>
                                                         <button
-                                                            onClick={handleBlockUser}
-                                                            className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
+                                                            onClick={openNicknameModal}
+                                                            className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                                                            title="Đổi biệt danh"
                                                         >
-                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                                                                <Ban size={16} />
-                                                            </div>
-                                                            {t('chat.block_user')}
-                                                        </button>
-                                                        <button
-                                                            onClick={handleDeleteChat}
-                                                            className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
-                                                        >
-                                                            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                                                                <Trash2 size={16} />
-                                                            </div>
-                                                            {t('chat.delete_chat')}
+                                                            <Pencil size={18} />
                                                         </button>
                                                     </div>
                                                 </div>
+
+                                                <div className="p-4 flex-1 overflow-y-auto">
+                                                    {/* Media Section */}
+                                                    <div className="mb-6">
+                                                        <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                                                            <Image size={16} className="text-blue-500" />
+                                                            {t('chat.media', { length: images.length })}
+                                                        </h3>
+                                                        {images.length > 0 ? (
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                {images.slice(0, 9).map((msg, idx) => (
+                                                                    <div
+                                                                        key={msg._id || idx}
+                                                                        className="aspect-square rounded-lg overflow-hidden border border-gray-100 cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        onClick={() => setViewingImage(msg.content)}
+                                                                    >
+                                                                        <img src={msg.content} alt="media" className="w-full h-full object-cover" />
+                                                                    </div>
+                                                                ))}
+                                                                {images.length > 9 && (
+                                                                    <div className="aspect-square rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 text-xs font-bold cursor-pointer hover:bg-gray-200">
+                                                                        +{images.length - 9}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <div className="text-center py-4 bg-gray-50 rounded-lg text-gray-400 text-xs">
+                                                                {t('chat.no_media')}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Actions Section */}
+                                                    <div>
+                                                        <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+                                                            <Shield size={16} className="text-green-500" />
+                                                            {t('chat.privacy_support')}
+                                                        </h3>
+                                                        <div className="space-y-1">
+                                                            <button
+                                                                onClick={handleReportUser}
+                                                                className="w-full flex items-center gap-3 p-3 hover:bg-red-50 text-gray-700 hover:text-red-600 rounded-xl transition-colors text-sm font-medium"
+                                                            >
+                                                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 group-hover:bg-red-100 group-hover:text-red-500">
+                                                                    <Shield size={16} />
+                                                                </div>
+                                                                {t('chat.report_user')}
+                                                            </button>
+                                                            <button
+                                                                onClick={handleBlockUser}
+                                                                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
+                                                            >
+                                                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                                                    <Ban size={16} />
+                                                                </div>
+                                                                {t('chat.block_user')}
+                                                            </button>
+                                                            <button
+                                                                onClick={handleDeleteChat}
+                                                                className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 text-gray-700 rounded-xl transition-colors text-sm font-medium"
+                                                            >
+                                                                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                                                    <Trash2 size={16} />
+                                                                </div>
+                                                                {t('chat.delete_chat')}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    );
-                                })()}
-                            </aside>
+                                        );
+                                    })()}
+                                </aside>
+                            </>
                         )}
 
                         {/* Report Modal */}
@@ -1109,7 +1121,7 @@ const Chat = () => {
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                            <h3 className="font-bold text-gray-900">Đặt biệt danh</h3>
+                            <h3 className="font-bold text-gray-900">{t('chat.set_nickname_title')}</h3>
                             <button
                                 onClick={() => setIsNicknameModalOpen(false)}
                                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200"
@@ -1119,13 +1131,13 @@ const Chat = () => {
                         </div>
                         <div className="p-6">
                             <p className="text-sm text-gray-500 mb-4">
-                                Biệt danh sẽ chỉ hiển thị với bạn trong cuộc trò chuyện này.
+                                {t('chat.nickname_desc')}
                             </p>
                             <input
                                 type="text"
                                 value={nicknameInput}
                                 onChange={(e) => setNicknameInput(e.target.value)}
-                                placeholder="Nhập biệt danh..."
+                                placeholder={t('chat.nickname_placeholder')}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -1138,13 +1150,13 @@ const Chat = () => {
                                 onClick={() => setIsNicknameModalOpen(false)}
                                 className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
                             >
-                                Hủy
+                                {t('chat.cancel')}
                             </button>
                             <button
                                 onClick={handleSetNickname}
                                 className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
                             >
-                                Lưu
+                                {t('chat.save')}
                             </button>
                         </div>
                     </div>

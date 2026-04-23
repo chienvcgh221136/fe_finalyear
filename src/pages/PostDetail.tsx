@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import LocalizedLink from '../components/common/LocalizedLink';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,7 @@ const PostDetail = () => {
     const { success, error, warning } = useToast();
     const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
 
+    const queryClient = useQueryClient();
     const { data: post, isLoading: loading } = useQuery({
         queryKey: ['post', id],
         queryFn: () => postService.getById(id!).then(res => res.data.data || res.data),
@@ -162,19 +163,19 @@ const PostDetail = () => {
                 </div>
             )}
 
-            {/* Breadcrumb */}
-            <div className="bg-white border-b border-gray-100 py-4 sticky top-[72px] z-10 shadow-sm/50">
-                <div className="container max-w-[1140px] mx-auto px-4 text-sm flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-                    <LocalizedLink to="/" className="text-gray-500 hover:text-blue-600 transition-colors">{t('common.home')}</LocalizedLink>
-                    <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
-                    <LocalizedLink to="/buy" className="text-gray-500 hover:text-blue-600 transition-colors">{t('common.real_estate')}</LocalizedLink>
-                    <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
+            {/* Breadcrumb - Optimized for mobile */}
+            <div className="bg-white border-b border-gray-100 py-3 sticky top-[72px] z-10 shadow-sm">
+                <div className="w-full px-4 md:px-8 text-[12px] md:text-sm flex items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar">
+                    <LocalizedLink to="/" className="text-gray-500 hover:text-blue-600 transition-colors shrink-0">{t('common.home')}</LocalizedLink>
+                    <ChevronRight size={12} className="text-gray-300 shrink-0" />
+                    <LocalizedLink to="/buy" className="text-gray-500 hover:text-blue-600 transition-colors shrink-0">{t('common.real_estate')}</LocalizedLink>
+                    <ChevronRight size={12} className="text-gray-300 shrink-0" />
                     <span className="text-gray-900 font-medium truncate">{post.title}</span>
                 </div>
             </div>
 
 
-            <div className="container max-w-[1140px] mx-auto px-4 mt-8">
+            <div className="w-full px-4 md:px-8 mt-8">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* LEFT COLUMN: Main Content (70%) */}
                     <div className="lg:w-[70%] space-y-6">
@@ -207,14 +208,14 @@ const PostDetail = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex gap-3">
+                            <div className="flex flex-wrap gap-2 sm:gap-3">
                                 {user?._id !== (typeof post.userId === 'object' ? (post.userId as any)._id : post.userId) && (
                                     <button
                                         onClick={() => setIsScheduleModalOpen(true)}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
                                     >
                                         <Calendar size={18} />
-                                        <span className="text-sm">{t('post_detail.schedule')}</span>
+                                        <span className="text-sm whitespace-nowrap">{t('post_detail.schedule')}</span>
                                     </button>
                                 )}
 
@@ -226,34 +227,46 @@ const PostDetail = () => {
                                         }
                                         try {
                                             const res = await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
-                                            if (res.data.success) {
-                                                success(res.data.message === 'Favorited' ? t('post_detail.saved') : t('post_detail.unsaved'));
-                                                // Ideally, toggle a local state here to change icon style
+                                                const isNowFavorited = res.data.message === 'Favorited';
+                                                success(isNowFavorited ? t('post_detail.saved') : t('post_detail.unsaved'));
+                                                // Update query cache to trigger re-render
+                                                queryClient.setQueryData(['post', id], (oldData: any) => {
+                                                    if (!oldData) return oldData;
+                                                    return { ...oldData, isFavorite: isNowFavorited };
+                                                });
+                                            } catch (error) {
+                                                console.error("Favorite error", error);
                                             }
-                                        } catch (error) {
-                                            console.error("Favorite error", error);
-                                        }
-                                    }}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-red-50 hover:text-red-500 transition-all"
+                                        }}
+                                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 border ${post.isFavorite
+                                        ? 'bg-red-50 text-red-600 border-red-100 shadow-sm'
+                                        : 'bg-gray-50 text-gray-600 border-transparent hover:bg-red-50 hover:text-red-500 hover:border-red-100'
+                                        }`}
                                 >
-                                    <Heart size={18} />
-                                    <span className="text-sm">{t('post_detail.save')}</span>
+                                    <Heart 
+                                        size={20} 
+                                        className={`transition-all duration-300 ${post.isFavorite ? 'scale-110' : 'scale-100'}`}
+                                        fill={post.isFavorite ? "#EF4444" : "transparent"} 
+                                        color={post.isFavorite ? "#EF4444" : "currentColor"}
+                                    />
+                                    <span className="text-sm font-bold whitespace-nowrap">
+                                        {post.isFavorite ? t('post_detail.unsave') : t('post_detail.save')}
+                                    </span>
                                 </button>
+                                
                                 <button
                                     onClick={() => setIsReportModalOpen(true)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all"
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all border border-transparent hover:border-orange-100"
                                 >
                                     <Flag size={18} />
-                                    <span className="text-sm">{t('common.report')}</span>
+                                    <span className="text-sm whitespace-nowrap">{t('common.report')}</span>
                                 </button>
 
                                 {/* Owner Actions */}
                                 {user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId) && (
-                                    <>
-                                        <LocalizedLink to={`/post-ad?edit=${post._id}`} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 font-bold hover:bg-blue-100 transition-all ml-auto">
-                                            <span className="text-sm">{t('post_detail.edit')}</span>
-                                        </LocalizedLink>
-                                    </>
+                                    <LocalizedLink to={`/post-ad?edit=${post._id}`} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all sm:ml-auto shadow-md shadow-blue-200">
+                                        <span className="text-sm whitespace-nowrap">{t('post_detail.edit')}</span>
+                                    </LocalizedLink>
                                 )}
                             </div>
                         </div>
@@ -261,7 +274,7 @@ const PostDetail = () => {
 
 
                         {/* Specs Grid */}
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-8">
                             <SpecItem icon={Maximize2} label={t('post_detail.area')} value={`${post.area} m²`} />
                             
                             {post.propertyType !== 'OFFICE' && post.propertyType !== 'LAND' && (

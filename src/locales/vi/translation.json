@@ -195,6 +195,14 @@
         "tab_vip_packages": "Gói VIP",
         "tab_vip_management": "Quản lý VIP",
         "tab_statistics": "Thống kê",
+        "tab_wallet": "Ví của tôi",
+        "tab_posts": "Tin đăng của tôi",
+        "tab_favorites": "Tin đã lưu",
+        "tab_appointments": "Lịch hẹn",
+        "tab_vip": "Gói VIP",
+        "tab_vip-management": "Quản lý VIP",
+        "tab_stats": "Thống kê",
+        "account_menu": "Menu tài khoản",
         "group_account": "Tài khoản",
         "group_activity": "Hoạt động",
         "group_finance_vip": "Tài chính & VIP",
@@ -292,6 +300,7 @@
         "status_sold": "Đã bán",
         "login_to_save": "Vui lòng đăng nhập để lưu tin",
         "saved": "Đã lưu tin",
+        "unsave": "Bỏ lưu tin",
         "unsaved": "Đã bỏ lưu tin",
         "edit": "Chỉnh sửa",
         "rooms": "phòng",
@@ -344,7 +353,7 @@
         "confirm_purchase": "Bạn có chắc muốn mua gói {{name}} với giá {{price}} VNĐ?",
         "premium_label": "Hội viên Premium",
         "title_main": "Nâng cấp tài khoản",
-        "subtitle": "Tiếp cận hàng triệu khách hàng tiềm năng, hiển thị tin đăng ở vị trí ưu tiên và chốt giao dịch nhanh chóng hơn.",
+        "subtitle": "Tiếp cận hàng triệu khách hàng tiềm năng, hiển thị tin đăng ở vị tiên và chốt giao dịch nhanh chóng hơn.",
         "manage_vip": "Quản lý Slot & Gắn VIP",
         "popular_tag": "Phổ biến nhất",
         "active_status": "Đang sử dụng",
@@ -689,6 +698,55 @@
         "item_vip_gold_subtitle": "Up VIP Gold cho 1 tin",
         "item_vip_gold_desc": "Nâng cấp tin lên VIP Gold trong 7 ngày, hiệu quả cao nhất."
     },
+    "chat": {
+        "title": "Tin nhắn",
+        "tab_all": "Tất cả",
+        "tab_buying": "Mua",
+        "tab_selling": "Bán",
+        "search_placeholder": "Tìm người dùng hoặc tin nhắn...",
+        "no_chats": "Không tìm thấy cuộc trò chuyện nào",
+        "no_messages": "Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!",
+        "new_messages_badge": "Tin nhắn mới",
+        "input_placeholder": "Nhập tin nhắn...",
+        "discussing": "Đang trao đổi về",
+        "billion": "Tỷ",
+        "million": "Triệu",
+        "view_tin": "Xem tin",
+        "active_now": "Đang hoạt động",
+        "delete_chat": "Xóa cuộc trò chuyện",
+        "confirm_delete_chat": "Bạn có chắc chắn muốn xóa cuộc trò chuyện này? Hành động này không thể hoàn tác.",
+        "confirm_block_user": "Bạn có chắc chắn muốn chặn {{name}}? Bạn sẽ không thể gửi hoặc nhận tin nhắn từ người này.",
+        "block_success": "Đã chặn người dùng thành công.",
+        "confirm_unblock_user": "Bạn có chắc chắn muốn bỏ chặn {{name}}?",
+        "unblock_success": "Đã bỏ chặn người dùng thành công.",
+        "you_blocked_user": "Bạn đã chặn người dùng này.",
+        "unblock_btn": "Bỏ chặn",
+        "blocked_by_other": "Bạn không thể liên lạc với người này.",
+        "details": "Chi tiết",
+        "member": "Thành viên",
+        "view_profile": "Xem trang cá nhân",
+        "media": "Ảnh & Video ({{length}})",
+        "no_media": "Chưa có phương tiện nào được chia sẻ",
+        "privacy_support": "Quyền riêng tư & Hỗ trợ",
+        "report_user": "Báo cáo người dùng",
+        "block_user": "Chặn người dùng",
+        "seen": "Đã xem",
+        "sent": "Đã gửi",
+        "welcome_msg": "Chào mừng, {{name}}!",
+        "select_chat": "Chọn một cuộc trò chuyện để bắt đầu nhắn tin",
+        "set_nickname_title": "Đặt biệt danh",
+        "nickname_desc": "Biệt danh sẽ chỉ hiển thị với bạn trong cuộc trò chuyện này.",
+        "nickname_placeholder": "Nhập biệt danh...",
+        "cancel": "Hủy",
+        "save": "Lưu",
+        "upload_failed": "Gửi ảnh thất bại",
+        "delete_failed": "Xóa thất bại",
+        "set_nickname_failed": "Đặt biệt danh thất bại",
+        "block_failed": "Chặn thất bại",
+        "unblock_failed": "Bỏ chặn thất bại",
+        "conversation_info": "Thông tin hội thoại",
+        "send_failed": "Gửi tin nhắn thất bại. Vui lòng thử lại."
+    },
     "admin": {
         "title": "Quản trị viên",
         "menu_overview": "Tổng quan",
@@ -789,7 +847,6 @@
             "status_banned": "Đã bị cấm"
         },
         "notifications": {
-            "title": "Thông báo hệ thống",
             "btn_add": "Gửi thông báo",
             "btn_new": "Gửi thông báo mới",
             "table_content": "Nội dung",
@@ -948,11 +1005,46 @@
         "suggest_rent": "Thuê căn hộ",
         "no_results_for": "Không tìm thấy kết quả cho"
     },
+    "report_modal": {
+        "title_post": "Báo cáo bài đăng",
+        "title_user": "Báo cáo người dùng",
+        "reason_label": "Lý do báo cáo",
+        "reasons": {
+            "SCAM": {
+                "label": "Lừa đảo",
+                "sub": "Bài đăng có dấu hiệu lừa đảo, giả mạo."
+            },
+            "WRONG_INFO": {
+                "label": "Thông tin sai lệch",
+                "sub": "Giá, diện tích hoặc vị trí không đúng thực tế."
+            },
+            "DUPLICATE": {
+                "label": "Tin trùng lặp",
+                "sub": "Nhiều tin đăng cho cùng một bất động sản."
+            },
+            "SPAM": {
+                "label": "Spam/Quảng cáo",
+                "sub": "Nội dung rác hoặc quảng cáo không đúng chỗ."
+            },
+            "OTHER": {
+                "label": "Lý do khác",
+                "sub": "Các vấn đề khác không nằm trong danh sách."
+            }
+        },
+        "details_label": "Chi tiết thêm (không bắt buộc)",
+        "details_placeholder": "Mô tả cụ thể vấn đề bạn gặp phải...",
+        "btn_submit": "Gửi báo cáo",
+        "btn_cancel": "Hủy",
+        "btn_sending": "Đang gửi...",
+        "success_msg": "Báo cáo của bạn đã được gửi. Cảm ơn bạn!",
+        "error_msg": "Gửi báo cáo thất bại. Vui lòng thử lại."
+    },
     "notifications": {
         "title": "Thông báo",
         "mark_all_read": "Đánh dấu tất cả đã đọc",
         "tab_activity": "Hoạt động",
         "tab_news": "Hệ thống",
+        "no_notifications": "Không có thông báo nào",
         "schedule_modal": {
             "title": "Đặt lịch",
             "modal_header": "Đặt lịch xem nhà",
@@ -1001,7 +1093,7 @@
             "report_received": "Chúng tôi đã nhận được báo cáo của bạn. Cảm ơn bạn đã đóng góp.",
             "new_report_post": "Báo cáo mới từ người dùng về bài đăng (Lý do: {{reason}}).",
             "new_report_user": "Báo cáo mới từ người dùng về tài khoản (Lý do: {{reason}}).",
-            "admin_violation_prefix": "[CẢNH BÁO VI PHẠM] {{content}}",
+            "admin_violation_prefix": "[CẢNH BÁO] {{content}}",
             "admin_earn_detail": "[CỘNG ĐIỂM] {{content}} (+{{amount}} PTS)",
             "admin_spend_detail": "[TRỪ ĐIỂM] {{content}} (-{{amount}} PTS)",
             "admin_earn_prefix": "[THƯỞNG] {{content}}",
@@ -1390,6 +1482,17 @@
             "welcome_back": "Chào mừng bạn quay trở lại! Vui lòng tuân thủ chặt chẽ các chính sách cộng đồng để xây dựng một môi trường an toàn nhé.",
             "login_now": "Đăng nhập ngay",
             "footer": "Đội ngũ Quản trị EstateMarket"
+        },
+        "report_confirmation": {
+            "subject": "📢 Xác nhận đã nhận báo cáo của bạn",
+            "header": "Cảm ơn bạn đã báo cáo",
+            "greeting": "Xin chào <strong>{{userName}}</strong>,",
+            "content": "Chúng tôi đã nhận được báo cáo của bạn về {{type}}: <strong>\"{{targetName}}\"</strong>.",
+            "type_post": "bài đăng",
+            "type_user": "tài khoản người dùng",
+            "reason_label": "Lý do báo cáo:",
+            "note": "Đội ngũ quản trị sẽ xem xét báo cáo này trong vòng 24-48 giờ tới. Chúng tôi cam kết xây dựng một cộng đồng an toàn và minh bạch."
         }
     }
 }
+

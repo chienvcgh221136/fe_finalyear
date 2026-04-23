@@ -130,7 +130,7 @@ const LoyaltyPage = () => {
                 <div className="absolute top-6 left-10 w-24 h-24 bg-white/5 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-6 right-20 w-48 h-48 bg-yellow-500/10 rounded-full blur-3xl"></div>
 
-                <div className="container max-w-5xl mx-auto relative z-10">
+                <div className="w-full px-4 md:px-8 mx-auto relative z-10">
                     <div className="flex flex-col items-center">
                         <div className="text-center mb-6">
                             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full mb-3 border border-white/20">
@@ -145,9 +145,9 @@ const LoyaltyPage = () => {
                             {/* Smaller Circular Point Display */}
                             <div className="relative group">
                                 <div className="absolute -inset-1 bg-gradient-to-r from-yellow-300 to-yellow-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
-                                <div className="relative w-40 h-40 rounded-full border-4 border-white/10 flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md shadow-xl">
-                                    <Award size={24} className="mb-1 text-yellow-300 drop-shadow-lg" />
-                                    <span className="text-4xl font-black text-white tracking-tight drop-shadow-md">{balance.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
+                                <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-white/10 flex flex-col items-center justify-center bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-md shadow-xl">
+                                    <Award size={20} className="md:size-24 mb-1 text-yellow-300 drop-shadow-lg md:scale-100 scale-90" />
+                                    <span className="text-3xl md:text-4xl font-black text-white tracking-tight drop-shadow-md">{balance.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                                     <span className="text-[10px] font-bold text-blue-100 mt-1 uppercase tracking-widest opacity-80">{t('loyalty.balance_label')}</span>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@ const LoyaltyPage = () => {
                 </div>
             </div>
 
-            <div className="container max-w-5xl mx-auto px-4 -mt-20 relative z-20 space-y-10">
+            <div className="w-full px-4 md:px-8 mx-auto -mt-20 relative z-20 space-y-10">
                 {/* Expiring Points Warning */}
                 {expiringSoon.total > 0 && (
                     <div className="bg-orange-50 border-l-4 border-orange-500 p-6 rounded-3xl shadow-md">
@@ -292,7 +292,7 @@ const LoyaltyPage = () => {
                             <option>{t('loyalty.history_filter_last_month')}</option>
                         </select>
                     </div>
-                    <div className="overflow-x-auto">
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-gray-100/50 text-gray-500 font-semibold uppercase tracking-wider text-xs">
                                 <tr>
@@ -310,7 +310,7 @@ const LoyaltyPage = () => {
                                         <td className="px-8 py-5 text-gray-500">
                                             {new Date(log.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} <span className="text-gray-300 mx-2">|</span> {new Date(log.createdAt).toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                                         </td>
-                                        <td className="px-8 py-5 text-right font-bold text-base flex flex-col items-end">
+                                        <td className="px-8 py-5 text-right font-bold text-base">
                                             <div className={`${log.type === 'EARN' ? 'text-green-600' : 'text-orange-500'}`}>
                                                 {log.type === 'EARN' ? '+' : '-'}{log.points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
                                             </div>
@@ -318,16 +318,42 @@ const LoyaltyPage = () => {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={3} className="px-8 py-16 text-center text-gray-400 flex flex-col items-center justify-center">
-                                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                                <Clock size={32} className="text-gray-300" />
-                                            </div>
+                                        <td colSpan={3} className="px-8 py-16 text-center text-gray-400">
                                             {t('loyalty.no_history')}
                                         </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile History List */}
+                    <div className="md:hidden divide-y divide-gray-100">
+                        {filteredHistory.length > 0 ? filteredHistory.map((log: any) => (
+                            <div key={log._id} className="p-5 hover:bg-gray-50 transition active:bg-gray-100">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="font-bold text-gray-900 leading-tight pr-4">
+                                        {formatAction(log)}
+                                    </span>
+                                    <div className={`font-black text-lg shrink-0 ${log.type === 'EARN' ? 'text-green-600' : 'text-orange-500'}`}>
+                                        {log.type === 'EARN' ? '+' : '-'}{log.points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                                    <Clock size={12} className="opacity-50" />
+                                    <span>{new Date(log.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
+                                    <span className="text-gray-300">•</span>
+                                    <span>{new Date(log.createdAt).toLocaleTimeString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="px-8 py-16 text-center text-gray-400 flex flex-col items-center justify-center">
+                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <Clock size={32} className="text-gray-300" />
+                                </div>
+                                {t('loyalty.no_history')}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

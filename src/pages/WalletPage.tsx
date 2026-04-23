@@ -153,36 +153,41 @@ const WalletPage = () => {
     if (loadingWallet) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
     return (
-        <div className="w-full px-4 md:px-8 py-8">
-            <h1 className="text-3xl font-bold mb-8 text-gray-800 flex items-center gap-3">
-                <WalletIcon className="text-blue-600" size={32} />
+        <div className="w-full py-0 md:py-4">
+            <h1 className="text-2xl md:text-3xl font-black mb-8 text-gray-900 flex items-center gap-3">
+                <div className="p-2 bg-blue-50 rounded-xl">
+                    <WalletIcon className="text-blue-600" size={28} />
+                </div>
                 {t('wallet.title')}
             </h1>
 
             {/* Wallet Balance Card */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 mb-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20"></div>
+            <div className="bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-3xl p-6 md:p-10 mb-10 text-white shadow-2xl flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden border border-white/10">
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay"></div>
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
 
-                <div className="relative z-10 w-full md:w-auto">
-                    <p className="text-blue-100 text-sm font-medium mb-1 uppercase tracking-wider">{t('wallet.balance_label')}</p>
-                    <div className="text-4xl md:text-5xl font-extrabold mb-2 text-white drop-shadow-sm">
+                <div className="relative z-10 w-full md:w-auto text-center md:text-left">
+                    <p className="text-blue-100 text-xs font-bold mb-2 uppercase tracking-[0.2em]">{t('wallet.balance_label')}</p>
+                    <div className="text-5xl md:text-6xl font-black mb-2 text-white drop-shadow-xl tracking-tight">
                         {formatCurrency(wallet?.balance || 0)}
                     </div>
                 </div>
 
-                <div className="relative z-10 flex gap-4 w-full md:w-auto">
+                <div className="relative z-10 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                     <button
                         onClick={() => { setIsTopupModalOpen(true); setShowSuccess(false); }}
-                        className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold hover:bg-blue-50 transition-all flex items-center gap-2 shadow-lg active:scale-95"
+                        className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-black hover:bg-blue-50 transition-all flex items-center justify-center gap-3 shadow-xl active:scale-95 group"
                     >
-                        <Plus size={20} />
+                        <div className="p-1 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+                            <Plus size={20} />
+                        </div>
                         {t('wallet.topup_btn')}
                     </button>
                     <button
                         onClick={() => setIsWithdrawModalOpen(true)}
-                        className="bg-blue-500/30 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2 backdrop-blur-sm border border-white/20"
+                        className="bg-white/10 text-white px-8 py-4 rounded-2xl font-black hover:bg-white/20 transition-all flex items-center justify-center gap-3 backdrop-blur-md border border-white/20 active:scale-95"
                     >
-                        <ArrowUpRight size={20} />
+                        <ArrowUpRight size={22} className="text-blue-300" />
                         {t('wallet.withdraw_btn')}
                     </button>
                 </div>
@@ -229,42 +234,69 @@ const WalletPage = () => {
                 </div>
 
                 {loadingTransactions ? (
-                    <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
+                    <div className="p-12 text-center text-gray-500 animate-pulse">{t('common.loading')}</div>
                 ) : transactions?.length === 0 ? (
-                    <div className="p-12 text-center text-gray-400">{t('wallet.no_transactions')}</div>
+                    <div className="p-20 text-center text-gray-400 font-medium">{t('wallet.no_transactions')}</div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-                                <tr>
-                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_type')}</th>
-                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_amount')}</th>
-                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_description')}</th>
-                                    <th className="px-6 py-4 font-semibold">{t('wallet.col_time')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {transactions?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((tx) => (
-                                    <tr key={tx._id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                }`}>
-                                                {['TOPUP', 'REFUND'].includes(tx.type) ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
-                                                {tx.type}
-                                            </span>
-                                        </td>
-                                        <td className={`px-6 py-4 font-bold ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
-                                            {tx.type === 'TOPUP' || tx.type === 'REFUND' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-600">
-                                            {parseNotificationMessage(tx.description, t)}
-                                        </td>
-                                        <td className="px-6 py-4 text-gray-500 font-medium">{formatDate(tx.createdAt)}</td>
+                    <>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-gray-50 text-gray-400 uppercase text-[10px] font-black tracking-widest">
+                                    <tr>
+                                        <th className="px-8 py-5">{t('wallet.col_type')}</th>
+                                        <th className="px-8 py-5">{t('wallet.col_amount')}</th>
+                                        <th className="px-8 py-5">{t('wallet.col_description')}</th>
+                                        <th className="px-8 py-5">{t('wallet.col_time')}</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100">
+                                    {transactions?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((tx) => (
+                                        <tr key={tx._id} className="hover:bg-gray-50/80 transition-colors group">
+                                            <td className="px-8 py-5">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${['TOPUP', 'REFUND'].includes(tx.type) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                    }`}>
+                                                    {['TOPUP', 'REFUND'].includes(tx.type) ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
+                                                    {tx.type}
+                                                </span>
+                                            </td>
+                                            <td className={`px-8 py-5 font-black text-base ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
+                                                {tx.type === 'TOPUP' || tx.type === 'REFUND' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                                            </td>
+                                            <td className="px-8 py-5 text-gray-600 font-medium">
+                                                {parseNotificationMessage(tx.description, t)}
+                                            </td>
+                                            <td className="px-8 py-5 text-gray-400 font-bold text-xs uppercase">{formatDate(tx.createdAt)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden divide-y divide-gray-100">
+                            {transactions?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((tx) => (
+                                <div key={tx._id} className="p-6 bg-white active:bg-gray-50 transition-colors">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${['TOPUP', 'REFUND'].includes(tx.type) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                            }`}>
+                                            {['TOPUP', 'REFUND'].includes(tx.type) ? <ArrowDownLeft size={12} /> : <ArrowUpRight size={12} />}
+                                            {tx.type}
+                                        </span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase">{formatDate(tx.createdAt)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <p className="text-sm text-gray-600 font-medium flex-1 pr-4 line-clamp-2">
+                                            {parseNotificationMessage(tx.description, t)}
+                                        </p>
+                                        <div className={`font-black text-xl whitespace-nowrap ${['TOPUP', 'REFUND'].includes(tx.type) ? 'text-green-600' : 'text-red-600'}`}>
+                                            {tx.type === 'TOPUP' || tx.type === 'REFUND' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount))}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
                 {/* Pagination UI */}
                 {transactions && transactions.length > ITEMS_PER_PAGE && (

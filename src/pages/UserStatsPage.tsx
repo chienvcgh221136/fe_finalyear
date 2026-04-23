@@ -36,7 +36,7 @@ const UserStatsPage = () => {
     const formatCurrency = (val: number) => formatVND(val);
 
     return (
-        <div className="w-full px-4 md:px-0 py-4 relative">
+        <div className="w-full py-0 md:py-4 relative">
             {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                 <div>
@@ -208,48 +208,48 @@ const UserStatsPage = () => {
                 </div>
 
                 {/* Distribution Chart */}
-                <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col h-[450px]">
+                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col h-auto lg:h-[500px]">
                     <div className="mb-8">
                         <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{t('stats.chart_distribution_title')}</h3>
                         <p className="text-sm text-gray-500 font-medium">{t('stats.chart_distribution_subtitle')}</p>
                     </div>
-                    <div className="flex-1 flex flex-col md:flex-row items-center gap-8 min-h-0">
-                        <div className="flex-1 w-full h-full relative">
+                    <div className="flex-1 flex flex-col items-center gap-6 md:gap-10 min-h-0 py-4">
+                        <div className="w-full h-64 md:h-full relative flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
                                         data={postStatusData}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={70}
-                                        outerRadius={100}
-                                        paddingAngle={8}
+                                        innerRadius={80}
+                                        outerRadius={110}
+                                        paddingAngle={6}
                                         dataKey="value"
                                         stroke="none"
-                                        cornerRadius={8}
+                                        cornerRadius={12}
                                     >
                                         {postStatusData.map((_, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
+                                        contentStyle={{ borderRadius: '24px', border: 'none', boxShadow: '0 20px 50px -12px rgba(0,0,0,0.15)', padding: '16px' }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
                             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span className="text-3xl font-black text-gray-900">{stats?.totalPosts || 0}</span>
-                                <span className="text-[10px] uppercase font-bold text-gray-400 tracking-widest">{t('stats.total_count')}</span>
+                                <span className="text-4xl font-black text-gray-900 tracking-tighter">{stats?.totalPosts || 0}</span>
+                                <span className="text-[10px] uppercase font-black text-gray-400 tracking-[0.2em] mt-1">{t('stats.total_count')}</span>
                             </div>
                         </div>
-                        <div className="w-full md:w-32 space-y-4">
+                        <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-4 lg:w-48">
                             {postStatusData.map((entry, index) => (
-                                <div key={index} className="flex flex-col">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                                        <span className="text-xs font-bold text-gray-400 uppercase tracking-tighter">{entry.name}</span>
+                                <div key={index} className="flex flex-col p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 hover:bg-white hover:shadow-sm transition-all">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">{entry.name}</span>
                                     </div>
-                                    <span className="text-xl font-black text-gray-900 pl-4">{entry.value}</span>
+                                    <span className="text-2xl font-black text-gray-900">{entry.value}</span>
                                 </div>
                             ))}
                         </div>

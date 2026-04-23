@@ -236,15 +236,15 @@ const AdminUsers = () => {
                                     <tr key={user._id} className="hover:bg-slate-50/50 transition-colors group">
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3">
-                                                <img
-                                                    src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
-                                                    alt={user.name}
-                                                    className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                                                />
-                                                <div>
-                                                    <p className="font-bold text-slate-900 text-sm">{user.name}</p>
-                                                    <p className="text-xs text-slate-400 font-mono mt-0.5">ID: #USR-{user._id?.slice(-4).toUpperCase() || '????'}</p>
+                                                <div className="flex flex-col items-center gap-1">
+                                                    <img
+                                                        src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
+                                                        alt={user.name}
+                                                        className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                                                    />
+                                                    <p className="text-[10px] text-slate-400 font-mono tracking-tighter">#USR-{user._id?.slice(-4).toUpperCase() || '????'}</p>
                                                 </div>
+                                                <p className="font-bold text-slate-900 text-sm">{user.name}</p>
                                             </div>
                                         </td>
                                         <td className="py-4 px-6 text-sm text-slate-600 font-medium">

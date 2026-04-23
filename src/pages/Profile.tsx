@@ -7,7 +7,7 @@ import { useToast } from '../context/ToastContext';
 import { useTranslation } from 'react-i18next';
 import { formatVND } from '../utils/currencyUtils';
 import LocalizedLink from '../components/common/LocalizedLink';
-import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2 } from 'lucide-react';
+import { FileText, Heart, LogOut, Edit, User as UserIcon, Calendar, Trash2, CheckCircle, Camera, CreditCard, Crown, BarChart2, Menu, X } from 'lucide-react';
 import WalletPage from './WalletPage';
 import VipPage from './VipPage';
 import UserStatsPage from './UserStatsPage';
@@ -22,6 +22,7 @@ const Profile = () => {
     const { success: toastSuccess, error: toastError } = useToast();
     const activeTab = searchParams.get('tab') || 'profile';
     const [isEditing, setIsEditing] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Form State
     const [profileForm, setProfileForm] = useState({
@@ -194,10 +195,10 @@ const Profile = () => {
             if (!post) return null;
 
             return (
-                <div key={ap._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors flex flex-col md:flex-row gap-4 group">
+                <div key={ap._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors flex flex-col lg:flex-row gap-4 group">
                     {/* Post Info */}
-                    <div className="md:w-48 shrink-0">
-                        <div className="w-full h-28 bg-gray-200 rounded-lg overflow-hidden relative mb-2">
+                    <div className="w-full lg:w-48 shrink-0">
+                        <div className="w-full h-48 lg:h-28 bg-gray-200 rounded-lg overflow-hidden relative mb-2">
                             {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
                             <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded text-white ${ap.status === 'PENDING' ? 'bg-yellow-500' :
                                 ap.status === 'APPROVED' ? 'bg-green-500' : 'bg-red-500'
@@ -282,9 +283,9 @@ const Profile = () => {
         };
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_appointments')}</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">{t('profile.tab_appointments')}</h2>
                     <div className="flex bg-gray-100 p-1 rounded-lg">
                         <button
                             onClick={() => setSubTab('received')}
@@ -339,28 +340,28 @@ const Profile = () => {
         if (isLoading) return <div className="py-12 text-center text-gray-500">{t('common.loading')}</div>;
 
         return (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('profile.tab_saved_posts')}</h2>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <h2 className="text-2xl font-black text-gray-900 mb-8 tracking-tight">{t('profile.tab_saved_posts')}</h2>
                 {favorites.length > 0 ? (
                     <div className="space-y-4">
                         {favorites.map((fav: any) => {
                             const post = fav.postId;
                             if (!post) return null; // Handle deleted posts
                             return (
-                                <div key={fav._id} className="flex flex-col md:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors bg-white">
-                                    <div className="w-full md:w-48 h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
-                                        {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
+                                <div key={fav._id} className="flex flex-col lg:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-all bg-white hover:shadow-md">
+                                    <div className="w-full lg:w-48 h-56 lg:h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
+                                        {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />}
                                         <div className="absolute top-2 left-2">
-                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-xs font-bold">{t('common.saved')}</span>
+                                            <span className="bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">{t('common.saved')}</span>
                                         </div>
                                     </div>
-                                    <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                         <div>
-                                            <h3 className="font-bold text-gray-900 text-lg truncate pr-4">{post.title}</h3>
-                                            <p className="text-blue-600 font-bold">{formatPrice(post.price, post.transactionType)}</p>
+                                            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-1 line-clamp-2 lg:line-clamp-1 group-hover:text-blue-600 transition-colors" title={post.title}>{post.title}</h3>
+                                            <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price, post.transactionType)}</p>
                                         </div>
-                                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
-                                            <LocalizedLink to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 lg:mt-0 lg:border-0 lg:justify-end lg:pt-0">
+                                            <LocalizedLink to={`/post/${post._id}`} className="flex-1 lg:flex-none text-center px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                                                 {t('common.view_post')}
                                             </LocalizedLink>
                                             <button
@@ -371,7 +372,7 @@ const Profile = () => {
                                                         toastSuccess(t('profile.unsave_success'));
                                                     }
                                                 }}
-                                                className="px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors"
+                                                className="flex-1 lg:flex-none text-center px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
                                             >
                                                 {t('common.unsave')}
                                             </button>
@@ -444,93 +445,143 @@ const Profile = () => {
     const myPosts = myPostsResponse?.data?.data || myPostsResponse?.data || [];
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="w-full px-4 md:px-8">
-                <div className="grid gap-6 md:grid-cols-[280px_1fr]">
+        <div className="min-h-screen bg-gray-50 py-4 md:py-8">
+            <div className="w-full mx-auto px-4 md:px-8">
+                <div className="flex flex-col lg:grid lg:grid-cols-[280px_1fr] gap-6 relative">
+                    {/* Mobile Sidebar Toggle Button */}
+                    <div className="lg:hidden flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-2">
+                        <button 
+                            onClick={() => setSidebarOpen(true)}
+                            className="flex items-center gap-2 text-gray-600 font-bold text-sm"
+                        >
+                            <Menu size={20} className="text-blue-600" />
+                            {activeTab && activeTab !== 'profile' ? t(`profile.tab_${activeTab}`) : t('profile.tab_personal_info')}
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{t('profile.account_menu')}</span>
+                        </div>
+                    </div>
 
-                    {/* Sidebar */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit sticky top-24">
-                        <div className="p-6 text-center border-b border-gray-100">
-                            {/* Avatar Display */}
-                            <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg overflow-hidden bg-blue-600 text-white text-3xl font-bold relative group">
+                    {/* Sidebar / Navigation Overlay for Mobile */}
+                    <div 
+                        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                    
+                    <div className={`fixed lg:sticky lg:top-24 inset-y-0 left-0 z-50 w-72 lg:w-full bg-white lg:bg-transparent transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} h-full lg:h-fit lg:space-y-4 flex flex-col`}>
+                        <div className="lg:hidden flex items-center justify-between p-6 border-b border-gray-100 bg-gray-50/50">
+                            <h3 className="font-bold text-gray-900">{t('profile.account_menu')}</h3>
+                            <button onClick={() => setSidebarOpen(false)} className="text-gray-400 hover:text-gray-600">
+                                <X size={24} />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto no-scrollbar lg:overflow-visible">
+                        {/* Compact User Info Card for Mobile */}
+                        <div className="lg:hidden bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center border-2 border-white shadow-sm overflow-hidden bg-blue-600 text-white text-lg font-bold shrink-0">
                                 {user?.avatar ? (
                                     <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                 ) : (
                                     user?.name?.charAt(0).toUpperCase()
                                 )}
                             </div>
-                            <h3 className="font-bold text-gray-900 text-lg mb-1">{user?.name}</h3>
-                            <p className="text-sm text-gray-500">{user?.email}</p>
-                        </div>
-                        <nav className="p-4 space-y-6">
-                            {[
-                                {
-                                    group: t('profile.group_account'),
-                                    items: [
-                                        { id: 'profile', label: t('profile.tab_personal_info'), icon: UserIcon },
-                                    ]
-                                },
-                                {
-                                    group: t('profile.group_activity'),
-                                    items: [
-                                        { id: 'posts', label: t('profile.tab_my_posts'), icon: FileText },
-                                        { id: 'favorites', label: t('profile.tab_saved_posts'), icon: Heart },
-                                        { id: 'appointments', label: t('profile.tab_appointments'), icon: Calendar },
-                                    ]
-                                },
-                                {
-                                    group: t('profile.group_finance_vip'),
-                                    items: [
-                                        { id: 'wallet', label: t('profile.tab_my_wallet'), icon: CreditCard },
-                                        { id: 'vip', label: t('profile.tab_vip_packages'), icon: Crown },
-                                        { id: 'vip-management', label: t('profile.tab_vip_management'), icon: Crown },
-                                    ]
-                                },
-                                {
-                                    group: t('profile.group_analysis'),
-                                    items: [
-                                        { id: 'stats', label: t('profile.tab_statistics'), icon: BarChart2 },
-                                    ]
-                                }
-                            ].map((section, idx) => (
-                                <div key={idx} className="space-y-2">
-                                    <div className="px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <div className="h-px bg-gray-100 flex-1"></div>
-                                        {section.group}
-                                        <div className="h-px bg-gray-100 flex-1"></div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        {section.items.map(item => (
-                                            <button
-                                                key={item.id}
-                                                onClick={() => handleTabChange(item.id)}
-                                                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === item.id
-                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                    : 'text-gray-500 hover:bg-gray-50 hover:text-blue-600'
-                                                    }`}
-                                            >
-                                                <item.icon size={18} className={activeTab === item.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-600'} />
-                                                {item.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </nav>
-                        <div className="p-4 bg-gray-50/50">
-                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
-                                <LogOut size={18} />
-                                {t('navbar.logout')}
+                            <div className="min-w-0">
+                                <h3 className="font-bold text-gray-900 truncate">{user?.name}</h3>
+                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                            </div>
+                            <button onClick={handleLogout} className="ml-auto p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                                <LogOut size={20} />
                             </button>
                         </div>
+
+                        {/* Navigation Menu */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            {/* Desktop Sidebar Header */}
+                            <div className="hidden lg:block p-6 text-center border-b border-gray-100">
+                                <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg overflow-hidden bg-blue-600 text-white text-3xl font-bold">
+                                    {user?.avatar ? (
+                                        <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        user?.name?.charAt(0).toUpperCase()
+                                    )}
+                                </div>
+                                <h3 className="font-bold text-gray-900 text-lg mb-1">{user?.name}</h3>
+                                <p className="text-sm text-gray-500">{user?.email}</p>
+                            </div>
+
+                            <nav className="p-2 lg:p-4 flex flex-col">
+                                {[
+                                    {
+                                        group: t('profile.group_account'),
+                                        items: [
+                                            { id: 'profile', label: t('profile.tab_personal_info'), icon: UserIcon },
+                                        ]
+                                    },
+                                    {
+                                        group: t('profile.group_activity'),
+                                        items: [
+                                            { id: 'posts', label: t('profile.tab_my_posts'), icon: FileText },
+                                            { id: 'favorites', label: t('profile.tab_saved_posts'), icon: Heart },
+                                            { id: 'appointments', label: t('profile.tab_appointments'), icon: Calendar },
+                                        ]
+                                    },
+                                    {
+                                        group: t('profile.group_finance_vip'),
+                                        items: [
+                                            { id: 'wallet', label: t('profile.tab_my_wallet'), icon: CreditCard },
+                                            { id: 'vip', label: t('profile.tab_vip_packages'), icon: Crown },
+                                            { id: 'vip-management', label: t('profile.tab_vip_management'), icon: Crown },
+                                        ]
+                                    },
+                                    {
+                                        group: t('profile.group_analysis'),
+                                        items: [
+                                            { id: 'stats', label: t('profile.tab_statistics'), icon: BarChart2 },
+                                        ]
+                                    }
+                                ].map((section, idx) => (
+                                    <div key={idx} className="flex flex-col">
+                                        <div className="flex px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest my-2 items-center gap-2">
+                                            <div className="h-px bg-gray-100 flex-1"></div>
+                                            {section.group}
+                                            <div className="h-px bg-gray-100 flex-1"></div>
+                                        </div>
+                                        <div className="flex flex-col gap-1 p-1 lg:p-0">
+                                            {section.items.map(item => (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => { handleTabChange(item.id); setSidebarOpen(false); }}
+                                                    className={`flex items-center gap-2 lg:gap-3 px-4 py-2 lg:py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${activeTab === item.id
+                                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                        : 'text-gray-500 hover:bg-gray-50 hover:text-blue-600'
+                                                        }`}
+                                                >
+                                                    <item.icon size={18} className={activeTab === item.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-600'} />
+                                                    <span>{item.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </nav>
+
+                            <div className="p-4 bg-gray-50/50 mt-auto border-t border-gray-100">
+                                <button onClick={() => { handleLogout(); setSidebarOpen(false); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                                    <LogOut size={18} />
+                                    {t('navbar.logout')}
+                                </button>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
                     {/* Content */}
                     <div className="space-y-6">
                         {activeTab === 'profile' && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_personal_info')}</h2>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">{t('profile.tab_personal_info')}</h2>
                                     {!isEditing && (
                                         <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors">
                                             <Edit size={16} />
@@ -540,25 +591,25 @@ const Profile = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.avatar_label')}</label>
-                                    <div className="flex items-center justify-center gap-4">
-                                        <div className="relative group/avatar cursor-pointer" onClick={() => isEditing && fileInputRef.current?.click()}>
-                                            <div className="w-20 h-20 rounded-full border-2 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                                    <label className="block text-sm font-medium text-gray-700 mb-3">{t('profile.avatar_label')}</label>
+                                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                                        <div className="relative group/avatar cursor-pointer shrink-0" onClick={() => isEditing && fileInputRef.current?.click()}>
+                                            <div className="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
                                                 {profileForm.avatar ? (
                                                     <img src={profileForm.avatar} alt="Preview" className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <UserIcon className="text-gray-400" size={32} />
+                                                    <UserIcon className="text-gray-400" size={40} />
                                                 )}
                                             </div>
                                             {isEditing && (
-                                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-100 sm:opacity-0 group-hover/avatar:opacity-100 transition-opacity">
                                                     <Camera className="text-white" size={24} />
                                                 </div>
                                             )}
                                         </div>
 
                                         {isEditing && (
-                                            <div className="flex items-center justify-center gap-4">
+                                            <div className="flex flex-col items-center sm:items-start gap-2">
                                                 <input
                                                     type="file"
                                                     ref={fileInputRef}
@@ -570,18 +621,18 @@ const Profile = () => {
                                                     type="button"
                                                     onClick={() => fileInputRef.current?.click()}
                                                     disabled={uploading}
-                                                    className="px-4 py-2 border border-blue-200 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors"
+                                                    className="px-4 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-sm font-bold hover:bg-blue-100 transition-colors shadow-sm"
                                                 >
                                                     {uploading ? t('common.uploading') : t('profile.btn_choose_new_photo')}
                                                 </button>
-                                                <p className="text-xs text-gray-500 mt-1">{t('profile.avatar_support_formats')}</p>
+                                                <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">{t('profile.avatar_support_formats')}</p>
                                             </div>
                                         )}
                                     </div>
                                 </div>
 
 
-                                <div className="space-y-4 max-w-lg">
+                                <div className="space-y-6 max-w-4xl">
                                     {/* Name Input */}
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">{t('profile.full_name')}</label>
@@ -641,15 +692,15 @@ const Profile = () => {
                         )}
 
                         {activeTab === 'posts' && (
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-gray-900">{t('profile.tab_my_posts')}</h2>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">{t('profile.tab_my_posts')}</h2>
                                     <LocalizedLink to="/post-ad" className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
                                         {t('profile.btn_new_post')}
                                     </LocalizedLink>
                                 </div>
 
-                                <div className="flex gap-2 mb-6 border-b border-gray-100 pb-1 overflow-x-auto">
+                                <div className="flex gap-2 mb-6 border-b border-gray-100 pb-1 overflow-x-auto no-scrollbar">
                                     {['ALL', 'ACTIVE', 'PENDING', 'SOLD', 'REJECTED'].map(status => (
                                         <button
                                             key={status}
@@ -676,42 +727,49 @@ const Profile = () => {
                                 ) : filteredPosts.length > 0 ? (
                                     <div className="space-y-4">
                                         {filteredPosts.map((post: any) => (
-                                            <div key={post._id} className="flex flex-col md:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors bg-white">
-                                                <div className="w-full md:w-48 h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
-                                                    {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
-                                                    <div className="absolute top-2 left-2">
+                                            <div key={post._id} className="flex flex-col lg:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-all bg-white hover:shadow-md group">
+                                                <div className="w-full lg:w-56 h-64 lg:h-36 bg-gray-100 rounded-xl shrink-0 overflow-hidden relative">
+                                                    {post.images?.[0] ? (
+                                                        <img src={post.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
+                                                            <Camera size={32} />
+                                                        </div>
+                                                    )}
+                                                    <div className="absolute top-2 left-2 flex flex-col gap-1">
                                                         <StatusBadge status={post.status || 'PENDING'} />
                                                     </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                                     <div>
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <h3 className="font-bold text-gray-900 text-lg truncate pr-4" title={post.title}>{post.title}</h3>
-                                                            <div className="text-right">
-                                                                <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price, post.transactionType)}</p>
+                                                        <div className="flex flex-col sm:flex-row justify-between items-start mb-2 gap-2">
+                                                            <h3 className="font-bold text-gray-900 text-lg line-clamp-2 lg:line-clamp-1 group-hover:text-blue-600 transition-colors" title={post.title}>{post.title}</h3>
+                                                            <div className="shrink-0">
+                                                                <p className="text-blue-600 font-black text-xl">{formatPrice(post.price, post.transactionType)}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="text-sm text-gray-500 mb-2 flex flex-wrap gap-4">
-                                                            <span className="flex items-center gap-1"><Calendar size={14} /> {new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
-                                                            {post.area && <span>• {post.area} m²</span>}
-                                                            {post.city && <span>• {post.city}</span>}
+                                                        <div className="text-xs text-gray-500 mb-3 flex flex-wrap gap-x-4 gap-y-2 font-medium">
+                                                            <span className="flex items-center gap-1.5"><Calendar size={14} className="text-gray-400" /> {new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
+                                                            {post.area && <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-gray-300"></div> {post.area} m²</span>}
+                                                            {post.city && <span className="flex items-center gap-1.5"><div className="w-1 h-1 rounded-full bg-gray-300"></div> {post.city}</span>}
                                                         </div>
                                                         {post.rejectReason && post.status === 'REJECTED' && (
-                                                            <div className="text-sm text-red-600 bg-red-50 p-2 rounded mb-2">
-                                                                {t('profile.reject_reason')}: {post.rejectReason}
+                                                            <div className="text-xs text-red-600 bg-red-50 p-3 rounded-lg mb-3 border border-red-100 font-medium">
+                                                                <span className="font-bold block mb-1 uppercase tracking-wider text-[10px]">{t('profile.reject_reason')}:</span>
+                                                                {post.rejectReason}
                                                             </div>
                                                         )}
                                                     </div>
 
-                                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-50 md:mt-0 md:border-0 md:justify-end">
-                                                        <LocalizedLink to={`/post/${post._id}`} className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                                                    <div className="flex items-center flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50 lg:mt-0 lg:border-0 lg:justify-end lg:pt-0">
+                                                        <LocalizedLink to={`/post/${post._id}`} className="px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                                                             {t('common.view')}
                                                         </LocalizedLink>
 
                                                         {post.status !== 'SOLD' && (
                                                             <button
                                                                 onClick={() => navigate(`/post-ad?edit=${post._id}`)}
-                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                                                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                                                             >
                                                                 <Edit size={14} /> {t('common.edit')}
                                                             </button>
@@ -720,7 +778,7 @@ const Profile = () => {
                                                         {post.status === 'ACTIVE' && post.transactionType === 'SALE' && (
                                                             <button
                                                                 onClick={() => handleMarkSold(post._id)}
-                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 rounded hover:bg-green-100 transition-colors"
+                                                                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                                                             >
                                                                 <CheckCircle size={14} /> {t('profile.btn_sold')}
                                                             </button>
@@ -729,7 +787,7 @@ const Profile = () => {
                                                         {post.status === 'ACTIVE' && post.transactionType === 'RENT' && (
                                                             <button
                                                                 onClick={() => handleMarkRented(post._id)}
-                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors"
+                                                                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
                                                             >
                                                                 <CheckCircle size={14} /> {t('profile.btn_rented')}
                                                             </button>
@@ -738,7 +796,7 @@ const Profile = () => {
                                                         {post.status === 'RENTED' && post.transactionType === 'RENT' && (
                                                             <button
                                                                 onClick={() => handleMarkAvailable(post._id)}
-                                                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
+                                                                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                                                             >
                                                                 <CheckCircle size={14} /> {t('profile.btn_available')}
                                                             </button>
@@ -746,9 +804,11 @@ const Profile = () => {
 
                                                         <button
                                                             onClick={() => handleDeletePost(post._id)}
-                                                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded hover:bg-red-100 transition-colors ml-auto md:ml-0"
+                                                            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors ml-auto lg:ml-2"
+                                                            title={t('common.delete')}
                                                         >
-                                                            <Trash2 size={14} /> {t('common.delete')}
+                                                            <Trash2 size={14} />
+                                                            <span className="lg:hidden">{t('common.delete')}</span>
                                                         </button>
                                                     </div>
                                                 </div>
