@@ -129,7 +129,7 @@ const CreatePost = () => {
         if (!url.trim()) return;
         try {
             new URL(url);
-        } catch (_) {
+        } catch {
             setErrorMsg(t('create_post.error_invalid_link'));
             setTimeout(() => setErrorMsg(''), 3000);
             return;
@@ -399,7 +399,16 @@ const CreatePost = () => {
                                     <Label>{t('create_post.area')}</Label>
                                     <Input
                                         type="number"
+                                        min="0"
+                                        step="any"
                                         placeholder="80"
+                                        onKeyDown={(e) => {
+                                            if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                        }}
+                                        onPaste={(e) => {
+                                            const paste = e.clipboardData.getData('text');
+                                            if (/[^0-9.]/.test(paste)) e.preventDefault();
+                                        }}
                                         {...register('area', {
                                             required: t('create_post.req_area'),
                                             min: { value: 0, message: t('create_post.err_area_min') }
@@ -417,24 +426,56 @@ const CreatePost = () => {
                                             <>
                                                 <div className="space-y-2">
                                                     <Label>{t('create_post.bedrooms')}</Label>
-                                                    <Input type="number" min="0" placeholder="2" {...register('bedrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                                    <Input 
+                                                        type="number" 
+                                                        min="0" 
+                                                        placeholder="2" 
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                                        }}
+                                                        {...register('bedrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
+                                                    />
                                                     {errors.bedrooms && <p className="text-xs text-red-500">{errors.bedrooms.message as string}</p>}
                                                 </div>
                                                 <div className="space-y-2">
                                                     <Label>{t('create_post.bathrooms')}</Label>
-                                                    <Input type="number" min="0" placeholder="2" {...register('bathrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                                    <Input 
+                                                        type="number" 
+                                                        min="0" 
+                                                        placeholder="2" 
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                                        }}
+                                                        {...register('bathrooms', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
+                                                    />
                                                     {errors.bathrooms && <p className="text-xs text-red-500">{errors.bathrooms.message as string}</p>}
                                                 </div>
                                             </>
                                         )}
                                         <div className="space-y-2">
                                             <Label>{t('create_post.floor')}</Label>
-                                            <Input type="number" min="0" placeholder="5" {...register('floor', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                            <Input 
+                                                type="number" 
+                                                min="0" 
+                                                placeholder="5" 
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                                }}
+                                                {...register('floor', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
+                                            />
                                             {errors.floor && <p className="text-xs text-red-500">{errors.floor.message as string}</p>}
                                         </div>
                                         <div className="space-y-2">
                                             <Label>{t('create_post.total_floors')}</Label>
-                                            <Input type="number" min="0" placeholder="20" {...register('totalFloors', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} />
+                                            <Input 
+                                                type="number" 
+                                                min="0" 
+                                                placeholder="20" 
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                                }}
+                                                {...register('totalFloors', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
+                                            />
                                             {errors.totalFloors && <p className="text-xs text-red-500">{errors.totalFloors.message as string}</p>}
                                         </div>
                                     </div>

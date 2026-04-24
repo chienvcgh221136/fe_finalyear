@@ -153,7 +153,8 @@
             "ACTIVE": "Đang hoạt động",
             "SOLD": "Đã bán",
             "RENTED": "Đã cho thuê"
-        }
+        },
+        "not_updated": "Chưa cập nhật"
     },
     "home": {
         "hero": {
@@ -195,13 +196,6 @@
         "tab_vip_packages": "Gói VIP",
         "tab_vip_management": "Quản lý VIP",
         "tab_statistics": "Thống kê",
-        "tab_wallet": "Ví của tôi",
-        "tab_posts": "Tin đăng của tôi",
-        "tab_favorites": "Tin đã lưu",
-        "tab_appointments": "Lịch hẹn",
-        "tab_vip": "Gói VIP",
-        "tab_vip-management": "Quản lý VIP",
-        "tab_stats": "Thống kê",
         "account_menu": "Menu tài khoản",
         "group_account": "Tài khoản",
         "group_activity": "Hoạt động",
@@ -847,6 +841,7 @@
             "status_banned": "Đã bị cấm"
         },
         "notifications": {
+            "title": "Quản lý Thông báo",
             "btn_add": "Gửi thông báo",
             "btn_new": "Gửi thông báo mới",
             "table_content": "Nội dung",
@@ -1054,7 +1049,11 @@
             "notes_placeholder": "Bạn có yêu cầu gì thêm không? (Không bắt buộc)",
             "cancel": "Hủy bỏ",
             "confirm": "Xác nhận đặt lịch",
-            "success_booking": "Đặt lịch thành công!"
+            "success_booking": "Đặt lịch thành công!",
+            "error_booking": "Đặt lịch thất bại. Vui lòng thử lại sau.",
+            "error_select_datetime": "Vui lòng chọn ngày và giờ hẹn.",
+            "sending": "Đang gửi yêu cầu...",
+            "terms_note": "Lưu ý: Bạn nên đến đúng giờ hẹn. Nếu có thay đổi, vui lòng liên hệ sớm với chủ nhà."
         },
         "patterns": {
             "topup_success": "Nạp tiền thành công: +{{amount}}đ. Số dư: {{balance}}đ.",
@@ -1109,6 +1108,21 @@
             "withdraw_autoreject_user": "Yêu cầu bị từ chối tự động do quá hạn xử lý (48h)."
         }
     },
+    "reports": {
+        "error_pending_post": "Bạn đang có báo cáo chờ xử lý cho bài đăng này",
+        "error_pending_user": "Bạn đang có báo cáo chờ xử lý cho người dùng này",
+        "error_not_found": "Bài đăng không tồn tại",
+        "error_self_report_post": "Bạn không thể báo cáo bài đăng của chính mình",
+        "error_self_report_user": "Bạn không thể báo cáo chính mình",
+        "error_not_edited": "Bài đăng chưa được chỉnh sửa kể từ lần báo cáo trước. Bạn không thể báo cáo lại.",
+        "success_deleted": "Báo cáo đã được xóa thành công",
+        "success_rejected": "Đã từ chối báo cáo thành công"
+    },
+    "favorites": {
+        "error_self_favorite": "Bạn không thể lưu bài đăng của chính mình",
+        "success_favorited": "Đã lưu vào danh sách yêu thích",
+        "success_unfavorited": "Đã xóa khỏi danh sách yêu thích"
+    },
     "transactions": {
         "withdraw_request": "Yêu cầu rút tiền: {{amount}} VNĐ",
         "withdraw_refund": "Hoàn tiền do từ chối rút: {{amount}} VNĐ",
@@ -1139,47 +1153,6 @@
         "ready_to_help": "Sẵn sàng hỗ trợ",
         "searching": "Đang tìm kiếm thông tin...",
         "placeholder": "Hỏi tôi bất cứ điều gì..."
-    },
-    "chat": {
-        "title": "Tin nhắn",
-        "tab_all": "Tất cả",
-        "tab_buying": "Mua",
-        "tab_selling": "Bán",
-        "search_placeholder": "Tìm người dùng hoặc tin nhắn...",
-        "no_chats": "Không tìm thấy cuộc trò chuyện nào",
-        "start_chatting": "Bắt đầu trò chuyện",
-        "active_now": "Đang hoạt động",
-        "delete_chat": "Xóa cuộc trò chuyện",
-        "conversation_info": "Thông tin hội thoại",
-        "discussing_about": "Đang trao đổi về",
-        "view_tin": "Xem tin",
-        "no_messages": "Chưa có tin nhắn. Hãy bắt đầu cuộc trò chuyện!",
-        "new_messages_badge": "Tin nhắn mới",
-        "blocked_user_notice": "Bạn đã chặn người dùng này. Bỏ chặn để gửi tin nhắn.",
-        "unblock_btn": "Bỏ chặn",
-        "cannot_contact": "Bạn không thể liên lạc với người này.",
-        "input_placeholder": "Nhập tin nhắn...",
-        "seen": "Đã xem",
-        "sent": "Đã gửi",
-        "confirm_delete_chat": "Bạn có chắc chắn muốn xóa cuộc trò chuyện này? hành động này không thể hoàn tác.",
-        "confirm_block_user": "Bạn có chắc chắn muốn chặn người dùng {{name}}? Họ sẽ không thể nhắn tin cho bạn.",
-        "block_success": "Đã chặn người dùng thành công",
-        "confirm_unblock_user": "Bạn có chắc chắn muốn bỏ chặn người dùng {{name}}?",
-        "unblock_success": "Đã bỏ chặn người dùng thành công",
-        "you_blocked_user": "Bạn đã chặn người dùng này. Bỏ chặn để gửi tin nhắn.",
-        "media": "Ảnh & Video ({{length}})",
-        "no_media": "Chưa có hình ảnh nào",
-        "privacy_support": "Quyền riêng tư & Hỗ trợ",
-        "report_user": "Báo xấu người dùng",
-        "block_user": "Chặn người dùng",
-        "welcome_msg": "Xin chào, {{name}}!",
-        "select_chat": "Chọn một cuộc trò chuyện để bắt đầu nhắn tin",
-        "discussing": "Đang trao đổi về",
-        "member": "Thành viên",
-        "view_profile": "Xem Trang",
-        "view_post": "Xem tin",
-        "billion": "Tỷ VNĐ",
-        "million": "Triệu VNĐ"
     },
     "search_page": {
         "title": "Tìm ngôi nhà mơ ước của bạn",
@@ -1424,6 +1397,8 @@
             "update_accepted": "ĐÃ CHẤP NHẬN",
             "update_rejected": "ĐÃ TỪ CHỐI",
             "update_note": "Ghi chú từ chủ nhà:",
+            "update_note_approved": "<p>Vui lòng sắp xếp thời gian để gặp chủ nhà đúng hẹn. Bạn có thể xem số điện thoại liên hệ trong trang cá nhân.</p>",
+            "update_note_rejected": "<p>Yêu cầu của bạn không phù hợp với lịch trình của chủ nhà. Bạn có thể thử đặt lịch vào một thời điểm khác.</p>",
             "update_btn": "Xem chi tiết",
             "remind_seller_subject": "Nhắc nhở duyệt lịch: {{postTitle}}",
             "remind_seller_header": "Lịch hẹn đang chờ duyệt",
@@ -1436,8 +1411,6 @@
             "remind_buyer_greeting": "Xin chào <strong>{{buyerName}}</strong>,",
             "remind_buyer_content": "Yêu cầu xem nhà của bạn vẫn đang chờ <strong>{{sellerName}}</strong> phản hồi.",
             "remind_buyer_note": "Chúng tôi vừa gửi email nhắc nhở chủ nhà. Nếu quá chậm trễ, bạn có thể chủ động liên hệ qua chat hoặc số điện thoại (nếu có).",
-            "update_note_approved": "<p>Vui lòng đến đúng giờ hoặc liên hệ người bán nếu có thay đổi.</p>",
-            "update_note_rejected": "<p>Bạn có thể thử đặt lịch vào thời gian khác.</p>",
             "remind_seller_overdue": "Yêu cầu này đã được gửi hơn 24 giờ trước.",
             "remind_seller_action": "Vui lòng phản hồi sớm để tránh làm mất thời gian của khách hàng."
         },
@@ -1464,16 +1437,6 @@
             "violation_manage_btn": "Quản lý bài đăng",
             "user_violation_btn": "Xem quy định"
         },
-        "password_reset": {
-            "subject": "🔑 Yêu cầu khôi phục mật khẩu",
-            "header": "Khôi phục mật khẩu",
-            "greeting": "Xin chào <strong>{{userName}}</strong>,",
-            "content": "Bạn đã yêu cầu khôi phục mật khẩu cho tài khoản của mình. Dưới đây là mã OTP của bạn:",
-            "note_label": "Lưu ý quan trọng:",
-            "note_1": "Mã này chỉ có hiệu lực trong 5 phút.",
-            "note_2": "Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này.",
-            "note_3": "Tuyệt đối không chia sẻ mã này với bất kỳ ai."
-        },
         "unban_notification": {
             "subject": "🔓 Tài khoản của bạn đã được mở khóa",
             "header": "Thông báo mở khóa tài khoản",
@@ -1495,4 +1458,3 @@
         }
     }
 }
-

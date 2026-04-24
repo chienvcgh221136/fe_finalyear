@@ -37,11 +37,11 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
     const firstLetter = userName.charAt(0).toUpperCase();
 
     const [showPhone, setShowPhone] = useState(false);
-    // Mask phone number initially: 0909 123 ***
-    const originalPhone = user?.phone || "0909 123 456";
-    const maskedPhone = originalPhone.length > 6
-        ? `${originalPhone.slice(0, 4)} *** ***`
-        : t('post_detail.reveal_phone');
+    const hasPhone = !!user?.phone;
+    const originalPhone = hasPhone ? user.phone : t('common.not_updated');
+    const maskedPhone = hasPhone 
+        ? (originalPhone!.length > 6 ? `${originalPhone!.slice(0, 4)} *** ***` : t('post_detail.reveal_phone'))
+        : t('common.not_updated');
 
     const [isLoadingPhone, setIsLoadingPhone] = useState(false);
 
@@ -50,7 +50,7 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
     const { warning, error: toastError } = useToast();
 
     const handleShowPhone = async () => {
-        if (showPhone) return;
+        if (showPhone || !hasPhone) return;
 
         // If owner viewing their own post
         if (currentUser && (currentUser.id === user?._id || currentUser._id === user?._id)) {
@@ -149,24 +149,24 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
             <div className="flex flex-col gap-3 mb-8">
                 <button
                     onClick={handleShowPhone}
-                    disabled={isLoadingPhone}
+                    disabled={isLoadingPhone || !hasPhone}
                     className={`w-full font-bold py-3.5 px-4 rounded-lg flex items-center justify-center gap-2.5 transition-all shadow-sm ${showPhone
                         ? 'bg-white border-2 border-blue-600 text-blue-600'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : (!hasPhone ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200' : 'bg-blue-600 hover:bg-blue-700 text-white')
                         } ${isLoadingPhone ? 'opacity-70 cursor-wait' : ''}`}
                 >
                     {isLoadingPhone ? (
                         <span>{t('post_detail.checking')}</span>
                     ) : (
                         <>
-                            {showPhone ? <Phone size={20} className="text-blue-600" /> : <Lock size={18} />}
+                            {showPhone ? <Phone size={20} className="text-blue-600" /> : (hasPhone ? <Lock size={18} /> : <Phone size={20} className="text-gray-400" />)}
                             <span>
                                 {showPhone ? originalPhone : maskedPhone}
                             </span>
                         </>
                     )}
 
-                    {!showPhone && !isLoadingPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">{t('post_detail.reveal_phone')}</span>}
+                    {!showPhone && !isLoadingPhone && hasPhone && <span className="text-xs opacity-80 font-normal ml-auto hidden sm:inline-block">{t('post_detail.reveal_phone')}</span>}
                 </button>
 
                 <button

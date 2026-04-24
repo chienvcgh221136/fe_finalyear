@@ -86,7 +86,7 @@ const Home = () => {
             {/* Categories */}
             <section className="py-12 bg-white border-b border-gray-100">
                 <div className="w-full px-4 md:px-8">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8">
                         {categories.map((cat, i) => (
                             <motion.div
                                 key={cat.label}
@@ -121,12 +121,13 @@ const Home = () => {
                             </div>
                             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('home.vip_posts.title')}</h2>
                         </div>
-                        <Button variant="ghost" asChild className="hidden md:flex gap-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 font-semibold group">
-                            <LocalizedLink to="/buy?isVip=true">
-                                {t('home.vip_posts.view_all')}
-                                <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </LocalizedLink>
-                        </Button>
+                        <LocalizedLink 
+                            to="/search?isVip=true"
+                            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 transition-all group whitespace-nowrap"
+                        >
+                            <span>{t('home.vip_posts.view_all')}</span>
+                            <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </LocalizedLink>
                     </div>
 
                     {loadingVip ? (
@@ -148,10 +149,14 @@ const Home = () => {
                         </div>
                     )}
 
-                    <div className="mt-8 text-center md:hidden">
-                        <Button variant="outline" asChild className="w-full">
-                            <LocalizedLink to="/buy?isVip=true">{t('home.vip_posts.view_all')}</LocalizedLink>
-                        </Button>
+                    <div className="mt-8 text-center md:hidden px-4">
+                        <LocalizedLink 
+                            to="/search?isVip=true"
+                            className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                        >
+                            <span>{t('home.vip_posts.view_all')}</span>
+                            <ChevronRight className="h-4 w-4" />
+                        </LocalizedLink>
                     </div>
                 </div>
             </section>
@@ -167,12 +172,13 @@ const Home = () => {
                             </div>
                             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">{t('home.recent_posts.title')}</h2>
                         </div>
-                        <Button variant="ghost" asChild className="hidden md:flex gap-2 text-gray-600 hover:text-blue-600 hover:bg-white font-semibold group">
-                            <LocalizedLink to="/buy">
-                                {t('home.recent_posts.view_all')}
-                                <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                            </LocalizedLink>
-                        </Button>
+                        <LocalizedLink 
+                            to="/search"
+                            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-bold text-gray-500 hover:text-blue-600 hover:bg-white transition-all group whitespace-nowrap"
+                        >
+                            <span>{t('home.recent_posts.view_all')}</span>
+                            <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                        </LocalizedLink>
                     </div>
 
                     {loadingRecent ? (
@@ -194,10 +200,14 @@ const Home = () => {
                         </div>
                     )}
 
-                    <div className="mt-8 text-center md:hidden">
-                        <Button variant="outline" asChild className="w-full bg-white">
-                            <LocalizedLink to="/buy">{t('home.recent_posts.view_all')}</LocalizedLink>
-                        </Button>
+                    <div className="mt-8 text-center md:hidden px-4">
+                        <LocalizedLink 
+                            to="/search"
+                            className="flex items-center justify-center gap-2 w-full py-3 px-6 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all shadow-sm"
+                        >
+                            <span>{t('home.recent_posts.view_all')}</span>
+                            <ChevronRight className="h-4 w-4" />
+                        </LocalizedLink>
                     </div>
                 </div>
             </section>

@@ -119,9 +119,14 @@ const Search = () => {
                     setPropertyTypes([]);
                 }
 
-                // Filter by VIP (Query Param)
-                if (isVipParam === 'true') {
-                    initialFiltered = initialFiltered.filter(p => p.vip?.isActive);
+                // Filter by Price (Query Params)
+                const minPriceParam = searchParams.get('minPrice');
+                const maxPriceParam = searchParams.get('maxPrice');
+                if (minPriceParam || maxPriceParam) {
+                    const min = minPriceParam ? parseInt(minPriceParam) : MIN_PRICE;
+                    const max = maxPriceParam ? parseInt(maxPriceParam) : MAX_PRICE;
+                    initialFiltered = initialFiltered.filter(p => p.price >= min && p.price <= max);
+                    setPriceRange([min, max]);
                 }
 
                 setFilteredListings(initialFiltered);
@@ -328,7 +333,7 @@ const Search = () => {
         return formatVND(price);
     };
 
-    const SidebarContent = () => (
+    const sidebarContent = (
         <>
             <div className="filter-title border-b border-gray-100 pb-4 mb-4">
                 <span className="flex items-center gap-2">
@@ -358,23 +363,27 @@ const Search = () => {
                     <div className="flex-1">
                         <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.min')}</span>
                         <input
-                            type="number"
-                            min="0"
-                            onKeyDown={(e) => ["-", "e", "+"].includes(e.key) && e.preventDefault()}
+                            type="text"
+                            inputMode="numeric"
                             className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
                             value={minArea}
-                            onChange={(e) => setMinArea(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                setMinArea(val);
+                            }}
                         />
                     </div>
                     <div className="flex-1">
                         <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.max')}</span>
                         <input
-                            type="number"
-                            min="0"
-                            onKeyDown={(e) => ["-", "e", "+"].includes(e.key) && e.preventDefault()}
+                            type="text"
+                            inputMode="numeric"
                             className="w-full px-3 py-2 text-sm border rounded-md focus:ring-1 focus:ring-blue-500 outline-none font-medium text-gray-900 bg-gray-50"
                             value={maxArea}
-                            onChange={(e) => setMaxArea(e.target.value)}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, '');
+                                setMaxArea(val);
+                            }}
                         />
                     </div>
                 </div>
@@ -427,6 +436,7 @@ const Search = () => {
                         <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.min')}</span>
                         <input
                             type="text"
+                            inputMode="numeric"
                             value={priceRange[0].toLocaleString('vi-VN')}
                             onChange={(e) => {
                                 const val = Number(e.target.value.replace(/\./g, '').replace(/[^0-9]/g, ''));
@@ -442,6 +452,7 @@ const Search = () => {
                         <span className="block text-gray-500 text-xs font-bold mb-1">{t('search_page.max')}</span>
                         <input
                             type="text"
+                            inputMode="numeric"
                             value={priceRange[1].toLocaleString('vi-VN')}
                             onChange={(e) => {
                                 const val = Number(e.target.value.replace(/\./g, '').replace(/[^0-9]/g, ''));
@@ -511,8 +522,8 @@ const Search = () => {
                 </div>
             </div>
 
-            <button 
-                className="btn btn-primary w-full mt-4 shadow-lg shadow-blue-200" 
+            <button
+                className="btn btn-primary w-full mt-4 shadow-lg shadow-blue-200"
                 onClick={() => {
                     handleApplyFilters();
                     setIsFilterDrawerOpen(false);
@@ -528,14 +539,14 @@ const Search = () => {
             <div className="page-layout w-full">
                 {/* Desktop Sidebar */}
                 <aside className="sidebar hidden lg:block shadow-sm">
-                    <SidebarContent />
+                    {sidebarContent}
                 </aside>
 
                 {/* Mobile Filter Drawer */}
                 {isFilterDrawerOpen && (
                     <div className="filter-drawer-overlay lg:hidden" onClick={() => setIsFilterDrawerOpen(false)}>
                         <div className="filter-drawer-content p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
-                            <SidebarContent />
+                            {sidebarContent}
                         </div>
                     </div>
                 )}
@@ -544,7 +555,7 @@ const Search = () => {
                 <main className="main-content">
                     {/* Compact Filter Bar for Mobile */}
                     <div className="lg:hidden flex items-center gap-3 mb-6 bg-white p-3 rounded-xl shadow-sm border border-gray-100">
-                        <button 
+                        <button
                             onClick={() => setIsFilterDrawerOpen(true)}
                             className="flex-1 flex items-center justify-center gap-2 py-2 px-4 bg-blue-50 text-blue-600 rounded-lg font-bold text-sm transition-all active:scale-95"
                         >

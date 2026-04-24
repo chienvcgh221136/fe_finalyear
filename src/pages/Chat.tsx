@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { filesAPI, chatAPI, usersAPI } from '../services/api';
 import type { ChatRoom, MessageData } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -16,7 +16,9 @@ const Chat = () => {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+    const [searchParams] = useSearchParams();
+    const initialRoomId = searchParams.get('id');
+    const [selectedRoomId, setSelectedRoomId] = useState<string | null>(initialRoomId);
     const [socket, setSocket] = useState<Socket | null>(null);
     const [newMessage, setNewMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -510,11 +512,16 @@ const Chat = () => {
     return (
         <div className="flex bg-gray-50 h-[calc(100vh-74px)] relative">
             {/* Sidebar */}
-            <aside className={`w-full md:w-80 border-r border-gray-200 bg-white flex-col h-full transition-all duration-300 ${selectedRoomId ? 'hidden md:flex' : 'flex'}`}>
+            <aside className={`w-full lg:w-[350px] border-r border-gray-200 bg-white flex-col h-full transition-all duration-300 ${selectedRoomId ? 'hidden lg:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
                     <div className="flex items-center justify-between mb-4">
-                        <h1 className="text-xl font-bold text-gray-900">{t('chat.title', 'Tin nhắn')}</h1>
-                        {/* Optional: Add a 'New Chat' or 'Compose' button here if needed */}
+                        <div className="flex flex-col">
+                            <h1 className="text-xl font-bold text-gray-900">{t('chat.title', 'Tin nhắn')}</h1>
+                            <p className="text-[10px] text-gray-400 font-medium md:hidden">{t('chat.welcome_msg', { name: user?.name || '' })}</p>
+                        </div>
+                        <div className="hidden md:block text-right">
+                            <p className="text-xs text-gray-500 font-medium">{t('chat.welcome_msg', { name: user?.name || '' })}</p>
+                        </div>
                     </div>
 
                     {/* Tabs */}
@@ -626,7 +633,7 @@ const Chat = () => {
             </aside>
 
             {/* Chat Area */}
-            <main className={`flex-1 h-full bg-white/50 relative flex flex-row ${selectedRoomId ? 'flex' : 'hidden md:flex'}`}>
+            <main className={`flex-1 h-full bg-white/50 relative flex flex-row ${selectedRoomId ? 'flex' : 'hidden lg:flex'}`}>
                 {selectedRoomId ? (
                     <>
                         <div className="flex-1 flex flex-col min-w-0 h-full">
@@ -634,7 +641,7 @@ const Chat = () => {
                                 <div className="flex items-center gap-2 md:gap-3 min-w-0">
                                     <button
                                         onClick={() => setSelectedRoomId(null)}
-                                        className="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full shrink-0"
+                                        className="lg:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full shrink-0"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
@@ -1089,12 +1096,12 @@ const Chat = () => {
                         })()}
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
-                        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md mb-6">
-                            <MessageCircle size={48} className="text-blue-600" />
+                    <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 p-6 md:p-8 text-center">
+                        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm border border-blue-100 mb-5">
+                            <MessageCircle size={40} className="text-blue-500" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('chat.welcome_msg', { name: user?.name || '' })}</h2>
-                        <p className="text-gray-500">{t('chat.select_chat')}</p>
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2 hidden md:block">{t('chat.welcome_msg', { name: user?.name || '' })}</h2>
+                        <p className="text-sm md:text-base text-gray-500 max-w-xs">{t('chat.select_chat')}</p>
                     </div>
                 )}
 
@@ -1121,7 +1128,7 @@ const Chat = () => {
                 <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                            <h3 className="font-bold text-gray-900">{t('chat.set_nickname_title')}</h3>
+                            <h3 className="font-bold text-gray-900">{t('chat.set_nickname_title', 'Đặt biệt danh')}</h3>
                             <button
                                 onClick={() => setIsNicknameModalOpen(false)}
                                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-200"
@@ -1131,13 +1138,13 @@ const Chat = () => {
                         </div>
                         <div className="p-6">
                             <p className="text-sm text-gray-500 mb-4">
-                                {t('chat.nickname_desc')}
+                                {t('chat.nickname_desc', 'Biệt danh sẽ chỉ hiển thị với bạn trong cuộc trò chuyện này.')}
                             </p>
                             <input
                                 type="text"
                                 value={nicknameInput}
                                 onChange={(e) => setNicknameInput(e.target.value)}
-                                placeholder={t('chat.nickname_placeholder')}
+                                placeholder={t('chat.nickname_placeholder', 'Nhập biệt danh...')}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-medium"
                                 autoFocus
                                 onKeyDown={(e) => {
@@ -1150,13 +1157,13 @@ const Chat = () => {
                                 onClick={() => setIsNicknameModalOpen(false)}
                                 className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-200 rounded-lg transition-colors"
                             >
-                                {t('chat.cancel')}
+                                {t('chat.cancel', 'Hủy')}
                             </button>
                             <button
                                 onClick={handleSetNickname}
                                 className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20"
                             >
-                                {t('chat.save')}
+                                {t('chat.save', 'Lưu')}
                             </button>
                         </div>
                     </div>

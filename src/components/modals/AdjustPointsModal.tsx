@@ -258,6 +258,9 @@ const AdjustPointsModal: React.FC<AdjustPointsModalProps> = ({ isOpen, onClose, 
                                             min="0"
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                            }}
                                             className="w-full pl-6 pr-16 py-4 bg-gray-50 border-2 border-gray-100 rounded-[20px] focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100/50 outline-none transition-all font-black text-xl text-gray-800"
                                             placeholder="0"
                                         />

@@ -108,6 +108,7 @@ const PostDetail = () => {
     if (!post) return <div className="min-h-screen pt-20 text-center">{t('post_detail.not_found')}</div>;
 
     const images = post.images || [];
+    const isOwner = user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId);
 
     // Helper to format currency
     const formatPrice = (price: number) => {
@@ -138,12 +139,13 @@ const PostDetail = () => {
             return;
         }
         try {
-            await import('../services/api').then(m => m.chatAPI.createOrGet({
+            const res = await import('../services/api').then(m => m.chatAPI.createOrGet({
                 postId: post._id,
                 sellerId: post.user?._id || post.userId?._id || post.userId
             }));
-            // Redirect to chat
-            window.location.href = '/chat';
+            // Redirect to chat with specific room ID
+            const roomId = res.data.chatRoom?._id || res.data.data?._id;
+            window.location.href = `/chat?id=${roomId}`;
         } catch (err) {
             console.error("Chat error", err);
             error(t('post_detail.chat_error'));
@@ -254,16 +256,18 @@ const PostDetail = () => {
                                     </span>
                                 </button>
                                 
-                                <button
-                                    onClick={() => setIsReportModalOpen(true)}
-                                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all border border-transparent hover:border-orange-100"
-                                >
-                                    <Flag size={18} />
-                                    <span className="text-sm whitespace-nowrap">{t('common.report')}</span>
-                                </button>
+                                {user && !isOwner && (
+                                    <button
+                                        onClick={() => setIsReportModalOpen(true)}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 text-gray-600 font-bold hover:bg-orange-50 hover:text-orange-600 transition-all border border-transparent hover:border-orange-100"
+                                    >
+                                        <Flag size={18} />
+                                        <span className="text-sm whitespace-nowrap">{t('common.report')}</span>
+                                    </button>
+                                )}
 
                                 {/* Owner Actions */}
-                                {user && (user.id === post.userId?._id || user._id === post.userId?._id || user.id === post.userId || user._id === post.userId) && (
+                                {isOwner && (
                                     <LocalizedLink to={`/post-ad?edit=${post._id}`} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all sm:ml-auto shadow-md shadow-blue-200">
                                         <span className="text-sm whitespace-nowrap">{t('post_detail.edit')}</span>
                                     </LocalizedLink>
@@ -416,12 +420,14 @@ const PostDetail = () => {
                             </p>
                             <div className="flex items-center justify-between mb-4">
                                 <LocalizedLink to="#" className="text-blue-600 text-sm font-bold hover:underline">{t('post_detail.view_guide')}</LocalizedLink>
-                                <button
-                                    onClick={() => setIsReportModalOpen(true)}
-                                    className="text-gray-400 hover:text-gray-600 text-sm font-medium flex items-center gap-1"
-                                >
-                                    <Flag size={14} /> {t('common.report')}
-                                </button>
+                                {user && !isOwner && (
+                                    <button
+                                        onClick={() => setIsReportModalOpen(true)}
+                                        className="text-gray-400 hover:text-gray-600 text-sm font-medium flex items-center gap-1"
+                                    >
+                                        <Flag size={14} /> {t('common.report')}
+                                    </button>
+                                )}
                             </div>
 
 

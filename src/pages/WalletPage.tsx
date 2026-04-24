@@ -350,10 +350,17 @@ const WalletPage = () => {
                                             <input
                                                 type="number"
                                                 value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    if (Number(val) < 0) return;
+                                                    setAmount(val);
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                }}
                                                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none font-bold text-lg text-gray-900"
                                                 placeholder={t('wallet.topup_amount_placeholder')}
-                                                min="10000"
+                                                min="0"
                                                 autoFocus
                                             />
                                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">{t('common.currency')}</span>
@@ -491,9 +498,16 @@ const WalletPage = () => {
                                                 <input
                                                     type="number"
                                                     required
-                                                    min="50000"
+                                                    min="0"
                                                     value={withdrawAmount}
-                                                    onChange={(e) => setWithdrawAmount(e.target.value)}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        if (Number(val) < 0) return;
+                                                        setWithdrawAmount(val);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e') e.preventDefault();
+                                                    }}
                                                     className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 outline-none font-bold text-3xl text-gray-900 transition-all placeholder:text-gray-300"
                                                     placeholder="0"
                                                 />

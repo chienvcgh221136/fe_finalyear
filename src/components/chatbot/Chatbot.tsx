@@ -44,41 +44,36 @@ const Chatbot = () => {
     const hasFetchedForCurrentSession = useRef(false);
 
 
+    // Consolidate sync logic to handle user transitions cleanly
     useEffect(() => {
-        const syncHistory = async () => {
+        const syncChatbot = async () => {
             const userChanged = prevUserId.current !== user?.id;
-
-            if (!userChanged && hasFetchedForCurrentSession.current) {
-                if (!isAuthenticated || !isOpen) return;
-            }
-
-            if (!userChanged && isOpen && hasFetchedForCurrentSession.current) {
-                return;
-            }
-
-            prevUserId.current = user?.id;
-
+            
+            // Define welcome message
             const welcomeMsg: Message = {
                 id: '1',
                 text: t('chatbot.welcome', 'Xin chào! Tôi là trợ lý ảo RealEstate. Tôi có thể giúp gì cho bạn trong việc tìm kiếm bất động sản?'),
                 sender: 'bot'
             };
 
+            // 1. If user identity changed (Guest -> User, User A -> User B, or Logout)
             if (userChanged) {
+                console.log('[Chatbot] Identity changed, resetting state.');
                 setMessages([welcomeMsg]);
-            }
-
-            if (!isAuthenticated || !user?.id) {
                 setAnonymousCount(0);
-                hasFetchedForCurrentSession.current = true;
-                return;
+                hasFetchedForCurrentSession.current = false;
+                prevUserId.current = user?.id;
+                // If it's a logout or closed, we stop here
+                if (!isAuthenticated || !user?.id || !isOpen) return;
             }
 
-            if (isOpen) {
+            // 2. If authenticated and open, fetch history if not already done for this session
+            if (isAuthenticated && user?.id && isOpen && !hasFetchedForCurrentSession.current) {
                 try {
                     hasFetchedForCurrentSession.current = true;
-                    console.log('[Chatbot] Fetching history for user:', user.id);
+                    console.log('[Chatbot] Fetching clean history for user:', user.id);
                     const response = await chatbotAPI.getHistory();
+                    
                     if (response.data.success && response.data.data.length > 0) {
                         const historyMessages: Message[] = response.data.data.map((m: any, idx: number) => ({
                             id: `history-${idx}-${Date.now()}`,
@@ -86,7 +81,12 @@ const Chatbot = () => {
                             sender: m.role === 'user' ? 'user' : 'bot',
                             posts: m.posts || []
                         }));
+                        
+                        // Set fresh messages: Welcome + History (discarding any existing guest messages)
                         setMessages([welcomeMsg, ...historyMessages]);
+                    } else {
+                        // Ensure it's reset if no history found
+                        setMessages([welcomeMsg]);
                     }
                 } catch (error) {
                     console.error('Fetch chatbot history error:', error);
@@ -95,9 +95,8 @@ const Chatbot = () => {
             }
         };
 
-        syncHistory();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id, isAuthenticated, isOpen]); // user.id is the ultimate source of truth, removed t
+        syncChatbot();
+    }, [isAuthenticated, user?.id, isOpen, t]);
 
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;

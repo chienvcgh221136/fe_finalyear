@@ -22,6 +22,7 @@ const LoyaltyPage = () => {
     const [showTasks, setShowTasks] = React.useState(false);
     const [showTerms, setShowTerms] = React.useState(false);
     const [selectedItem, setSelectedItem] = React.useState<any>(null);
+    const [historyDateFilter, setHistoryDateFilter] = React.useState('recent');
 
     const { data: pointData, isLoading } = useQuery({
         queryKey: ['myPoints'],
@@ -86,7 +87,28 @@ const LoyaltyPage = () => {
     if (isLoading) return <div className="p-8 text-center">{t('common.loading')}</div>;
 
     const { balance, history, inventory = {}, expiringSoon = { total: 0, batches: [] } } = pointData || { balance: 0, history: [], inventory: {}, expiringSoon: { total: 0, batches: [] } };
-    const filteredHistory = (history || []).filter((log: any) => log.points > 0 || log.action === 'EXPIRED');
+    
+    const filteredHistory = (history || []).filter((log: any) => {
+        const matchesBasic = log.points > 0 || log.action === 'EXPIRED';
+        if (!matchesBasic) return false;
+
+        let matchesDate = true;
+        const logDate = new Date(log.createdAt);
+        const now = new Date();
+        
+        if (historyDateFilter === 'this_month') {
+            matchesDate = logDate.getMonth() === now.getMonth() && logDate.getFullYear() === now.getFullYear();
+        } else if (historyDateFilter === 'last_month') {
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            matchesDate = logDate.getMonth() === lastMonth.getMonth() && logDate.getFullYear() === lastMonth.getFullYear();
+        } else if (historyDateFilter === 'recent') {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(now.getDate() - 7);
+            matchesDate = logDate >= sevenDaysAgo;
+        }
+
+        return matchesDate;
+    });
 
     const formatAction = (log: any) => {
         const { action, description } = log;
@@ -230,6 +252,7 @@ const LoyaltyPage = () => {
                             label={t('loyalty.item_push')}
                             count={inventory.postPush || 0}
                             onClick={() => handleItemClick('ITEM_POST_PUSH', t('loyalty.item_push'), TrendingUp, 'bg-cyan-100 text-cyan-600', inventory.postPush)}
+                            t={t}
                         />
                         <InventoryItem
                             icon={Users}
@@ -237,6 +260,7 @@ const LoyaltyPage = () => {
                             label={t('loyalty.item_lead')}
                             count={inventory.leadCredit || 0}
                             onClick={() => handleItemClick('LEAD_CREDIT', t('loyalty.item_lead'), Users, 'bg-green-100 text-green-600', inventory.leadCredit)}
+                            t={t}
                         />
                         <InventoryItem
                             icon={Award}
@@ -244,6 +268,7 @@ const LoyaltyPage = () => {
                             label={t('loyalty.item_vip_bronze')}
                             count={inventory.vipBronze1Day || 0}
                             onClick={() => handleItemClick('ITEM_VIP_BRONZE_1DAY', t('loyalty.item_vip_bronze'), Award, 'bg-amber-100 text-amber-700', inventory.vipBronze1Day)}
+                            t={t}
                         />
                         <InventoryItem
                             icon={Award}
@@ -251,6 +276,7 @@ const LoyaltyPage = () => {
                             label={t('loyalty.item_vip_silver')}
                             count={inventory.vipSilver3Day || 0}
                             onClick={() => handleItemClick('ITEM_VIP_SILVER_3DAY', t('loyalty.item_vip_silver'), Award, 'bg-gray-200 text-gray-600', inventory.vipSilver3Day)}
+                            t={t}
                         />
                         <InventoryItem
                             icon={Award}
@@ -258,6 +284,7 @@ const LoyaltyPage = () => {
                             label={t('loyalty.item_vip_gold')}
                             count={inventory.vipGold7Day || 0}
                             onClick={() => handleItemClick('ITEM_VIP_GOLD_7DAY', t('loyalty.item_vip_gold'), Award, 'bg-yellow-100 text-yellow-600', inventory.vipGold7Day)}
+                            t={t}
                         />
                     </div>
                 </div>
@@ -286,10 +313,14 @@ const LoyaltyPage = () => {
                             </h3>
                             <p className="text-gray-500 text-sm mt-1">{t('loyalty.history_subtitle')}</p>
                         </div>
-                        <select className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none shadow-sm">
-                            <option>{t('loyalty.history_filter_recent')}</option>
-                            <option>{t('loyalty.history_filter_month')}</option>
-                            <option>{t('loyalty.history_filter_last_month')}</option>
+                        <select 
+                            className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none shadow-sm cursor-pointer"
+                            value={historyDateFilter}
+                            onChange={(e) => setHistoryDateFilter(e.target.value)}
+                        >
+                            <option value="recent">{t('loyalty.filter_recent', 'Gần đây')}</option>
+                            <option value="this_month">{t('loyalty.filter_this_month', 'Tháng này')}</option>
+                            <option value="last_month">{t('loyalty.filter_last_month', 'Tháng trước')}</option>
                         </select>
                     </div>
                     <div className="hidden md:block overflow-x-auto">
@@ -371,20 +402,23 @@ const LoyaltyPage = () => {
     );
 };
 
-const InventoryItem = ({ icon: Icon, color, label, count, onClick }: any) => (
+const InventoryItem = ({ icon: Icon, color, label, count, onClick, t }: any) => (
     <div
         onClick={onClick}
-        className={`flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-transparent group transition
+        className={`flex flex-col md:flex-row md:justify-between items-center md:items-center gap-3 p-4 bg-gray-50 rounded-2xl border border-transparent group transition
             ${count > 0 ? 'cursor-pointer hover:bg-blue-50 hover:border-blue-100 hover:shadow-md' : 'cursor-not-allowed opacity-60'}
         `}
     >
-        <div className="flex items-center gap-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color}`}>
+        <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${color}`}>
                 <Icon size={20} />
             </div>
-            <span className={`font-medium transition ${count > 0 ? 'text-gray-700 group-hover:text-blue-700' : 'text-gray-400'}`}>{label}</span>
+            <span className={`font-medium transition truncate ${count > 0 ? 'text-gray-700 group-hover:text-blue-700' : 'text-gray-400'}`}>{label}</span>
         </div>
-        <span className={`font-extrabold text-xl ${count > 0 ? 'text-gray-900' : 'text-gray-400'}`}>{count}</span>
+        <div className="flex items-center justify-between w-full md:w-auto md:justify-end gap-2 border-t md:border-t-0 pt-2 md:pt-0 border-gray-100">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest md:hidden">{t('loyalty.inventory_count', 'Số lượng')}</span>
+            <span className={`font-extrabold text-xl ${count > 0 ? 'text-gray-900' : 'text-gray-400'}`}>{count}</span>
+        </div>
     </div>
 );
 

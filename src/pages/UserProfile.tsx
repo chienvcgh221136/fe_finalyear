@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import LocalizedLink from '../components/common/LocalizedLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { usersAPI, postsAPI, reviewsAPI, filesAPI } from '../services/api'; // Added filesAPI
+import { usersAPI, postsAPI, reviewsAPI, filesAPI, chatAPI } from '../services/api'; // Added filesAPI, chatAPI
 import type { Post, User, Review } from '../types';
 import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
 import { useAuth } from '../context/AuthContext'; // Added useAuth
@@ -193,10 +193,36 @@ const UserProfile = () => {
                                         <Edit size={16} /> {t('user_profile.btn_edit_profile')}
                                     </LocalizedLink>
                                 ) : (
-                                    <LocalizedLink to="/chat" className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-200/50">
+                                    <button
+                                        onClick={async () => {
+                                            if (!currentUser) {
+                                                window.location.href = '/login';
+                                                return;
+                                            }
+                                            try {
+                                                // Try to use the first active post as context, or any post
+                                                const postToUse = posts?.find(p => p.status === 'ACTIVE') || posts?.[0];
+                                                if (postToUse) {
+                                                    const res = await chatAPI.createOrGet({
+                                                        postId: postToUse._id,
+                                                        sellerId: userId!
+                                                    });
+                                                    const roomId = res.data.chatRoom?._id || res.data.data?._id;
+                                                    window.location.href = `/chat?id=${roomId}`;
+                                                } else {
+                                                    // Fallback to general chat if no posts found
+                                                    window.location.href = '/chat';
+                                                }
+                                            } catch (err) {
+                                                console.error("Chat error", err);
+                                                window.location.href = '/chat';
+                                            }
+                                        }}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-200/50"
+                                    >
                                         <MessageSquare size={16} />
                                         {t('user_profile.btn_message')}
-                                    </LocalizedLink>
+                                    </button>
                                 )}
                             </div>
                         </div>

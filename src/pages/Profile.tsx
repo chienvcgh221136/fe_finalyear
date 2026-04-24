@@ -197,18 +197,18 @@ const Profile = () => {
             return (
                 <div key={ap._id} className="bg-white border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-colors flex flex-col lg:flex-row gap-4 group">
                     {/* Post Info */}
-                    <div className="w-full lg:w-48 shrink-0">
+                    <LocalizedLink to={`/post/${post._id}`} className="w-full lg:w-48 shrink-0 block">
                         <div className="w-full h-48 lg:h-28 bg-gray-200 rounded-lg overflow-hidden relative mb-2">
-                            {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover" alt="" />}
+                            {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />}
                             <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded text-white ${ap.status === 'PENDING' ? 'bg-yellow-500' :
                                 ap.status === 'APPROVED' ? 'bg-green-500' : 'bg-red-500'
                                 }`}>
                                 {ap.status}
                             </span>
                         </div>
-                        <h4 className="font-bold text-gray-900 text-sm truncate">{post.title}</h4>
+                        <h4 className="font-bold text-gray-900 text-sm truncate group-hover:text-blue-600 transition-colors">{post.title}</h4>
                         <p className="text-blue-600 text-xs font-bold">{formatPrice(post.price, post.transactionType)}</p>
-                    </div>
+                    </LocalizedLink>
 
                     {/* Appointment Details */}
                     <div className="flex-1 text-sm">
@@ -236,6 +236,13 @@ const Profile = () => {
 
                         {/* Actions */}
                         <div className="flex gap-2 justify-end items-center">
+                            <LocalizedLink
+                                to={`/post/${post._id}`}
+                                className="px-3 py-1.5 bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 transition-colors text-xs"
+                            >
+                                {t('common.view_post')}
+                            </LocalizedLink>
+
                             {/* Delete Button (Always visible for both parties to clear history) */}
                             <button
                                 onClick={() => {
@@ -243,10 +250,10 @@ const Profile = () => {
                                         deleteMutation.mutate(ap._id);
                                     }
                                 }}
-                                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                 title={t('common.delete')}
                             >
-                                <Trash2 size={16} /> {t('common.delete')}
+                                <Trash2 size={16} />
                             </button>
 
                             {isSeller && ap.status === 'PENDING' && (
@@ -349,17 +356,17 @@ const Profile = () => {
                             if (!post) return null; // Handle deleted posts
                             return (
                                 <div key={fav._id} className="flex flex-col lg:flex-row gap-4 border border-gray-100 rounded-xl p-4 hover:border-blue-100 transition-all bg-white hover:shadow-md">
-                                    <div className="w-full lg:w-48 h-56 lg:h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative">
-                                        {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="" />}
+                                    <LocalizedLink to={`/post/${post._id}`} className="w-full lg:w-48 h-56 lg:h-32 bg-gray-200 rounded-lg shrink-0 overflow-hidden relative block group/img">
+                                        {post.images?.[0] && <img src={post.images[0]} className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500" alt="" />}
                                         <div className="absolute top-2 left-2">
                                             <span className="bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">{t('common.saved')}</span>
                                         </div>
-                                    </div>
+                                    </LocalizedLink>
                                     <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-1 line-clamp-2 lg:line-clamp-1 group-hover:text-blue-600 transition-colors" title={post.title}>{post.title}</h3>
+                                        <LocalizedLink to={`/post/${post._id}`} className="block group/text">
+                                            <h3 className="font-bold text-gray-900 text-base md:text-lg mb-1 line-clamp-2 lg:line-clamp-1 group-hover/text:text-blue-600 transition-colors" title={post.title}>{post.title}</h3>
                                             <p className="text-blue-600 font-bold text-lg">{formatPrice(post.price, post.transactionType)}</p>
-                                        </div>
+                                        </LocalizedLink>
                                         <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-50 lg:mt-0 lg:border-0 lg:justify-end lg:pt-0">
                                             <LocalizedLink to={`/post/${post._id}`} className="flex-1 lg:flex-none text-center px-4 py-2 text-sm font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
                                                 {t('common.view_post')}

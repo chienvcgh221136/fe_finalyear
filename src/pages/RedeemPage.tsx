@@ -226,29 +226,32 @@ const RewardCardBig = ({ title, subtitle, desc, points, icon: Icon, color, iconB
 
     return (
         <div className={`p-1 rounded-3xl bg-white border border-gray-100 hover:border-blue-200 transition duration-300 group shadow-sm hover:shadow-md`}>
-            <div className="p-5 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
-                <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl md:rounded-3xl flex items-center justify-center shrink-0 ${iconBg} shadow-inner`}>
-                    <Icon size={32} className="md:hidden drop-shadow-sm" />
-                    <Icon size={40} className="hidden md:block drop-shadow-sm" />
+            <div className="p-5 md:p-8 flex flex-col md:flex-row items-stretch md:items-center gap-5 md:gap-8">
+                {/* Top wrapper for mobile: Icon + Info */}
+                <div className="flex flex-row items-start md:items-center gap-4 md:gap-6 flex-1 min-w-0">
+                    <div className={`w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-2xl md:rounded-3xl flex items-center justify-center shrink-0 ${iconBg} shadow-inner`}>
+                        <Icon size={32} className="md:hidden drop-shadow-sm" />
+                        <Icon size={40} className="hidden md:block drop-shadow-sm" />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                            <h4 className="text-lg md:text-xl font-bold text-gray-900 leading-tight">{title}</h4>
+                            <span className={`px-2 md:px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white bg-gradient-to-r ${color}`}>
+                                {subtitle}
+                            </span>
+                        </div>
+                        <p className="text-gray-500 text-xs md:text-sm lg:text-base leading-relaxed mb-3">
+                            {desc}
+                        </p>
+                        <div className="flex items-center gap-2 text-blue-600 bg-blue-50 w-fit px-3 py-1.5 rounded-xl border border-blue-100">
+                            <Coins size={14} className="md:size-4" />
+                            <span className="font-black text-xs md:text-sm">{points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} {t('common.points', 'Points')}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex-1 w-full">
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
-                        <h4 className="text-lg md:text-xl font-bold text-gray-900">{title}</h4>
-                        <span className={`px-2 md:px-3 py-1 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest text-white bg-gradient-to-r ${color}`}>
-                            {subtitle}
-                        </span>
-                    </div>
-                    <p className="text-gray-500 text-xs md:text-sm lg:text-base leading-relaxed mb-4">
-                        {desc}
-                    </p>
-                    <div className="flex items-center gap-2 text-blue-600 bg-blue-50 w-fit px-3 py-1.5 rounded-xl border border-blue-100">
-                        <Coins size={14} className="md:size-4" />
-                        <span className="font-black text-xs md:text-sm">{points.toLocaleString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')} {t('common.points', 'Points')}</span>
-                    </div>
-                </div>
-
-                <div className="w-full md:w-auto mt-2 md:mt-0">
+                <div className="w-full md:w-auto mt-2 md:mt-0 flex flex-col justify-center shrink-0">
                     <button
                         onClick={onRedeem}
                         disabled={!canAfford}

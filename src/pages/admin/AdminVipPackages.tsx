@@ -369,6 +369,8 @@ const AdminVipPackages = () => {
                                     <input
                                         type="number"
                                         required
+                                        min="0"
+                                        onKeyDown={(e) => ["-", "e", "E"].includes(e.key) && e.preventDefault()}
                                         value={formData.price}
                                         onChange={e => setFormData({ ...formData, price: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -380,6 +382,8 @@ const AdminVipPackages = () => {
                                     <input
                                         type="number"
                                         required
+                                        min="0"
+                                        onKeyDown={(e) => ["-", "e", "E"].includes(e.key) && e.preventDefault()}
                                         value={formData.durationDays}
                                         onChange={e => setFormData({ ...formData, durationDays: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -394,6 +398,7 @@ const AdminVipPackages = () => {
                                         required
                                         min="0"
                                         max="100"
+                                        onKeyDown={(e) => ["-", "e", "E"].includes(e.key) && e.preventDefault()}
                                         value={formData.priorityScore}
                                         onChange={e => setFormData({ ...formData, priorityScore: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -405,6 +410,7 @@ const AdminVipPackages = () => {
                                         type="number"
                                         required
                                         min="0"
+                                        onKeyDown={(e) => ["-", "e", "E"].includes(e.key) && e.preventDefault()}
                                         value={formData.limitViewPhone}
                                         onChange={e => setFormData({ ...formData, limitViewPhone: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -419,6 +425,7 @@ const AdminVipPackages = () => {
                                         type="number"
                                         required
                                         min="0"
+                                        onKeyDown={(e) => ["-", "e", "E"].includes(e.key) && e.preventDefault()}
                                         value={formData.postLimit}
                                         onChange={e => setFormData({ ...formData, postLimit: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"

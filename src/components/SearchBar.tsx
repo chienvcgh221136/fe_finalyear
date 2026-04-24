@@ -22,6 +22,7 @@ export function SearchBar() {
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+ 
 
     // Debounce search
     useEffect(() => {
