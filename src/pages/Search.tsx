@@ -95,6 +95,10 @@ const Search = () => {
                 const typeParam = searchParams.get('propertyType');
                 const isVipParam = searchParams.get('isVip');
 
+                if (isVipParam === 'true') {
+                    initialFiltered = initialFiltered.filter(p => p.vip?.isActive);
+                }
+
                 // Filter by Transaction Type (Path)
                 if (isBuyPage) {
                     initialFiltered = initialFiltered.filter(p => p.transactionType === 'SALE');
