@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { withdrawAPI } from '../../services/api';
-import { CheckCircle, XCircle, Clock, AlertCircle, Search, Filter, DollarSign, Wallet, ArrowUpRight } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertCircle, Search, DollarSign, Wallet, ArrowUpRight } from 'lucide-react';
 import { formatVND } from '../../utils/currencyUtils';
 
 const AdminWithdrawals = () => {
