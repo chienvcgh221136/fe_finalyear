@@ -311,19 +311,35 @@ const Search = () => {
         setMaxArea('');
         setPriceRange([0, MAX_PRICE]); // Reset Price Slider
         setPropertyTypes([]);
+        setSortOption('newest'); // Reset sort to newest
 
+        // Determine default transaction type based on URL path or parameters
+        const searchParams = new URLSearchParams(location.search);
+        const urlType = searchParams.get('transactionType');
+        
         let initialT: string[] = [];
-        if (location.pathname.endsWith('/buy')) initialT = ['SALE'];
-        else if (location.pathname.endsWith('/rent')) initialT = ['RENT'];
+        if (location.pathname.endsWith('/buy')) {
+            initialT = ['SALE'];
+        } else if (location.pathname.endsWith('/rent')) {
+            initialT = ['RENT'];
+        } else if (urlType) {
+            initialT = [urlType];
+        }
+        
         setTransactionTypes(initialT);
 
         let initialListings = [...listings];
         if (initialT.length > 0) {
             initialListings = initialListings.filter(p => initialT.includes(p.transactionType));
         }
-        setFilteredListings(initialListings);
+        
+        // Ensure the cleared results are sorted by the default 'newest' option
+        const sortedResult = sortListings(initialListings, 'newest');
+        setFilteredListings(sortedResult);
+        
         setCurrentPage(1);
         setAreaError('');
+        setIsFilterDrawerOpen(false); // Close mobile drawer
     };
 
     // Helper to format price
@@ -346,12 +362,14 @@ const Search = () => {
                 </span>
                 <div className="flex items-center gap-4">
                     <button
+                        type="button"
                         className="text-blue-600 text-xs font-bold bg-transparent hover:underline"
                         onClick={handleClearFilters}
                     >
                         {t('search_page.clear_all')}
                     </button>
                     <button
+                        type="button"
                         className="lg:hidden p-1 text-gray-400 hover:text-gray-600"
                         onClick={() => setIsFilterDrawerOpen(false)}
                     >
@@ -527,6 +545,7 @@ const Search = () => {
             </div>
 
             <button
+                type="button"
                 className="btn btn-primary w-full mt-4 shadow-lg shadow-blue-200"
                 onClick={() => {
                     handleApplyFilters();

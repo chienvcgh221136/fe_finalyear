@@ -135,7 +135,7 @@ const AdminUsers = () => {
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('admin.users.stat_total')}</p>
                         <p className="text-3xl font-bold text-slate-900 mt-3">{totalUsers.toLocaleString()}</p>
                         <p className="text-xs font-medium text-green-600 mt-2 flex items-center gap-1">
-                            <span>↗</span> +{usersThisMonth} {t('common.month').toLowerCase()}
+                            <span>↗</span> +{usersThisMonth} {t('admin.dashboard.new_users').toLowerCase()}
                         </p>
                     </div>
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">

@@ -37,24 +37,25 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
     const firstLetter = userName.charAt(0).toUpperCase();
 
     const [showPhone, setShowPhone] = useState(false);
-    const hasPhone = !!user?.phone;
-    const originalPhone = hasPhone ? user.phone : t('common.not_updated');
-    const maskedPhone = hasPhone 
-        ? (originalPhone!.length > 6 ? `${originalPhone!.slice(0, 4)} *** ***` : t('post_detail.reveal_phone'))
-        : t('common.not_updated');
-
+    const [revealedPhone, setRevealedPhone] = useState<string | null>(null);
     const [isLoadingPhone, setIsLoadingPhone] = useState(false);
 
-    const queryClient = useQueryClient();
+    const hasPhone = !!user?.phone || !!revealedPhone;
+    const originalPhone = revealedPhone || user?.phone || t('common.not_updated');
+    const maskedPhone = hasPhone 
+        ? (originalPhone.length > 6 ? `${originalPhone.slice(0, 4)} *** ***` : t('post_detail.reveal_phone'))
+        : t('common.not_updated');
 
+    const queryClient = useQueryClient();
     const { warning, error: toastError } = useToast();
 
     const handleShowPhone = async () => {
-        if (showPhone || !hasPhone) return;
+        if (showPhone) return;
 
         // If owner viewing their own post
         if (currentUser && (currentUser.id === user?._id || currentUser._id === user?._id)) {
             setShowPhone(true);
+            if (user?.phone) setRevealedPhone(user.phone);
             return;
         }
 
@@ -64,14 +65,20 @@ const AgentWidget = ({ user, postId, updatedAt, onStartChat }: AgentWidgetProps)
         }
 
         if (!postId) {
-            // Fallback if no postId provided
             setShowPhone(true);
+            if (user?.phone) setRevealedPhone(user.phone);
             return;
         }
 
         setIsLoadingPhone(true);
         try {
-            await leadsAPI.showPhone(postId);
+            const res = await leadsAPI.showPhone(postId);
+            const phoneFromApi = res.data.seller?.phone || res.data.data?.seller?.phone;
+            if (phoneFromApi) {
+                setRevealedPhone(phoneFromApi);
+            } else if (user?.phone) {
+                setRevealedPhone(user.phone);
+            }
             setShowPhone(true);
             // Refresh VIP and stats immediately
             queryClient.invalidateQueries({ queryKey: ['vip', 'me'] });

@@ -191,9 +191,6 @@ const AdminWithdrawals = () => {
                         <option value="PAID">{t('admin.withdrawals.status_paid')}</option>
                         <option value="REJECTED">{t('admin.reports.tab_dismissed')}</option>
                     </select>
-                    <button className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-                        <Filter size={14} /> {t('admin.common.filter')}
-                    </button>
                 </div>
             </div>
 

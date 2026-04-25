@@ -185,10 +185,10 @@ const Chat = () => {
                     // Update the messages cache instantly
                     queryClient.setQueryData(['messages', selectedRoomId], (old: any) => {
                         if (!old || !old.data || !old.data.data) return old;
-                        
+
                         const incomingMsg = data.newMessage;
                         const messages = [...(old.data.data.messages || [])];
-                        
+
                         // Check if we already have this message (by ID or optimistic temp ID)
                         const isFromMe = String(incomingMsg.senderId) === String(user?.id || user?._id);
                         if (isFromMe) {
@@ -206,7 +206,7 @@ const Chat = () => {
 
                         return { ...old, data: { ...old.data, data: { ...old.data.data, messages } } };
                     });
-                    
+
                     // Also invalidate chats to updated last message in sidebar
                     queryClient.invalidateQueries({ queryKey: ['chats'] });
                 }
@@ -334,7 +334,7 @@ const Chat = () => {
             if (previousData) {
                 queryClient.setQueryData(['messages', selectedRoomId], (old: any) => {
                     if (!old || !old.data || !old.data.data) return old;
-                    
+
                     const tempId = 'temp-' + Date.now();
                     const optimisticMsg = {
                         _id: tempId,
@@ -346,7 +346,7 @@ const Chat = () => {
                     };
 
                     const newMessages = [...(old.data.data.messages || []), optimisticMsg];
-                    
+
                     return {
                         ...old,
                         data: {
@@ -651,7 +651,7 @@ const Chat = () => {
                                         const other = getOtherParticipant(room) as any;
                                         return (
                                             <>
-                                                <div 
+                                                <div
                                                     className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold overflow-hidden border border-gray-100 shrink-0 cursor-pointer"
                                                     onClick={() => navigate(`/user/${other?._id || other?.id}`)}
                                                 >
@@ -942,14 +942,14 @@ const Chat = () => {
                         {isDetailsOpen && (
                             <>
                                 {/* Overlay for mobile */}
-                                <div 
+                                <div
                                     className="fixed inset-0 bg-black/30 backdrop-blur-sm z-[40] lg:hidden transition-opacity duration-300"
                                     onClick={() => setIsDetailsOpen(false)}
                                 />
                                 <aside className="fixed right-0 top-0 bottom-0 z-[50] w-[85%] max-w-[340px] lg:static lg:z-0 lg:w-80 border-l border-gray-200 bg-white flex flex-col h-full overflow-y-auto animate-in slide-in-from-right duration-300 shrink-0 shadow-2xl lg:shadow-none">
                                     <div className="lg:hidden flex items-center justify-between p-4 border-b border-gray-100 sticky top-0 bg-white z-10">
                                         <h3 className="font-bold text-gray-900">{t('chat.details', 'Chi tiết')}</h3>
-                                        <button 
+                                        <button
                                             onClick={() => setIsDetailsOpen(false)}
                                             className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
                                         >

@@ -208,13 +208,13 @@ const UserStatsPage = () => {
                 </div>
 
                 {/* Distribution Chart */}
-                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col h-auto lg:h-[500px]">
-                    <div className="mb-8">
+                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col h-auto">
+                    <div className="mb-8 text-center lg:text-left">
                         <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">{t('stats.chart_distribution_title')}</h3>
                         <p className="text-sm text-gray-500 font-medium">{t('stats.chart_distribution_subtitle')}</p>
                     </div>
-                    <div className="flex-1 flex flex-col items-center gap-6 md:gap-10 min-h-0 py-4">
-                        <div className="w-full h-64 md:h-full relative flex items-center justify-center">
+                    <div className="flex-1 flex flex-col items-center gap-6 md:gap-8 min-h-0 py-0">
+                        <div className="w-full h-[320px] relative flex items-center justify-center">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie
@@ -242,14 +242,14 @@ const UserStatsPage = () => {
                                 <span className="text-[10px] uppercase font-black text-gray-400 tracking-[0.2em] mt-1">{t('stats.total_count')}</span>
                             </div>
                         </div>
-                        <div className="w-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-4 lg:w-48">
+                        <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
                             {postStatusData.map((entry, index) => (
                                 <div key={index} className="flex flex-col p-4 bg-gray-50/50 rounded-2xl border border-gray-100/50 hover:bg-white hover:shadow-sm transition-all">
-                                    <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex items-center gap-2 mb-1">
                                         <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
                                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider truncate">{entry.name}</span>
                                     </div>
-                                    <span className="text-2xl font-black text-gray-900">{entry.value}</span>
+                                    <span className="text-xl font-black text-gray-900">{entry.value}</span>
                                 </div>
                             ))}
                         </div>

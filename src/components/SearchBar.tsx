@@ -10,19 +10,28 @@ import type { Post } from '../types';
 // Simple cache for search suggestions
 const searchCache: { [key: string]: Post[] } = {};
 
+// Detect transaction type from keyword
+const detectTransactionType = (text: string): 'SALE' | 'RENT' | null => {
+    const lower = text.toLowerCase();
+    const rentKeywords = ['cho thuê', 'cho thue', 'thuê', 'thue', 'rent', 'rental'];
+    const saleKeywords = ['mua bán', 'mua ban', 'bán', 'ban', 'mua', 'sale', 'buy', 'bán nhà', 'ban nha'];
+    if (rentKeywords.some(k => lower.includes(k))) return 'RENT';
+    if (saleKeywords.some(k => lower.includes(k))) return 'SALE';
+    return null;
+};
+
 export function SearchBar() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const localizePath = useLocalizedPath();
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [keyword, setKeyword] = useState('');
-    const [type, setType] = useState('SALE'); // SALE or RENT
     const [city] = useState(''); // Empty = Toàn quốc
     const [suggestions, setSuggestions] = useState<Post[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
- 
+
 
     // Debounce search
     useEffect(() => {
@@ -66,17 +75,17 @@ export function SearchBar() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const detectedType = detectTransactionType(keyword);
+
     const handleSearch = (e?: React.FormEvent) => {
         if (e) e.preventDefault();
         setShowSuggestions(false);
         const params = new URLSearchParams();
         if (keyword) params.append('q', keyword);
         if (city) params.append('city', city);
+        if (detectedType) params.append('transactionType', detectedType);
 
-        const path = type === 'SALE' ? '/buy' : '/rent';
-        params.append('transactionType', type);
-
-        navigate(localizePath(`${path}?${params.toString()}`));
+        navigate(localizePath(`/search?${params.toString()}`));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -112,24 +121,7 @@ export function SearchBar() {
         <div className="w-full max-w-5xl mx-auto" ref={dropdownRef}>
 
             {/* Main Search Box */}
-            <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 pt-6 relative z-0 border border-gray-100">
-                {/* Transaction Type Tabs */}
-                <div className="flex gap-6 mb-4 border-b border-gray-100">
-                    <button
-                        type="button"
-                        onClick={() => setType('SALE')}
-                        className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'SALE' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-                    >
-                        {t('search.tab_buy')}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setType('RENT')}
-                        className={`pb-3 text-base md:text-lg font-bold border-b-2 transition-all duration-200 ${type === 'RENT' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-400 hover:text-gray-700'}`}
-                    >
-                        {t('search.tab_rent')}
-                    </button>
-                </div>
+            <form onSubmit={handleSearch} className="bg-white rounded-2xl shadow-2xl p-6 md:p-8 relative z-0 border border-gray-100">
 
                 <div className="flex flex-col md:flex-row gap-4 relative">
 
@@ -145,7 +137,11 @@ export function SearchBar() {
                             onChange={(e) => setKeyword(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onFocus={() => keyword.length >= 2 && setShowSuggestions(true)}
-                            placeholder={type === 'SALE' ? t('search.placeholder_buy') : t('search.placeholder_rent')}
+                            placeholder={
+                                detectedType === 'RENT'
+                                    ? t('search.placeholder_rent')
+                                    : t('search.placeholder_buy')
+                            }
                             className="w-full h-full min-h-[56px] pl-12 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all font-medium text-gray-900 placeholder:text-gray-400"
                         />
 

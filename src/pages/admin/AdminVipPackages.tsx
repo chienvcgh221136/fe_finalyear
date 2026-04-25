@@ -264,7 +264,7 @@ const AdminVipPackages = () => {
 
                                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
                                     <button onClick={() => handleDelete(pkg._id)} className="text-red-500 text-sm hover:underline">
-                                        {pkg.isActive ? t('admin.reports.dismiss') : t('stats.status_active')}
+                                        {t('admin.common.delete', 'Xóa')}
                                     </button>
                                 </div>
                             </div>

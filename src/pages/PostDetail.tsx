@@ -229,8 +229,8 @@ const PostDetail = () => {
                                         }
                                         try {
                                             const res = await import('../services/api').then(m => m.favoriteAPI.toggle(post._id));
-                                                const isNowFavorited = res.data.message === 'Favorited';
-                                                success(isNowFavorited ? t('post_detail.saved') : t('post_detail.unsaved'));
+                                                const isNowFavorited = res.data.isFavorite;
+                                                success(isNowFavorited ? t('favorites.success_favorited') : t('favorites.success_unfavorited'));
                                                 // Update query cache to trigger re-render
                                                 queryClient.setQueryData(['post', id], (oldData: any) => {
                                                     if (!oldData) return oldData;

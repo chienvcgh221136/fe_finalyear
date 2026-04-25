@@ -35,14 +35,14 @@ api.interceptors.response.use(
                 }
             }
         }
-        
+
         // Handle 403 Banned status globally
         if (error.response && error.response.status === 403) {
             if (error.response.data?.message === "Account is banned" || error.response.data?.message === "User is banned") {
                 window.dispatchEvent(new CustomEvent('user_banned'));
             }
         }
-        
+
         return Promise.reject(error);
     }
 );

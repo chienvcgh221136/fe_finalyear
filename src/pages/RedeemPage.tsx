@@ -47,7 +47,7 @@ const RedeemPage = () => {
             title: t('redeem.item_push_title'),
             subtitle: t('redeem.item_push_subtitle'),
             desc: t('redeem.item_push_desc'),
-            points: 10,
+            points: 50,
             icon: Flame,
             color: "from-orange-400 to-red-500",
             bg: "bg-orange-50",

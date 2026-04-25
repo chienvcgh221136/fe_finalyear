@@ -234,9 +234,6 @@ const Home = () => {
                                 <Button size="lg" asChild className="bg-white text-black hover:bg-gray-100 font-bold px-8 py-6 h-auto text-lg rounded-xl">
                                     <LocalizedLink to="/post-ad">{t('home.cta.post_now')}</LocalizedLink>
                                 </Button>
-                                <Button variant="outline" size="lg" asChild className="border-gray-700 text-white hover:bg-white/10 hover:text-white font-semibold px-8 py-6 h-auto text-lg rounded-xl">
-                                    <LocalizedLink to="/contact">{t('home.cta.contact')}</LocalizedLink>
-                                </Button>
                             </div>
                         </div>
                     </div>

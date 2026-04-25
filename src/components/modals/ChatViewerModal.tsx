@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { X, MessageSquare } from 'lucide-react';
 import { chatAPI } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface ChatViewerModalProps {
     isOpen: boolean;
@@ -11,6 +12,9 @@ interface ChatViewerModalProps {
 }
 
 const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatViewerModalProps) => {
+    const { t, i18n } = useTranslation();
+    const currentLocale = i18n.language === 'vi' ? 'vi-VN' : 'en-US';
+
     const { data: messagesResponse, isLoading } = useQuery({
         queryKey: ['admin', 'chat', chatRoomId],
         queryFn: () => chatAPI.getMessages(chatRoomId),
@@ -41,10 +45,12 @@ const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatVi
                             <MessageSquare size={20} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900 text-lg">Lịch sử hội thoại</h3>
+                            <h3 className="font-bold text-gray-900 text-lg">
+                                {t('admin.reports.chat_viewer.title')}
+                            </h3>
                             {targetUserName && (
                                 <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">
-                                    Báo cáo: {targetUserName}
+                                    {t('admin.reports.chat_viewer.report_target', { name: targetUserName })}
                                 </p>
                             )}
                         </div>
@@ -59,15 +65,15 @@ const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatVi
                     {isLoading ? (
                         <div className="flex flex-col justify-center items-center h-full gap-3 text-slate-400">
                             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-sm font-medium">Đang tải tin nhắn...</p>
+                            <p className="text-sm font-medium">{t('admin.reports.chat_viewer.loading')}</p>
                         </div>
                     ) : messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-gray-400">
                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                                 <MessageSquare size={32} className="opacity-20" />
                             </div>
-                            <p className="font-medium text-gray-500">Không có dữ liệu trò chuyện</p>
-                            <p className="text-xs text-gray-400 mt-1">Hội thoại này hiện đang trống hoặc đã bị xóa.</p>
+                            <p className="font-medium text-gray-500">{t('admin.reports.chat_viewer.no_data')}</p>
+                            <p className="text-xs text-gray-400 mt-1">{t('admin.reports.chat_viewer.no_data_desc')}</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -76,8 +82,8 @@ const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatVi
                                 const isLeft = side === 'left';
                                 
                                 // Date divider logic
-                                const currentDate = new Date(msg.createdAt).toLocaleDateString('vi-VN');
-                                const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toLocaleDateString('vi-VN') : null;
+                                const currentDate = new Date(msg.createdAt).toLocaleDateString(currentLocale);
+                                const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toLocaleDateString(currentLocale) : null;
                                 const showDateDivider = currentDate !== prevDate;
 
                                 // Check if next message is from same sender for grouping
@@ -116,7 +122,7 @@ const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatVi
                                                 
                                                 {isLastInGroup && (
                                                     <div className={`flex items-center gap-2 mt-1 px-1 text-[10px] font-medium text-gray-400 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}>
-                                                        <span>{new Date(msg.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        <span>{new Date(msg.createdAt).toLocaleTimeString(currentLocale, { hour: '2-digit', minute: '2-digit' })}</span>
                                                         <span>•</span>
                                                         <span className="font-mono bg-gray-100 px-1 rounded uppercase">User: {msg.senderId?.slice(-4)}</span>
                                                     </div>
@@ -132,7 +138,9 @@ const ChatViewerModal = ({ isOpen, onClose, chatRoomId, targetUserName }: ChatVi
                 
                 {/* Footer hint */}
                 <div className="px-4 py-3 bg-white border-t border-gray-100 text-center shrink-0">
-                    <p className="text-[10px] text-gray-400 font-medium">Bên trái: Người nhắn đầu tiên | Bên phải: Người nhắn tiếp theo (Dữ liệu phục vụ kiểm soát vi phạm)</p>
+                    <p className="text-[10px] text-gray-400 font-medium">
+                        {t('admin.reports.chat_viewer.legend')}
+                    </p>
                 </div>
             </div>
         </div>

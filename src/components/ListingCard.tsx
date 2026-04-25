@@ -90,14 +90,18 @@ const ListingCard = ({ post, highlight }: ListingProps) => {
                 </p>
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
-                        <Bed size={16} className="text-gray-400" />
-                        <span>{post.bedrooms || 0} {t('common.bedrooms')}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
-                        <Bath size={16} className="text-gray-400" />
-                        <span>{post.bathrooms || 0} {t('common.bathrooms')}</span>
-                    </div>
+                    {post.propertyType !== 'LAND' && (
+                        <>
+                            <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
+                                <Bed size={16} className="text-gray-400" />
+                                <span>{post.bedrooms || 0} {t('common.bedrooms')}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
+                                <Bath size={16} className="text-gray-400" />
+                                <span>{post.bathrooms || 0} {t('common.bathrooms')}</span>
+                            </div>
+                        </>
+                    )}
                     <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium">
                         <Square size={16} className="text-gray-400" />
                         <span>{post.area || 0} m²</span>

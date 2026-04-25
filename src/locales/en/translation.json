@@ -864,6 +864,8 @@
             "tab_pending": "Pending",
             "tab_resolved": "Resolved",
             "tab_dismissed": "Dismissed",
+            "tab_posts": "Post Reports",
+            "tab_users": "User Reports",
             "table_reporter": "Reported by",
             "table_target": "Subject Type",
             "table_reason": "Violation Factor",
@@ -872,7 +874,15 @@
             "dismiss": "Dismiss",
             "post_not_exist": "Post removed",
             "user_not_exist": "Account deleted",
-            "table_bad_post": "Offensive Activity"
+            "table_bad_post": "Offensive Activity",
+            "chat_viewer": {
+                "title": "Conversation History",
+                "report_target": "REPORT: {{name}}",
+                "loading": "Loading messages...",
+                "no_data": "No chat data found",
+                "no_data_desc": "This conversation is currently empty or has been deleted.",
+                "legend": "Left: Initial sender | Right: Next sender (Data provided for violation monitoring)"
+            }
         },
         "vip": {
             "title": "VIP Plans & Services",
@@ -1428,9 +1438,9 @@
         },
         "moderation": {
             "violation_subject": "Warning: Policy violation post",
-            "violation_header": "POST REJECTED OR REMOVED",
+            "violation_header": "POST VIOLATION WARNING",
             "violation_greeting": "Hello <strong>{{userName}}</strong>,",
-            "violation_content": "Your post <strong>\"{{postTitle}}\"</strong> has been rejected or removed due to policy violations.",
+            "violation_content": "Your post <strong>\"{{postTitle}}\"</strong> has been identified as violating our community policies.",
             "violation_reason": "Violation details:",
             "violation_penalty": "Penalty:",
             "violation_penalty_deduct": "Deducted {{deductedPoints}} points",

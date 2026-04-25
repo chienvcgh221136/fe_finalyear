@@ -20,6 +20,8 @@ const AdminReports = () => {
     const [viewChatId, setViewChatId] = useState<string | null>(null);
     const [viewChatTargetUser, setViewChatTargetUser] = useState<string>('');
 
+    const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'RESOLVED' | 'REJECTED'>('ALL');
+
     const { data: reports, isLoading } = useQuery({
         queryKey: ['admin', 'reports'],
         queryFn: () => reportsAPI.getAll(),
@@ -85,6 +87,9 @@ const AdminReports = () => {
 
         if (!matchesTab) return false;
 
+        const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter;
+        if (!matchesStatus) return false;
+
         const searchLower = searchTerm.toLowerCase();
 
         if (activeTab === 'POST') {
@@ -123,18 +128,24 @@ const AdminReports = () => {
                         ? 'border-blue-600 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
-                    onClick={() => setActiveTab('POST')}
+                    onClick={() => {
+                        setActiveTab('POST');
+                        setCurrentPage(1);
+                    }}
                 >
-                    {t('admin.posts.table_post')}
+                    {t('admin.reports.tab_posts')}
                 </button>
                 <button
                     className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${activeTab === 'USER'
                         ? 'border-blue-600 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
-                    onClick={() => setActiveTab('USER')}
+                    onClick={() => {
+                        setActiveTab('USER');
+                        setCurrentPage(1);
+                    }}
                 >
-                    {t('admin.users.title')}
+                    {t('admin.reports.tab_users')}
                 </button>
             </div>
 
@@ -155,6 +166,20 @@ const AdminReports = () => {
                             className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all text-sm outline-none"
                         />
                     </div>
+
+                    <select
+                        value={statusFilter}
+                        onChange={(e: any) => {
+                            setStatusFilter(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg px-3 py-2 outline-none hover:bg-gray-50 focus:ring-2 focus:ring-blue-200 transition-all cursor-pointer min-w-[140px]"
+                    >
+                        <option value="ALL">{t('admin.common.status', 'Trạng thái')}</option>
+                        <option value="PENDING">{t('admin.reports.tab_pending')}</option>
+                        <option value="RESOLVED">{t('admin.reports.tab_resolved')}</option>
+                        <option value="REJECTED">{t('admin.reports.tab_dismissed')}</option>
+                    </select>
                 </div>
 
                 {/* Table */}

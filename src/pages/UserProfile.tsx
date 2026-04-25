@@ -4,7 +4,7 @@ import LocalizedLink from '../components/common/LocalizedLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersAPI, postsAPI, reviewsAPI, filesAPI, chatAPI } from '../services/api'; // Added filesAPI, chatAPI
 import type { Post, User, Review } from '../types';
-import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
+import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home, Phone } from 'lucide-react'; // Added Camera, Phone
 import { useAuth } from '../context/AuthContext'; // Added useAuth
 import { useTranslation } from 'react-i18next';
 
@@ -136,7 +136,7 @@ const UserProfile = () => {
                     </div>
 
                     <div className="px-6 pb-6 relative">
-                        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 -mt-12 sm:-mt-10 md:-mt-16 px-2">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-10 md:-mt-16 px-4">
                             {/* Avatar */}
                             <div className="relative group shrink-0">
                                 <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg bg-white relative overflow-hidden">
@@ -173,7 +173,7 @@ const UserProfile = () => {
                             </div>
 
                             {/* User Info */}
-                            <div className="flex-1 text-center sm:text-left min-w-0 pt-2">
+                            <div className="flex-1 text-center sm:text-left min-w-0 pt-2 z-10">
                                 <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center justify-center sm:justify-start gap-2">
                                     {user.name}
                                     {user.isVerified && <ShieldCheck className="text-green-500 w-5 h-5 shrink-0" />}
@@ -183,6 +183,12 @@ const UserProfile = () => {
                                         <Calendar size={14} className="shrink-0" />
                                         {t('user_profile.joined')} <span className="text-gray-900 font-medium">{new Date(user.createdAt!).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                                     </p>
+                                    {user.phone && (
+                                        <p className="flex items-center gap-1">
+                                            <Phone size={14} className="shrink-0 text-blue-500" />
+                                            {t('common.contact')}: <span className="text-gray-900 font-medium">{user.phone}</span>
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 

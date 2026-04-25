@@ -242,18 +242,18 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
 
     // 8. Administrative / Manual Notifications (with prefixes)
     // Matches: [CẢNH BÁO VI PHẠM]: ..., CẢNH BÁO VI PHẠM: ..., [CỘNG ĐIỂM] ..., [TRỪ ĐIỂM] ...
-    const adminPrefixMatch = message.match(/^(\[?(CẢNH BÁO VI PHẠM|CỘNG ĐIỂM|TRỪ ĐIỂM)\]?):?\s*(.*)$/);
+    const adminPrefixMatch = message.match(/^(\[?(CẢNH BÁO VI PHẠM|CỘNG ĐIỂM|TRỪ ĐIỂM|VIOLATION WARNING|POINTS ADDED|POINTS DEDUCTED|REWARD)\]?):?\s*(.*)$/i);
     if (adminPrefixMatch) {
-        const prefix = adminPrefixMatch[2]; // CẢNH BÁO VI PHẠM, CỘNG ĐIỂM, or TRỪ ĐIỂM
+        const prefix = adminPrefixMatch[2].toUpperCase(); // Normalize prefix
         const content = adminPrefixMatch[3].trim();
 
         // Recursively parse the content to handle translated sub-messages
         let localizedContent = parseNotificationMessage(content, t);
 
-        if (prefix === 'CẢNH BÁO VI PHẠM') {
+        if (prefix === 'CẢNH BÁO VI PHẠM' || prefix === 'VIOLATION WARNING') {
             return t('notifications.patterns.admin_violation_prefix', { content: localizedContent });
         }
-        if (prefix === 'CỘNG ĐIỂM' || prefix === 'TRỪ ĐIỂM') {
+        if (prefix === 'CỘNG ĐIỂM' || prefix === 'TRỪ ĐIỂM' || prefix === 'POINTS ADDED' || prefix === 'POINTS DEDUCTED' || prefix === 'REWARD') {
             const pointSuffixMatch = content.match(/^(.*)\s*\(([+-][\d,.]+)\s*PTS\)$/i);
             if (pointSuffixMatch) {
                 const subContent = pointSuffixMatch[1].trim();
@@ -265,7 +265,8 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
                     localizedSubContent = t(localizedSubContent, { defaultValue: localizedSubContent });
                 }
 
-                const key = prefix === 'CỘNG ĐIỂM' ? 'notifications.patterns.admin_earn_detail' : 'notifications.patterns.admin_spend_detail';
+                const isEarn = ['CỘNG ĐIỂM', 'POINTS ADDED', 'REWARD'].includes(prefix);
+                const key = isEarn ? 'notifications.patterns.admin_earn_detail' : 'notifications.patterns.admin_spend_detail';
                 return t(key, { content: localizedSubContent, amount });
             }
             
@@ -277,14 +278,24 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
     }
 
     // 9. Warnings (from Admin)
-    // Cảnh cáo lần 1: Nhắc nhở vi phạm.
-    const warningMatch = message.match(/^\s*Cảnh cáo lần (\d+):?\s*(.*)$/);
+    // Cảnh cáo lần 1: Nhắc nhở vi phạm. / Strike 1: Nhắc nhở vi phạm
+    const warningMatch = message.match(/^\s*(?:Cảnh cáo lần|Strike|Level|Mức phạt)\s*(\d+):?\s*(.*)$/i);
     if (warningMatch) {
         const level = warningMatch[1];
         const reason = warningMatch[2].replace(/\.?\s*$/, ''); // Remove trailing dot
         let localizedReason = reason;
 
-        if (reason === 'Nhắc nhở vi phạm') localizedReason = t('notifications.patterns.target_violation_notice');
+        if (reason.includes('Nhắc nhở vi phạm') || reason.includes('Violation reminder')) {
+            localizedReason = t('notifications.patterns.target_violation_notice');
+        } else if (reason.includes('15% Net Revocation') || reason.includes('Trừ 15%')) {
+            localizedReason = t('admin.points.adjustment_reasons.violation_deduct_15');
+        } else if (reason.includes('30% Net Revocation') || reason.includes('Trừ 30%')) {
+            localizedReason = t('admin.points.adjustment_reasons.violation_deduct_30');
+        } else if (reason.includes('50% Net Revocation') || reason.includes('Trừ 50%')) {
+            localizedReason = t('admin.points.adjustment_reasons.violation_deduct_50');
+        } else if (reason.includes('Total Asset Seizure') || reason.includes('Tịch thu toàn bộ')) {
+            localizedReason = t('admin.points.adjustment_reasons.violation_ban');
+        }
 
         return t('notifications.patterns.warning_level_detail', { level, reason: localizedReason });
     }

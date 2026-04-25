@@ -421,7 +421,13 @@ const CreatePost = () => {
                             {/* Additional Info (Conditional based purely on property type logic) */}
                             {watch('propertyType') !== 'LAND' && (
                                 <>
-                                    <div className={`grid gap-4 ${watch('propertyType') === 'OFFICE' ? 'md:grid-cols-2' : 'md:grid-cols-4'}`}>
+                                    <div className={`grid gap-4 ${
+                                        watch('propertyType') === 'OFFICE' 
+                                            ? 'md:grid-cols-2' 
+                                            : (watch('propertyType') === 'HOUSE' || watch('propertyType') === 'SHOPHOUSE') 
+                                                ? 'md:grid-cols-3' 
+                                                : 'md:grid-cols-4'
+                                    }`}>
                                         {watch('propertyType') !== 'OFFICE' && (
                                             <>
                                                 <div className="space-y-2">
@@ -452,19 +458,22 @@ const CreatePost = () => {
                                                 </div>
                                             </>
                                         )}
-                                        <div className="space-y-2">
-                                            <Label>{t('create_post.floor')}</Label>
-                                            <Input 
-                                                type="number" 
-                                                min="0" 
-                                                placeholder="5" 
-                                                onKeyDown={(e) => {
-                                                    if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
-                                                }}
-                                                {...register('floor', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
-                                            />
-                                            {errors.floor && <p className="text-xs text-red-500">{errors.floor.message as string}</p>}
-                                        </div>
+                                        {/* Hide Floor Number for Private Houses and Shophouses */}
+                                        {watch('propertyType') !== 'HOUSE' && watch('propertyType') !== 'SHOPHOUSE' && (
+                                            <div className="space-y-2">
+                                                <Label>{t('create_post.floor')}</Label>
+                                                <Input 
+                                                    type="number" 
+                                                    min="0" 
+                                                    placeholder="5" 
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === '-' || e.key === 'e' || e.key === '+') e.preventDefault();
+                                                    }}
+                                                    {...register('floor', { min: { value: 0, message: t('common.invalid_number', { defaultValue: 'Số không hợp lệ' }) } })} 
+                                                />
+                                                {errors.floor && <p className="text-xs text-red-500">{errors.floor.message as string}</p>}
+                                            </div>
+                                        )}
                                         <div className="space-y-2">
                                             <Label>{t('create_post.total_floors')}</Label>
                                             <Input 

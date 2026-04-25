@@ -863,6 +863,8 @@
             "tab_pending": "Chờ xử lý",
             "tab_resolved": "Đã xử lý",
             "tab_dismissed": "Đã bỏ qua",
+            "tab_posts": "Báo cáo bài đăng",
+            "tab_users": "Báo cáo người dùng",
             "table_reporter": "Người báo cáo",
             "table_target": "Đối tượng",
             "table_reason": "Lý do",
@@ -871,7 +873,15 @@
             "dismiss": "Bỏ qua",
             "post_not_exist": "Tin không tồn tại",
             "user_not_exist": "Người dùng không tồn tại",
-            "table_bad_post": "Báo cáo xấu"
+            "table_bad_post": "Báo cáo xấu",
+            "chat_viewer": {
+                "title": "Lịch sử hội thoại",
+                "report_target": "BÁO CÁO: {{name}}",
+                "loading": "Đang tải tin nhắn...",
+                "no_data": "Không có dữ liệu trò chuyện",
+                "no_data_desc": "Hội thoại này hiện đang trống hoặc đã bị xóa.",
+                "legend": "Bên trái: Người nhắn đầu tiên | Bên phải: Người nhắn tiếp theo (Dữ liệu phục vụ kiểm soát vi phạm)"
+            }
         },
         "vip": {
             "title": "Gói VIP & Dịch vụ",
@@ -1416,9 +1426,9 @@
         },
         "moderation": {
             "violation_subject": "Cảnh báo bài đăng vi phạm chính sách",
-            "violation_header": "BÀI ĐĂNG BỊ XÓA HOẶC TỪ CHỐI",
+            "violation_header": "CẢNH BÁO BÀI ĐĂNG VI PHẠM",
             "violation_greeting": "Xin chào <strong>{{userName}}</strong>,",
-            "violation_content": "Bài đăng <strong>\"{{postTitle}}\"</strong> của bạn đã bị từ chối hoặc xóa khỏi hệ thống do vi phạm chính sách.",
+            "violation_content": "Bài đăng <strong>\"{{postTitle}}\"</strong> của bạn đã được xác định là vi phạm chính sách cộng đồng của chúng tôi.",
             "violation_reason": "Chi tiết lỗi vi phạm:",
             "violation_penalty": "Hình thức xử lý:",
             "violation_penalty_deduct": "Trừ {{deductedPoints}} điểm",

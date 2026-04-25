@@ -53,7 +53,6 @@ const Footer = () => {
                             <div className="footer-links">
                                 <LocalizedLink to="/buy" className="footer-link">{t('common.buy', 'Mua nhà')}</LocalizedLink>
                                 <LocalizedLink to="/rent" className="footer-link">{t('common.rent', 'Thuê nhà')}</LocalizedLink>
-                                <LocalizedLink to="/sell" className="footer-link">{t('common.sell', 'Bán nhà')}</LocalizedLink>
                                 <LocalizedLink to="/post-ad" className="footer-link">{t('common.post_ad', 'Đăng tin')}</LocalizedLink>
                                 <LocalizedLink to="/vip" className="footer-link">{t('common.vip_packages', 'Gói VIP')}</LocalizedLink>
                             </div>
@@ -66,7 +65,7 @@ const Footer = () => {
                                 <button onClick={() => openHelp('terms')} className="footer-link text-left">{t('auth.terms', 'Điều khoản dịch vụ')}</button>
                                 <button onClick={() => openHelp('privacy')} className="footer-link text-left">{t('auth.privacy_policy', 'Chính sách bảo mật')}</button>
                                 <button onClick={() => openHelp('cookie')} className="footer-link text-left">{t('footer.cookie_policy', 'Chính sách Cookie')}</button>
-                                <button onClick={() => openHelp('safety')} className="footer-link text-left">{t('footer.safety_tips', 'Mẹo an toàn')}</button>
+
                             </div>
                         </div>
 

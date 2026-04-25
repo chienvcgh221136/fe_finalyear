@@ -132,7 +132,7 @@ const UserBalancesTable = () => {
                                             </div>
                                         </div>
                                     </td>
-                                     <td className="px-6 py-4">
+                                    <td className="px-6 py-4">
                                         <div className="text-sm text-gray-600">
                                             {user.phone || <span className="text-gray-400 italic font-light">{t('common.none', { defaultValue: 'chưa có' })}</span>}
                                         </div>
