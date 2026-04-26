@@ -7,7 +7,7 @@ import { postService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import {
     MapPin, Heart, AlertCircle, ChevronRight,
-    Home, Maximize2, BedDouble, Bath, Compass, FileText, Flag, Calendar, ShieldCheck, Lock
+    Home, Maximize2, BedDouble, Bath, FileText, Flag, Calendar, ShieldCheck, Lock
 } from 'lucide-react';
 import Gallery from '../components/post/Gallery';
 import AgentWidget from '../components/post/AgentWidget';
