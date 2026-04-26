@@ -31,6 +31,39 @@ const Profile = () => {
         avatar: user?.avatar || '',
     });
 
+    const menuItems = [
+        {
+            group: t('profile.group_account'),
+            items: [
+                { id: 'profile', label: t('profile.tab_personal_info'), icon: UserIcon },
+            ]
+        },
+        {
+            group: t('profile.group_activity'),
+            items: [
+                { id: 'posts', label: t('profile.tab_my_posts'), icon: FileText },
+                { id: 'favorites', label: t('profile.tab_saved_posts'), icon: Heart },
+                { id: 'appointments', label: t('profile.tab_appointments'), icon: Calendar },
+            ]
+        },
+        {
+            group: t('profile.group_finance_vip'),
+            items: [
+                { id: 'wallet', label: t('profile.tab_my_wallet'), icon: CreditCard },
+                { id: 'vip', label: t('profile.tab_vip_packages'), icon: Crown },
+                { id: 'vip-management', label: t('profile.tab_vip_management'), icon: Crown },
+            ]
+        },
+        {
+            group: t('profile.group_analysis'),
+            items: [
+                { id: 'stats', label: t('profile.tab_statistics'), icon: BarChart2 },
+            ]
+        }
+    ];
+
+    const currentTabLabel = menuItems.flatMap(g => g.items).find(i => i.id === activeTab)?.label || t('profile.tab_personal_info');
+
     // File Upload State
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploading, setUploading] = useState(false);
@@ -462,7 +495,7 @@ const Profile = () => {
                             className="flex items-center gap-2 text-gray-600 font-bold text-sm"
                         >
                             <Menu size={20} className="text-blue-600" />
-                            {activeTab && activeTab !== 'profile' ? t(`profile.tab_${activeTab}`) : t('profile.tab_personal_info')}
+                            {currentTabLabel}
                         </button>
                         <div className="flex items-center gap-2">
                             <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{t('profile.account_menu')}</span>
@@ -518,36 +551,7 @@ const Profile = () => {
                             </div>
 
                             <nav className="p-2 lg:p-4 flex flex-col">
-                                {[
-                                    {
-                                        group: t('profile.group_account'),
-                                        items: [
-                                            { id: 'profile', label: t('profile.tab_personal_info'), icon: UserIcon },
-                                        ]
-                                    },
-                                    {
-                                        group: t('profile.group_activity'),
-                                        items: [
-                                            { id: 'posts', label: t('profile.tab_my_posts'), icon: FileText },
-                                            { id: 'favorites', label: t('profile.tab_saved_posts'), icon: Heart },
-                                            { id: 'appointments', label: t('profile.tab_appointments'), icon: Calendar },
-                                        ]
-                                    },
-                                    {
-                                        group: t('profile.group_finance_vip'),
-                                        items: [
-                                            { id: 'wallet', label: t('profile.tab_my_wallet'), icon: CreditCard },
-                                            { id: 'vip', label: t('profile.tab_vip_packages'), icon: Crown },
-                                            { id: 'vip-management', label: t('profile.tab_vip_management'), icon: Crown },
-                                        ]
-                                    },
-                                    {
-                                        group: t('profile.group_analysis'),
-                                        items: [
-                                            { id: 'stats', label: t('profile.tab_statistics'), icon: BarChart2 },
-                                        ]
-                                    }
-                                ].map((section, idx) => (
+                                {menuItems.map((section, idx) => (
                                     <div key={idx} className="flex flex-col">
                                         <div className="flex px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest my-2 items-center gap-2">
                                             <div className="h-px bg-gray-100 flex-1"></div>

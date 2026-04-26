@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { postsAPI, statsAPI } from '../../services/api';
 import type { Post, User } from '../../types';
 import {
-    CheckSquare, RefreshCw, Search, Filter, MapPin, AlertTriangle
+    CheckSquare, RefreshCw, Search, Filter, MapPin, AlertTriangle, Eye
 } from 'lucide-react';
 import LocalizedLink from '../../components/common/LocalizedLink';
 import { useTranslation } from 'react-i18next';
@@ -220,7 +220,10 @@ const AdminPosts = () => {
                                             </div>
                                         </td>
                                         <td className="py-4 px-6 font-bold text-slate-900 text-sm">
-                                            {(post.price / 1000000000).toFixed(2)} {t('common.billion').replace(' VNĐ', '')}
+                                            {post.price >= 1000000000 
+                                                ? `${(post.price / 1000000000).toLocaleString('vi-VN', { maximumFractionDigits: 2 })} ${t('common.billion')}`
+                                                : `${(post.price / 1000000).toLocaleString('vi-VN', { maximumFractionDigits: 0 })} ${t('common.million')}`
+                                            }
                                         </td>
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-1.5 text-sm text-slate-600">
@@ -247,6 +250,14 @@ const AdminPosts = () => {
                                         </td>
                                         <td className="py-4 px-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <LocalizedLink
+                                                    to={`/post/${post._id}`}
+                                                    target="_blank"
+                                                    className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-bold transition-colors flex items-center gap-1"
+                                                >
+                                                    <Eye size={14} />
+                                                    {t('admin.common.view')}
+                                                </LocalizedLink>
                                                 <button
                                                     onClick={() => approveMutation.mutate(post._id)}
                                                     disabled={approveMutation.isPending}

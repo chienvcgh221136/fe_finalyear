@@ -296,12 +296,20 @@ const PostDetail = () => {
                                 </>
                             )}
 
-                            <SpecItem icon={Compass} label={t('post_detail.direction')} value={post.direction || t('post_detail.southeast')} />
                             <SpecItem icon={FileText} label={t('post_detail.legal')} value={(post.redbookImages && post.redbookImages.length > 0) ? t('post_detail.legal_status_exists') : t('post_detail.legal_status_none')} />
                             <SpecItem icon={Home} label={t('post_detail.property_type')} value={t(`post_detail.property_type_${post.propertyType || post.type || 'HOUSE'}`)} />
                             
                             {post.propertyType !== 'LAND' && (
-                                <SpecItem icon={FileText} label={t('post_detail.furniture')} value={post.furniture || t('common.none')} />
+                                <SpecItem 
+                                    icon={FileText} 
+                                    label={t('post_detail.furniture')} 
+                                    value={
+                                        post.furniture === 'FULL' ? t('create_post.fully_furnished') :
+                                        post.furniture === 'BASIC' ? t('create_post.basic_furnished') :
+                                        post.furniture === 'NONE' ? t('create_post.unfurnished') :
+                                        post.furniture || t('common.none')
+                                    } 
+                                />
                             )}
                         </div>
 

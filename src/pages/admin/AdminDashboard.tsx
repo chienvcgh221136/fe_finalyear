@@ -102,11 +102,19 @@ const AdminDashboard = () => {
                                         <p className="text-xs text-gray-500 mt-1">
                                             {t('admin.dashboard.posted_by')}: <span className="font-medium text-gray-700">{(post.userId as User)?.name || 'Unknown'}</span>
                                         </p>
-                                        <div className="flex items-center gap-2 mt-1">
+                                        <div className="flex items-center gap-2 mt-2">
                                             <span className="text-xs font-medium text-orange-600 bg-orange-50 px-2 py-0.5 rounded">{t('admin.dashboard.pending_posts')}</span>
                                             <span className="text-xs text-gray-400">• {post.createdAt ? new Date(post.createdAt).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US') : t('admin.dashboard.just_now')}</span>
                                         </div>
                                     </div>
+                                    <LocalizedLink 
+                                        to={`/post/${post._id}`} 
+                                        target="_blank"
+                                        className="h-8 w-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                                        title={t('admin.common.view')}
+                                    >
+                                        <Eye size={16} />
+                                    </LocalizedLink>
                                 </div>
                             ))}
                         </div>

@@ -491,7 +491,7 @@
         "loading": "Loading data...",
         "title": "VIP Management",
         "subtitle": "Optimize the visibility of your listings",
-        "btn_history_packages": "History & Packages",
+        "btn_history_packages": "Packages",
         "current_package": "Current Package",
         "expired": "Expired",
         "remaining_hours": "{{count}} hours left",

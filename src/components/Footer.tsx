@@ -54,7 +54,7 @@ const Footer = () => {
                                 <LocalizedLink to="/buy" className="footer-link">{t('common.buy', 'Mua nhà')}</LocalizedLink>
                                 <LocalizedLink to="/rent" className="footer-link">{t('common.rent', 'Thuê nhà')}</LocalizedLink>
                                 <LocalizedLink to="/post-ad" className="footer-link">{t('common.post_ad', 'Đăng tin')}</LocalizedLink>
-                                <LocalizedLink to="/vip" className="footer-link">{t('common.vip_packages', 'Gói VIP')}</LocalizedLink>
+                                <LocalizedLink to="/loyalty" className="footer-link">{t('navbar.points', 'Điểm thưởng')}</LocalizedLink>
                             </div>
                         </div>
 
@@ -93,9 +93,9 @@ const Footer = () => {
                 </div>
             </div>
 
-            <HelpModal 
-                isOpen={isHelpOpen} 
-                onClose={() => setIsHelpOpen(false)} 
+            <HelpModal
+                isOpen={isHelpOpen}
+                onClose={() => setIsHelpOpen(false)}
                 initialTab={activeHelpTab}
             />
         </footer>

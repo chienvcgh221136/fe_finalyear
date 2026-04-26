@@ -490,7 +490,7 @@
         "loading": "Đang tải dữ liệu...",
         "title": "Quản lý VIP",
         "subtitle": "Tối ưu hóa hiển thị tin đăng của bạn",
-        "btn_history_packages": "Lịch sử & Gói cước",
+        "btn_history_packages": "Gói cước",
         "current_package": "Gói hiện tại",
         "expired": "Đã hết hạn",
         "remaining_hours": "Còn {{count}} giờ",
