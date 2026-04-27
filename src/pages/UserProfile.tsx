@@ -4,7 +4,7 @@ import LocalizedLink from '../components/common/LocalizedLink';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersAPI, postsAPI, reviewsAPI, filesAPI, chatAPI } from '../services/api'; // Added filesAPI, chatAPI
 import type { Post, User, Review } from '../types';
-import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home, Phone } from 'lucide-react'; // Added Camera, Phone
+import { Edit, Calendar, Camera, Star, Truck, ShieldCheck, MessageSquare, Home } from 'lucide-react'; // Added Camera
 import { useAuth } from '../context/AuthContext'; // Added useAuth
 import { useTranslation } from 'react-i18next';
 
@@ -183,12 +183,7 @@ const UserProfile = () => {
                                         <Calendar size={14} className="shrink-0" />
                                         {t('user_profile.joined')} <span className="text-gray-900 font-medium">{new Date(user.createdAt!).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US')}</span>
                                     </p>
-                                    {user.phone && (
-                                        <p className="flex items-center gap-1">
-                                            <Phone size={14} className="shrink-0 text-blue-500" />
-                                            {t('common.contact')}: <span className="text-gray-900 font-medium">{user.phone}</span>
-                                        </p>
-                                    )}
+
                                 </div>
                             </div>
 
