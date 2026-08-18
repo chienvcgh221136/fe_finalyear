@@ -37,9 +37,6 @@ const PostDetail = () => {
         enabled: !!id
     });
 
-    // Geocoding effect
-    // Geocoding effect
-    // Geocoding effect
     useEffect(() => {
         if (!post) return;
 
@@ -64,7 +61,7 @@ const PostDetail = () => {
         };
 
         const getBestCoordinates = async () => {
-            // 1. Try Specific Address
+            // Try Specific Address
             const fullAddress = `${post.address?.street ? `${post.address.street}, ` : ''}${post.address?.ward ? `${post.address.ward}, ` : ''}${post.address?.district || post.district || ''}, ${post.address?.city || post.city || ''}`;
             let coords = await fetchCoordinates(fullAddress);
             if (coords) {
@@ -72,7 +69,7 @@ const PostDetail = () => {
                 return;
             }
 
-            // 2. Try District + City (Fallback 1)
+            // Try District + City 
             const districtCity = `${post.address?.district || post.district || ''}, ${post.address?.city || post.city || ''}`;
             coords = await fetchCoordinates(districtCity);
             if (coords) {
@@ -81,7 +78,7 @@ const PostDetail = () => {
                 return;
             }
 
-            // 3. Try City Only (Fallback 2)
+            // Try City Only 
             const city = post.address?.city || post.city || '';
             if (city) {
                 coords = await fetchCoordinates(city);

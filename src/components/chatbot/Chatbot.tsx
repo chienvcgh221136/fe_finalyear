@@ -56,18 +56,15 @@ const Chatbot = () => {
                 sender: 'bot'
             };
 
-            // 1. If user identity changed (Guest -> User, User A -> User B, or Logout)
             if (userChanged) {
                 console.log('[Chatbot] Identity changed, resetting state.');
                 setMessages([welcomeMsg]);
                 setAnonymousCount(0);
                 hasFetchedForCurrentSession.current = false;
                 prevUserId.current = user?.id;
-                // If it's a logout or closed, we stop here
                 if (!isAuthenticated || !user?.id || !isOpen) return;
             }
 
-            // 2. If authenticated and open, fetch history if not already done for this session
             if (isAuthenticated && user?.id && isOpen && !hasFetchedForCurrentSession.current) {
                 try {
                     hasFetchedForCurrentSession.current = true;
@@ -82,10 +79,8 @@ const Chatbot = () => {
                             posts: m.posts || []
                         }));
                         
-                        // Set fresh messages: Welcome + History (discarding any existing guest messages)
                         setMessages([welcomeMsg, ...historyMessages]);
                     } else {
-                        // Ensure it's reset if no history found
                         setMessages([welcomeMsg]);
                     }
                 } catch (error) {

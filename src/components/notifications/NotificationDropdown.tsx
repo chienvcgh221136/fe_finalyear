@@ -80,10 +80,10 @@ const NotificationDropdown = () => {
     const getLink = (n: any) => {
         // Construct link based on type and relatedId
         if (n.relatedId) {
-            if (n.type === 'APPOINTMENT') return `/profile?tab=appointments`; // Or specific appointment detail if available
-            if (n.type === 'LEAD') return `/post/${n.relatedId}`; // Seller reviewing their post
+            if (n.type === 'APPOINTMENT') return `/profile?tab=appointments`; 
+            if (n.type === 'LEAD') return `/post/${n.relatedId}`; 
             if (n.type === 'LIKE' || n.type === 'REVIEW') return `/post/${n.relatedId}`;
-            if (n.type === 'REPORT') return `/post/${n.relatedId}`; // Or help center
+            if (n.type === 'REPORT') return `/post/${n.relatedId}`; 
             if (n.type === 'POINT') return `/loyalty`;
         }
         return '#';

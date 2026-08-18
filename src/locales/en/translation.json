@@ -208,6 +208,7 @@
         "email_no_change": "Email cannot be changed",
         "btn_save": "Save Changes",
         "update_success": "Information updated successfully!",
+        "phone_duplicate": "This phone number is already in use by another account.",
         "appointment_pending": "Pending confirmation",
         "appointment_received": "Received Requests",
         "appointment_sent": "Sent Requests",

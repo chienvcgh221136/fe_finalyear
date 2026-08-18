@@ -64,6 +64,7 @@ const Search = () => {
                 default:
                     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
             }
+
         });
     };
 
@@ -85,7 +86,6 @@ const Search = () => {
                 const data = response.data.data || response.data;
                 const posts = Array.isArray(data) ? data : [];
                 setListings(posts);
-                setFilteredListings(posts);
 
                 // Initial Filter based on URL
                 let initialFiltered = [...posts];
@@ -133,7 +133,8 @@ const Search = () => {
                     setPriceRange([min, max]);
                 }
 
-                setFilteredListings(initialFiltered);
+                // Always apply VIP sort on initial load
+                setFilteredListings(sortListings(initialFiltered, 'newest'));
                 setCurrentPage(1);
 
                 // Extract unique cities
@@ -307,7 +308,7 @@ const Search = () => {
 
     const handleClearFilters = () => {
         setCity('');
-        setMinArea(''); // Clear Area Inputs
+        setMinArea('');
         setMaxArea('');
         setPriceRange([0, MAX_PRICE]); // Reset Price Slider
         setPropertyTypes([]);
@@ -316,7 +317,7 @@ const Search = () => {
         // Determine default transaction type based on URL path or parameters
         const searchParams = new URLSearchParams(location.search);
         const urlType = searchParams.get('transactionType');
-        
+
         let initialT: string[] = [];
         if (location.pathname.endsWith('/buy')) {
             initialT = ['SALE'];
@@ -325,18 +326,18 @@ const Search = () => {
         } else if (urlType) {
             initialT = [urlType];
         }
-        
+
         setTransactionTypes(initialT);
 
         let initialListings = [...listings];
         if (initialT.length > 0) {
             initialListings = initialListings.filter(p => initialT.includes(p.transactionType));
         }
-        
+
         // Ensure the cleared results are sorted by the default 'newest' option
         const sortedResult = sortListings(initialListings, 'newest');
         setFilteredListings(sortedResult);
-        
+
         setCurrentPage(1);
         setAreaError('');
         setIsFilterDrawerOpen(false); // Close mobile drawer

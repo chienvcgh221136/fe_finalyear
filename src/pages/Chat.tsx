@@ -239,14 +239,13 @@ const Chat = () => {
         setShowNewMessageBadge(false);
     };
 
-    // Reset state on room change
     useEffect(() => {
         setShowNewMessageBadge(false);
         isNearBottomRef.current = true;
         prevMessageCountRef.current = 0;
     }, [selectedRoomId]);
 
-    // Handle New Messages & Auto-scroll
+
     useEffect(() => {
         if (highlightedMessageId && messageRefs.current[highlightedMessageId]) {
             messageRefs.current[highlightedMessageId]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -324,13 +323,10 @@ const Chat = () => {
     const sendMessageMutation = useMutation({
         mutationFn: ({ content, type }: { content: string, type: 'TEXT' | 'IMAGE' }) => chatAPI.sendMessage(selectedRoomId!, content, type),
         onMutate: async (newMsg) => {
-            // Cancel any outgoing refetches
-            await queryClient.cancelQueries({ queryKey: ['messages', selectedRoomId] });
 
-            // Snapshot the previous value
+            await queryClient.cancelQueries({ queryKey: ['messages', selectedRoomId] });
             const previousData = queryClient.getQueryData(['messages', selectedRoomId]);
 
-            // Optimistically update to the new value
             if (previousData) {
                 queryClient.setQueryData(['messages', selectedRoomId], (old: any) => {
                     if (!old || !old.data || !old.data.data) return old;

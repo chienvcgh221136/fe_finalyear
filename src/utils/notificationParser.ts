@@ -152,23 +152,18 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
         return t('notifications.patterns.admin_legacy_spend_detail', { amount: legacyAdminSpend[1], reason });
     }
 
-    // Legacy patterns
     const dailyLogin = message.match(/^\s*Điểm danh hàng ngày: \+(\d+) điểm\.?\s*$/);
     if (dailyLogin) return t('notifications.patterns.daily_login', { points: dailyLogin[1] });
 
-    // Bạn có 10 điểm đã hết hạn và bị trừ khỏi tài khoản.
     const pointsExpired = message.match(/^\s*Bạn có (\d+) điểm đã hết hạn và bị trừ khỏi tài khoản\.?\s*$/);
     if (pointsExpired) return t('notifications.patterns.points_expired', { points: pointsExpired[1] });
 
-    // Bạn có 10 điểm sắp hết hạn vào ngày 01/01/2026. Hãy sử dụng ngay!
     const pointsExpiryWarn = message.match(/^\s*Bạn có (\d+) điểm sắp hết hạn vào ngày (.*)\. Hãy sử dụng ngay!?\s*$/);
     if (pointsExpiryWarn) return t('notifications.patterns.points_expiry_warn', { points: pointsExpiryWarn[1], date: pointsExpiryWarn[2] });
 
-    // NHẮC LẠI: Bạn có 10 điểm sắp hết hạn vào ngày 01/01/2026 (còn 7 ngày).
     const pointsExpiryRemind = message.match(/^\s*NHẮC LẠI: Bạn có (\d+) điểm sắp hết hạn vào ngày (.*) \(còn 7 ngày\)\.?\s*$/);
     if (pointsExpiryRemind) return t('notifications.patterns.points_expiry_remind', { points: pointsExpiryRemind[1], date: pointsExpiryRemind[2] });
 
-    // CẢNH BÁO KHẨN: 10 điểm của bạn sẽ hết hạn vào ngày MAI (01/01/2026).
     const pointsExpiryUrgent = message.match(/^\s*CẢNH BÁO KHẨN: (\d+) điểm của bạn sẽ hết hạn vào ngày MAI \((.*)\)\.?\s*$/);
     if (pointsExpiryUrgent) return t('notifications.patterns.points_expiry_urgent', { points: pointsExpiryUrgent[1], date: pointsExpiryUrgent[2] });
 
@@ -182,66 +177,41 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
         return base;
     }
 
-    // 2. Wallet/Topup Related
-    // Nạp tiền thành công: +100.000đ. Số dư hiện tại: 100.000đ.
     const topupSuccess = message.match(/^\s*Nạp tiền thành công: \+(.*)đ\. Số dư hiện tại: (.*)đ\.?\s*$/);
     if (topupSuccess) return t('notifications.patterns.topup_success', { amount: topupSuccess[1], balance: topupSuccess[2] });
 
-    // Nạp tiền thành công (Sepay): +100.000đ. Số dư hiện tại: 100.000đ.
     const topupSuccessSepay = message.match(/^\s*Nạp tiền thành công \(Sepay\): \+(.*)đ\. Số dư hiện tại: (.*)đ\.?\s*$/);
     if (topupSuccessSepay) return t('notifications.patterns.topup_success_sepay', { amount: topupSuccessSepay[1], balance: topupSuccessSepay[2] });
 
-    // 3. VIP Related
-    // Nâng cấp gói VIP thành công: "GOLD".
     const vipUpgrade = message.match(/^\s*Nâng cấp gói VIP thành công: "(.*)"\.?\s*$/);
     if (vipUpgrade) return t('notifications.patterns.vip_upgrade_success', { name: vipUpgrade[1] });
-
-    // Đăng ký gói VIP "BASIC" thành công! Thời hạn: 30 ngày.
     const vipPurchase = message.match(/^\s*Đăng ký gói VIP "(.*)" thành công! Thời hạn: (\d+) ngày\.?\s*$/);
     if (vipPurchase) return t('notifications.patterns.vip_purchase_success', { name: vipPurchase[1], days: vipPurchase[2] });
-
-    // 4. Social/Interaction
-    // Người dùng User A đã xem số điện thoại bài đăng "Post Title".
     const leadViewed = message.match(/^\s*(?:Người dùng )?(.*) đã xem số điện thoại(?: bài đăng)? "(.*)"\.?\s*$/);
     if (leadViewed) return t('notifications.patterns.lead_viewed', { user: leadViewed[1], post: leadViewed[2] });
 
-    // User A đã yêu thích bài đăng "Post Title" của bạn.
     const postLiked = message.match(/^\s*(.*) đã yêu thích bài đăng "(.*)" của bạn\.?\s*$/);
     if (postLiked) return t('notifications.patterns.post_liked', { user: postLiked[1], post: postLiked[2] });
 
-    // User A đã viết đánh giá cho bạn.
     const reviewReceived = message.match(/^\s*(.*) đã viết đánh giá cho bạn\.?\s*$/);
     if (reviewReceived) return t('notifications.patterns.review_received', { user: reviewReceived[1] });
-
-    // 5. Post Management
-    // Bài đăng "Title" của bạn đã được tạo thành công và đang hiển thị.
     const postCreated = message.match(/^\s*Bài đăng "(.*)" của bạn đã được tạo thành công và đang hiển thị\.?\s*$/);
+
     if (postCreated) return t('notifications.patterns.post_created', { post: postCreated[1] });
-
-    // Tin đăng "Title" của bạn đã được duyệt và đang hiển thị công khai.
     const postApproved = message.match(/^\s*Tin đăng "(.*)" của bạn đã được duyệt và đang hiển thị công khai\.?\s*$/);
+
     if (postApproved) return t('notifications.patterns.post_approved', { post: postApproved[1] });
-
-    // Tin đăng "Title" của bạn đã bị từ chối. Lý do: XXX
     const postRejected = message.match(/^\s*Tin đăng "(.*)" của bạn đã bị từ chối\. Lý do: (.*)\s*$/);
-    if (postRejected) return t('notifications.patterns.post_rejected', { post: postRejected[1], reason: postRejected[2] });
 
-    // 6. Reports
-    // Chúng tôi đã nhận được báo cáo của bạn về bài đăng. Cảm ơn bạn đã đóng góp cho cộng đồng.
+    if (postRejected) return t('notifications.patterns.post_rejected', { post: postRejected[1], reason: postRejected[2] });
     if (message.trim().startsWith('Chúng tôi đã nhận được báo cáo của bạn về bài đăng')) {
         return t('notifications.patterns.report_received');
     }
-
-    // Báo cáo mới từ người dùng về bài đăng (Lý do: XXX).
     const newReportPost = message.match(/^\s*Báo cáo mới từ người dùng về bài đăng \(Lý do: (.*)\)\.?\s*$/);
     if (newReportPost) return t('notifications.patterns.new_report_post', { reason: newReportPost[1] });
-
-    // Báo cáo mới từ người dùng về một tài khoản (Lý do: XXX).
     const newReportUser = message.match(/^\s*Báo cáo mới từ người dùng về một tài khoản \(Lý do: (.*)\)\.?\s*$/);
-    if (newReportUser) return t('notifications.patterns.new_report_user', { reason: newReportUser[1] });
 
-    // 8. Administrative / Manual Notifications (with prefixes)
-    // Matches: [CẢNH BÁO VI PHẠM]: ..., CẢNH BÁO VI PHẠM: ..., [CỘNG ĐIỂM] ..., [TRỪ ĐIỂM] ...
+    if (newReportUser) return t('notifications.patterns.new_report_user', { reason: newReportUser[1] });
     const adminPrefixMatch = message.match(/^(\[?(CẢNH BÁO VI PHẠM|CỘNG ĐIỂM|TRỪ ĐIỂM|VIOLATION WARNING|POINTS ADDED|POINTS DEDUCTED|REWARD)\]?):?\s*(.*)$/i);
     if (adminPrefixMatch) {
         const prefix = adminPrefixMatch[2].toUpperCase(); // Normalize prefix
@@ -277,8 +247,7 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
         }
     }
 
-    // 9. Warnings (from Admin)
-    // Cảnh cáo lần 1: Nhắc nhở vi phạm. / Strike 1: Nhắc nhở vi phạm
+
     const warningMatch = message.match(/^\s*(?:Cảnh cáo lần|Strike|Level|Mức phạt)\s*(\d+):?\s*(.*)$/i);
     if (warningMatch) {
         const level = warningMatch[1];
@@ -308,34 +277,23 @@ export const parseNotificationMessage = (message: string, t: TFunction): string 
         if (target === 'Tài khoản của bạn') target = t('notifications.patterns.target_your_account');
         return t('notifications.patterns.violation_alert', { target, reason: violationAlert[2] });
     }
-
-    // 7. Appointments
-    // Yêu cầu xem nhà mới từ User A cho bài đăng: "Title"
     const appointmentNew = message.match(/^\s*Yêu cầu xem nhà mới từ (.*) cho bài đăng: "(.*)"\s*$/);
     if (appointmentNew) return t('notifications.patterns.appointment_new', { name: appointmentNew[1], title: appointmentNew[2] });
-
-    // Lịch hẹn xem nhà cho bài đăng "Title" đã được chấp nhận.
     const appointmentAccepted = message.match(/^\s*Lịch hẹn xem nhà cho bài đăng "(.*)" đã được chấp nhận\.?\s*$/);
+
     if (appointmentAccepted) return t('notifications.patterns.appointment_accepted', { post: appointmentAccepted[1] });
-
-    // Lịch hẹn xem nhà cho bài đăng "Title" bị từ chối.
     const appointmentRejected = message.match(/^\s*Lịch hẹn xem nhà cho bài đăng "(.*)" bị từ chối\.?\s*$/);
+
     if (appointmentRejected) return t('notifications.patterns.appointment_rejected', { post: appointmentRejected[1] });
-
-    // 10. Post Status (from System)
-    // Bài đăng "..." của bạn đã được tạo thành công và đang hiển thị.
     const postCreatedSys = message.match(/^\s*Bài đăng "(.*)" của bạn đã được tạo thành công và đang hiển thị\.?\s*$/);
+
     if (postCreatedSys) return t('notifications.patterns.post_created', { title: postCreatedSys[1] });
-
-    // Tin đăng "..." của bạn đã được duyệt và đang hiển thị công khai.
     const postApprovedSys = message.match(/^\s*Tin đăng "(.*)" của bạn đã được duyệt và đang hiển thị công khai\.?\s*$/);
+
     if (postApprovedSys) return t('notifications.patterns.post_approved', { title: postApprovedSys[1] });
-
-    // Tin đăng "..." của bạn đã bị từ chối. Lý do: XXX
     const postRejectedSys = message.match(/^\s*Tin đăng "(.*)" của bạn đã bị từ chối\. Lý do: (.*)\s*$/);
-    if (postRejectedSys) return t('notifications.patterns.post_rejected', { title: postRejectedSys[1], reason: postRejectedSys[2] });
 
-    // --- TOPUP NOTIFICATIONS ---
+    if (postRejectedSys) return t('notifications.patterns.post_rejected', { title: postRejectedSys[1], reason: postRejectedSys[2] });
     const topupSepayPoints = message.match(/^\s*Nạp tiền thành công \(Sepay\): \+(.*)đ\. Số dư hiện tại: (.*)đ\. Bạn nhận được (\d+) điểm thưởng!\s*$/);
     if (topupSepayPoints) return t('notifications.patterns.topup_sepay_success_points', { amount: topupSepayPoints[1], balance: topupSepayPoints[2], points: topupSepayPoints[3] });
 

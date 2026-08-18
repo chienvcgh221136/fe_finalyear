@@ -116,6 +116,14 @@ const Profile = () => {
             setIsEditing(false);
             toastSuccess(t('profile.update_success'));
         },
+        onError: (err: any) => {
+            const status = err?.response?.status;
+            if (status === 409) {
+                toastError(t('profile.phone_duplicate'));
+            } else {
+                toastError(err?.response?.data?.message || t('common.error_occurred'));
+            }
+        },
     });
 
     // Handlers
@@ -602,8 +610,8 @@ const Profile = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-3">{t('profile.avatar_label')}</label>
-                                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-3 text-center w-full">{t('profile.avatar_label')}</label>
+                                    <div className="flex flex-col items-center justify-center gap-6 w-full mb-6">
                                         <div className="relative group/avatar cursor-pointer shrink-0" onClick={() => isEditing && fileInputRef.current?.click()}>
                                             <div className="w-24 h-24 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100 flex items-center justify-center">
                                                 {profileForm.avatar ? (
@@ -620,7 +628,7 @@ const Profile = () => {
                                         </div>
 
                                         {isEditing && (
-                                            <div className="flex flex-col items-center sm:items-start gap-2">
+                                            <div className="flex flex-col items-center gap-2 text-center">
                                                 <input
                                                     type="file"
                                                     ref={fileInputRef}

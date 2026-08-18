@@ -81,8 +81,6 @@ const CreatePost = () => {
                 setValue('ward', data.address.ward);
                 setValue('street', data.address.street);
             } else {
-                // Fallback for old data if any
-                // Localize city to current language
                 setValue('city', getLocalizedCity(data.city, i18n.language));
                 setValue('district', data.district);
                 setValue('address', data.address); // Old detailed address
@@ -216,7 +214,7 @@ const CreatePost = () => {
             redbookImages: redbookImages,
             legalImages: redbookImages,
 
-            // Construct Nested Address
+            // Address
             address: {
                 city: cityToSubmit,
                 district: data.district,
